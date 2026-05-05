@@ -75,3 +75,8 @@ class JackpotThresholdRequest(BaseModel):
 class JackpotCounterRequest(BaseModel):
     """Запрос на ручную установку счётчика."""
     count: int = Field(..., ge=0, le=10000, description="Текущее значение счётчика")
+	
+class ChangePasswordRequest(BaseModel):
+    """Запрос на смену пароля."""
+    old_password: str = Field(..., min_length=1, description="Старый пароль")
+    new_password: str = Field(..., min_length=4, description="Новый пароль (мин. 4 символа)")

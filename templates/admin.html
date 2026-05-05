@@ -35,6 +35,7 @@
             <button class="tab active" onclick="showTab('overview')">Обзор</button>
             <button class="tab" onclick="showTab('machines')">По аппаратам</button>
             <button class="tab" onclick="showTab('history')">История</button>
+			<button class="tab" onclick="showTab('settings')">Настройки</button>
         </div>
 
         <!-- Вкладка: Обзор -->
@@ -73,6 +74,28 @@
                 <button onclick="loadHistory(currentOffset + 50)">Вперёд ⟶</button>
             </div>
         </div>
+		
+		<!-- Вкладка: Настройки -->
+		<div id="tab-settings" class="tab-content">
+			<h2>Настройки аккаунта</h2>
+			<div class="settings-card">
+				<h3>🔒 Сменить пароль</h3>
+				<div class="form-group">
+					<label>Старый пароль:</label>
+					<input type="password" id="old-password" class="form-input">
+				</div>
+				<div class="form-group">
+					<label>Новый пароль:</label>
+					<input type="password" id="new-password" class="form-input">
+				</div>
+				<div class="form-group">
+					<label>Подтвердите новый пароль:</label>
+					<input type="password" id="confirm-password" class="form-input">
+				</div>
+				<button onclick="changePassword()" class="form-button">Сохранить новый пароль</button>
+				<p id="password-message" class="form-message"></p>
+			</div>
+		</div>
     </div>
 
     <script>
@@ -321,6 +344,55 @@
                 setTimeout(() => loadMachineDetail(), 500);
             }
         }
+		
+		
+		async function changePassword() {
+			const oldPass = document.getElementById('old-password').value;
+			const newPass = document.getElementById('new-password').value;
+			const confirmPass = document.getElementById('confirm-password').value;
+			const msgEl = document.getElementById('password-message');
+
+			// Проверки на стороне клиента
+			if (!oldPass || !newPass || !confirmPass) {
+				msgEl.innerHTML = '<span style="color:#e74c3c;">Заполните все поля</span>';
+				return;
+			}
+			if (newPass !== confirmPass) {
+				msgEl.innerHTML = '<span style="color:#e74c3c;">Новые пароли не совпадают</span>';
+				return;
+			}
+			if (newPass.length < 4) {
+				msgEl.innerHTML = '<span style="color:#e74c3c;">Пароль должен быть не менее 4 символов</span>';
+				return;
+			}
+
+			try {
+				const resp = await fetch('/api/admin/change-password', {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({
+						old_password: oldPass,
+						new_password: newPass
+					})
+				});
+
+				const data = await resp.json();
+
+				if (resp.ok) {
+					msgEl.innerHTML = '<span style="color:#2ecc71;">✅ Пароль успешно изменён!</span>';
+					document.getElementById('old-password').value = '';
+					document.getElementById('new-password').value = '';
+					document.getElementById('confirm-password').value = '';
+				} else {
+					msgEl.innerHTML = `<span style="color:#e74c3c;">❌ ${data.detail || 'Ошибка'}</span>`;
+				}
+			} catch (e) {
+				msgEl.innerHTML = '<span style="color:#e74c3c;">Сервер недоступен</span>';
+			}
+		}
     </script>
 </body>
 </html>

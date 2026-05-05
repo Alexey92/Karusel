@@ -19,7 +19,8 @@ from database import (
 from models import (
     EventRequest, EventResponse, PublicStatsResponse,
     LoginRequest, LoginResponse, MachineStats, EventHistoryItem,
-    JackpotConfigResponse, JackpotThresholdRequest, JackpotCounterRequest
+    JackpotConfigResponse, JackpotThresholdRequest, JackpotCounterRequest,
+    ChangePasswordRequest
 )
 from auth import hash_password, verify_password, create_access_token, get_current_user
 
@@ -236,6 +237,34 @@ async def set_jackpot_counter_value(
         raise HTTPException(status_code=400, detail="machine_id должен быть от 1 до 10")
     result = await set_jackpot_counter(machine_id, data.count)
     return {"status": "ok", "config": result}
+	
+	
+# ─── Смена пароля ──────────────────────────────────────────────
+
+@app.put("/api/admin/change-password")
+async def change_password(
+    data: ChangePasswordRequest,
+    username: str = Depends(get_current_user)
+):
+    """Смена пароля администратора."""
+    user = await get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    # Проверяем старый пароль
+    if not verify_password(data.old_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Неверный старый пароль")
+
+    # Проверяем длину нового пароля
+    if len(data.new_password) < 4:
+        raise HTTPException(status_code=400, detail="Новый пароль должен быть не менее 4 символов")
+
+    # Хешируем и сохраняем новый пароль
+    new_hash = hash_password(data.new_password)
+    await update_admin_password(username, new_hash)
+
+    print(f"[AUTH] Пароль пользователя '{username}' изменён.")
+    return {"status": "ok", "message": "Пароль успешно изменён"}
 
 
 # ─── Точка входа ────────────────────────────────────────────────
