@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARUSEL — Инструкция по развёртыванию и работе</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --text: #e0e0e0;
+            --accent: #ffd200;
+            --code-bg: #0d1117;
+            --border: #2a2a4a;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            padding: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 36px; color: var(--accent); margin-bottom: 8px; }
+        h2 {
+            font-size: 24px; color: var(--accent); margin-top: 40px; margin-bottom: 16px;
+            border-bottom: 2px solid var(--border); padding-bottom: 8px;
+        }
+        h3 { font-size: 18px; margin-top: 24px; margin-bottom: 8px; color: #fff; }
+        p { margin-bottom: 12px; }
+        a { color: var(--accent); }
+        .subtitle { color: #888; font-size: 16px; margin-bottom: 30px; }
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 24px; margin: 20px 0;
+        }
+        .card h3 { margin-top: 0; }
+        code {
+            background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 14px;
+            color: #58a6ff;
+        }
+        pre {
+            background: var(--code-bg); padding: 16px 20px; border-radius: 8px;
+            overflow-x: auto; margin: 12px 0; border: 1px solid var(--border);
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 13px;
+            line-height: 1.5;
+        }
+        pre code { background: none; padding: 0; color: #e6edf3; }
+        .comment { color: #8b949e; }
+        .keyword { color: #ff7b72; }
+        .string { color: #a5d6ff; }
+        .number { color: #79c0ff; }
+        .note {
+            background: rgba(255, 210, 0, 0.08); border-left: 4px solid var(--accent);
+            padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0;
+        }
+        .warning {
+            background: rgba(231, 76, 60, 0.08); border-left: 4px solid var(--danger);
+            padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0;
+        }
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 700; margin-right: 8px;
+        }
+        .badge-green { background: var(--success); color: #000; }
+        .badge-yellow { background: var(--accent); color: #000; }
+        .badge-red { background: var(--danger); color: #fff; }
+        .badge-blue { background: #58a6ff; color: #000; }
+        table {
+            width: 100%; border-collapse: collapse; margin: 16px 0;
+            border: 1px solid var(--border);
+        }
+        th {
+            background: var(--card); padding: 10px 14px; text-align: left;
+            border-bottom: 2px solid var(--border); font-size: 14px; color: #888;
+        }
+        td {
+            padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px;
+        }
+        .toc { list-style: none; }
+        .toc li { margin: 8px 0; }
+        .toc a { text-decoration: none; font-size: 16px; }
+        @media print {
+            body { background: #fff; color: #000; }
+            .card { border: 1px solid #ccc; background: #fafafa; }
+            pre { border: 1px solid #ccc; background: #f5f5f5; }
+            pre code { color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎰 KARUSEL — Система учёта выигрышей</h1>
+<p class="subtitle">Инструкция по развёртыванию сервера и работе с системой. Версия 1.0 (май 2026).</p>
+
+<!-- ===== ОГЛАВЛЕНИЕ ===== -->
+<h2>📑 Оглавление</h2>
+<ol class="toc">
+    <li><a href="#section1">Краткое описание системы</a></li>
+    <li><a href="#section2">Перенос сервера на новый мини-ПК</a>
+        <ul>
+            <li><a href="#section2-1">2.1. Копирование файлов</a></li>
+            <li><a href="#section2-2">2.2. Установка Python</a></li>
+            <li><a href="#section2-3">2.3. Установка зависимостей</a></li>
+            <li><a href="#section2-4">2.4. Первый запуск</a></li>
+            <li><a href="#section2-5">2.5. Автозапуск при включении ПК</a></li>
+        </ul>
+    </li>
+    <li><a href="#section3">Ссылки для браузера</a></li>
+    <li><a href="#section4">Команды PowerShell</a>
+        <ul>
+            <li><a href="#section4-1">4.1. Вход в систему (получение токена)</a></li>
+            <li><a href="#section4-2">4.2. Эмуляция выигрыша</a></li>
+            <li><a href="#section4-3">4.3. Просмотр статистики</a></li>
+            <li><a href="#section4-4">4.4. Настройка главного приза</a></li>
+            <li><a href="#section4-5">4.5. Просмотр истории</a></li>
+            <li><a href="#section4-6">4.6. Смена пароля администратора</a></li>
+            <li><a href="#section4-7">4.7. Полный скрипт «Вход + все проверки»</a></li>
+        </ul>
+    </li>
+    <li><a href="#section5">Структура папок проекта</a></li>
+    <li><a href="#section6">Доступы по умолчанию</a></li>
+    <li><a href="#section7">Устранение неполадок</a></li>
+</ol>
+
+<!-- ===== 1. КРАТКОЕ ОПИСАНИЕ ===== -->
+<h2 id="section1">1. Краткое описание системы</h2>
+<div class="card">
+    <h3>Что это</h3>
+    <p>
+        Система фиксирует выигрыши с 10 игровых автоматов. Каждый автомат оснащён платой <strong>ESP32</strong>,
+        которая при выигрыше отправляет HTTP-запрос на сервер. Сервер работает на <strong>мини-ПК</strong> внутри
+        локальной сети магазина.
+    </p>
+
+    <h3>Компоненты</h3>
+    <table>
+        <tr><th>Компонент</th><th>Описание</th><th>Доступ</th></tr>
+        <tr>
+            <td><strong>Публичный экран</strong></td>
+            <td>Страница для телевизора. Показывает: выигрыши за 24 часа + последний приз.</td>
+            <td><span class="badge badge-green">Открытый</span></td>
+        </tr>
+        <tr>
+            <td><strong>Админ-панель</strong></td>
+            <td>Детальная статистика: по каждому аппарату, история, управление главным призом.</td>
+            <td><span class="badge badge-red">По паролю</span></td>
+        </tr>
+        <tr>
+            <td><strong>База данных</strong></td>
+            <td>SQLite (один файл <code>karusel.db</code>). Все события хранятся локально.</td>
+            <td><span class="badge badge-red">Сервер</span></td>
+        </tr>
+        <tr>
+            <td><strong>ESP32 × 10</strong></td>
+            <td>Платы в автоматах. Ловят импульс, отправляют JSON на сервер.</td>
+            <td><span class="badge badge-blue">Wi-Fi</span></td>
+        </tr>
+    </table>
+</div>
+
+<!-- ===== 2. ПЕРЕНОС СЕРВЕРА ===== -->
+<h2 id="section2">2. Перенос сервера на новый мини-ПК</h2>
+
+<h3 id="section2-1">2.1. Копирование файлов</h3>
+<div class="card">
+    <p>Скопируйте папку <code>karusel</code> на новый ПК (например, в <code>C:\karusel\</code>).</p>
+    <p><strong>Проверьте структуру:</strong></p>
+    <pre><code>C:\karusel\
+├── schema.sql
+├── README.html          ← этот файл
+├── static\
+│   ├── public.css
+│   └── admin.css
+├── templates\
+│   ├── public.html
+│   └── admin.html
+├── server\
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── auth.py
+│   └── requirements.txt
+└── esp32\
+    └── karusel_esp32.ino</code></pre>
+    <div class="note">
+        <strong>Важно:</strong> Не копируйте файл <code>karusel.db</code> со старого ПК (если не нужно сохранять историю).
+        База создастся автоматически при первом запуске.
+    </div>
+</div>
+
+<h3 id="section2-2">2.2. Установка Python</h3>
+<div class="card">
+    <p>Python нужен для запуска сервера. Устанавливается один раз.</p>
+    <ol>
+        <li>Скачайте Python с официального сайта: <a href="https://www.python.org/downloads/" target="_blank">python.org/downloads</a></li>
+        <li>Выберите версию <strong>3.12.x</strong> (стабильная, проверенная).</li>
+        <li>Запустите установщик.</li>
+        <li><strong>Обязательно поставьте галочку</strong> ✅ <code>Add Python to PATH</code> внизу первого окна!</li>
+        <li>Нажмите <strong>Install Now</strong> и дождитесь завершения.</li>
+        <li>Перезагрузите компьютер (рекомендуется).</li>
+    </ol>
+
+    <h3>Проверка установки</h3>
+    <p>Откройте PowerShell и выполните:</p>
+    <pre><code>python --version</code></pre>
+    <p>Должно вывести: <code>Python 3.12.x</code></p>
+
+    <div class="warning">
+        Если команда не найдена — Python не добавлен в PATH. Переустановите с галочкой <code>Add Python to PATH</code>
+        или пропишите путь вручную в переменных среды Windows.
+    </div>
+</div>
+
+<h3 id="section2-3">2.3. Установка зависимостей</h3>
+<div class="card">
+    <p>Откройте PowerShell в папке <code>server</code>:</p>
+    <pre><code>cd C:\karusel\server
+python -m pip install -r requirements.txt</code></pre>
+
+    <p>Пойдёт установка пакетов: <strong>FastAPI, Uvicorn, aiosqlite, Jinja2, python-jose</strong> и других.</p>
+    <p>Дождитесь надписи <code>Successfully installed ...</code></p>
+
+    <div class="note">
+        Если pip не найден — используйте: <code>python -m pip install -r requirements.txt</code>
+    </div>
+</div>
+
+<h3 id="section2-4">2.4. Первый запуск</h3>
+<div class="card">
+    <pre><code>cd C:\karusel\server
+python main.py</code></pre>
+
+    <p>В консоли должно появиться:</p>
+    <pre><code>==================================================
+[SERVER] Запуск сервера KARUSEL...
+[DB] Создаю новую базу данных...
+[DB] База данных создана и заполнена тестовыми данными.
+[AUTH] Установлен пароль администратора: admin123
+[SERVER] Сервер готов к работе.
+==================================================
+INFO:     Uvicorn running on http://0.0.0.0:5050</code></pre>
+
+    <p>Сервер работает, пока открыто это окно. Закроете — сервер остановится.</p>
+    <p>Откройте браузер и проверьте: <strong>http://localhost:5050/</strong></p>
+</div>
+
+<h3 id="section2-5">2.5. Автозапуск при включении ПК</h3>
+<div class="card">
+    <p>Чтобы сервер стартовал автоматически при включении мини-ПК, создайте <strong>.bat-файл</strong> и добавьте его в автозагрузку.</p>
+
+    <h3>Шаг 1: Создайте файл</h3>
+    <p>Создайте в папке <code>C:\karusel\</code> файл <code>start_server.bat</code> с содержимым:</p>
+    <pre><code>@echo off
+cd /d C:\karusel\server
+python main.py</code></pre>
+
+    <h3>Шаг 2: Добавьте в автозагрузку</h3>
+    <ol>
+        <li>Нажмите <strong>Win + R</strong></li>
+        <li>Введите <code>shell:startup</code> и нажмите Enter</li>
+        <li>Откроется папка автозагрузки</li>
+        <li>Создайте <strong>ярлык</strong> для файла <code>start_server.bat</code> и поместите его в эту папку</li>
+    </ol>
+
+    <p>После перезагрузки ПК сервер запустится автоматически. Окно PowerShell будет свёрнуто.</p>
+
+    <div class="warning">
+        <strong>Важно:</strong> на мини-ПК должен быть настроен <strong>статический IP-адрес</strong> в локальной сети
+        (через DHCP-резервацию в роутере). Именно этот IP прописывается в прошивках ESP32 в поле <code>SERVER_URL</code>.
+    </div>
+</div>
+
+<!-- ===== 3. ССЫЛКИ ===== -->
+<h2 id="section3">3. Ссылки для браузера</h2>
+<div class="card">
+    <p>Все ссылки — при запуске на локальной машине. Если открываете с другого устройства в сети — замените <code>localhost</code> на IP-адрес мини-ПК (например, <code>192.168.1.100</code>).</p>
+
+    <table>
+        <tr><th>Страница</th><th>URL</th><th>Описание</th></tr>
+        <tr>
+            <td>Проверка сервера</td>
+            <td><code>http://localhost:5050/</code></td>
+            <td>JSON-ответ: «сервер жив»</td>
+        </tr>
+        <tr>
+            <td><strong>Публичный экран</strong></td>
+            <td><code>http://localhost:5050/screen</code></td>
+            <td>Для телевизора. Обновляется каждые 5 сек.</td>
+        </tr>
+        <tr>
+            <td><strong>Админ-панель</strong></td>
+            <td><code>http://localhost:5050/admin</code></td>
+            <td>Вход по паролю. Статистика, история, настройки.</td>
+        </tr>
+        <tr>
+            <td>Swagger (документация API)</td>
+            <td><code>http://localhost:5050/docs</code></td>
+            <td>Интерактивная документация. Нужен интернет.</td>
+        </tr>
+        <tr>
+            <td>ReDoc (документация API)</td>
+            <td><code>http://localhost:5050/redoc</code></td>
+            <td>Альтернативная документация. Нужен интернет.</td>
+        </tr>
+    </table>
+</div>
+
+<!-- ===== 4. КОМАНДЫ POWERSHELL ===== -->
+<h2 id="section4">4. Команды PowerShell (для администратора)</h2>
+<div class="note">
+    Все команды выполняются в <strong>отдельном окне PowerShell</strong> (сервер должен работать в другом окне).
+</div>
+
+<h3 id="section4-1">4.1. Вход в систему (получение токена)</h3>
+<div class="card">
+    <p>Токен действует 24 часа. Получите его один раз перед серией команд:</p>
+    <pre><code>$r = Invoke-RestMethod -Uri http://localhost:5050/api/login -Method Post -ContentType "application/json" -Body '{"username":"admin","password":"admin123"}'
+$token = $r.access_token</code></pre>
+    <p>Теперь переменная <code>$token</code> содержит токен. Используйте её в следующих командах.</p>
+</div>
+
+<h3 id="section4-2">4.2. Эмуляция выигрыша (тестирование без ESP32)</h3>
+<div class="card">
+    <p>Один выигрыш с автомата №1:</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/event -Method Post -ContentType "application/json" -Body '{"machine_id":1}'</code></pre>
+
+    <p>15 случайных выигрышей (для наполнения тестовыми данными):</p>
+    <pre><code>1..15 | ForEach-Object {
+    $m = Get-Random -Minimum 1 -Maximum 11
+    Invoke-RestMethod -Uri http://localhost:5050/api/event -Method Post -ContentType "application/json" -Body "{`"machine_id`": $m}"
+    Start-Sleep -Milliseconds 200
+}
+Write-Host "Готово!"</code></pre>
+</div>
+
+<h3 id="section4-3">4.3. Просмотр статистики</h3>
+<div class="card">
+    <p>Публичная статистика (без авторизации):</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/public-stats</code></pre>
+
+    <p>Статистика по одному аппарату (с авторизацией):</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/stats/1 -Headers @{Authorization="Bearer $token"}</code></pre>
+
+    <p>Статистика по всем аппаратам:</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/stats -Headers @{Authorization="Bearer $token"}</code></pre>
+</div>
+
+<h3 id="section4-4">4.4. Настройка главного приза</h3>
+<div class="card">
+    <p>Посмотреть настройки джекпота для автомата №1:</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/jackpot/1 -Headers @{Authorization="Bearer $token"}</code></pre>
+
+    <p>Установить порог джекпота (например, 50 выигрышей):</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/jackpot/1/threshold -Method Put -Headers @{Authorization="Bearer $token"} -ContentType "application/json" -Body '{"win_count":50}'</code></pre>
+
+    <p>Сбросить счётчик в 0:</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/jackpot/1/reset -Method Post -Headers @{Authorization="Bearer $token"}</code></pre>
+
+    <p>Установить счётчик вручную (например, 25):</p>
+    <pre><code>Invoke-RestMethod -Uri http://localhost:5050/api/admin/jackpot/1/counter -Method Put -Headers @{Authorization="Bearer $token"} -ContentType "application/json" -Body '{"count":25}'</code></pre>
+
+    <p>Установить всем автоматам одинаковый порог:</p>
+    <pre><code>1..10 | ForEach-Object {
+    $body = "{`"win_count`": 100}"
+    Invoke-RestMethod -Uri "http://localhost:5050/api/admin/jackpot/$_/threshold" -Method Put -Headers @{Authorization="Bearer $token"} -ContentType "application/json" -Body $body
+}
+Write-Host "Порог 100 установлен для всех автоматов."</code></pre>
+</div>
+
+<h3 id="section4-5">4.5. Просмотр истории</h3>
+<div class="card">
+    <p>Последние 50 событий:</p>
+    <pre><code>Invoke-RestMethod -Uri "http://localhost:5050/api/admin/events?limit=50&offset=0" -Headers @{Authorization="Bearer $token"}</code></pre>
+
+    <p>Следующие 50 событий:</p>
+    <pre><code>Invoke-RestMethod -Uri "http://localhost:5050/api/admin/events?limit=50&offset=50" -Headers @{Authorization="Bearer $token"}</code></pre>
+</div>
+
+<h3 id="section4-6">4.6. Смена пароля администратора</h3>
+<div class="card">
+    <p>Смена пароля пока доступна только через прямой доступ к БД. Для этого:</p>
+    <ol>
+        <li>Остановите сервер (Ctrl+C в окне сервера)</li>
+        <li>Откройте файл <code>C:\karusel\server\karusel.db</code> программой <a href="https://sqlitebrowser.org" target="_blank">DB Browser for SQLite</a></li>
+        <li>Выполните в PowerShell генерацию хеша нового пароля:</li>
+    </ol>
+    <pre><code>python -c "
+import hashlib, secrets
+password = 'ваш_новый_пароль'
+salt = secrets.token_hex(16)
+salted = salt + password
+hash_val = hashlib.sha256(salted.encode('utf-8')).hexdigest()
+print(f'{salt}${hash_val}')
+"</code></pre>
+    <p>Скопируйте вывод и вставьте его в поле <code>password_hash</code> для пользователя <code>admin</code> в таблице <code>users</code>.</p>
+
+    <div class="note">
+        В будущих версиях добавим смену пароля прямо из админ-панели.
+    </div>
+</div>
+
+<h3 id="section4-7">4.7. Полный скрипт «Вход + все проверки»</h3>
+<div class="card">
+    <p>Скопируйте и выполните одним блоком — получите токен, проверите все автоматы и статистику:</p>
+    <pre><code># Вход
+$r = Invoke-RestMethod -Uri http://localhost:5050/api/login -Method Post -ContentType "application/json" -Body '{"username":"admin","password":"admin123"}'
+$token = $r.access_token
+Write-Host "Токен получен.`n"
+
+# Публичная статистика
+Write-Host "=== ПУБЛИЧНАЯ СТАТИСТИКА ==="
+Invoke-RestMethod -Uri http://localhost:5050/api/public-stats | Format-List
+
+# Статистика по всем автоматам
+Write-Host "`n=== СТАТИСТИКА ПО ВСЕМ АВТОМАТАМ ==="
+$stats = Invoke-RestMethod -Uri http://localhost:5050/api/admin/stats -Headers @{Authorization="Bearer $token"}
+$stats | ForEach-Object {
+    Write-Host ("Автомат {0}: сегодня={1}, всего={2}, джекпот={3}/{4}" -f $_.machine_id, $_.wins_today, $_.wins_total, $_.jackpot_config.current_win_count, $_.jackpot_config.win_count_for_jackpot)
+}
+
+# Последние 5 событий
+Write-Host "`n=== ПОСЛЕДНИЕ 5 СОБЫТИЙ ==="
+$events = Invoke-RestMethod -Uri "http://localhost:5050/api/admin/events?limit=5&offset=0" -Headers @{Authorization="Bearer $token"}
+$events.events | ForEach-Object {
+    Write-Host ("[{0}] {1} — {2} — {3}" -f $_.id, $_.timestamp, $_.machine_name, $_.event_type)
+}
+
+Write-Host "`nГотово!"</code></pre>
+</div>
+
+<!-- ===== 5. СТРУКТУРА ПАПОК ===== -->
+<h2 id="section5">5. Структура папок проекта</h2>
+<div class="card">
+    <table>
+        <tr><th>Файл / Папка</th><th>Назначение</th></tr>
+        <tr><td><code>schema.sql</code></td><td>Схема базы данных (таблицы, индексы, тестовые данные)</td></tr>
+        <tr><td><code>server/main.py</code></td><td>Основной файл сервера (FastAPI + все эндпоинты)</td></tr>
+        <tr><td><code>server/database.py</code></td><td>Функции работы с SQLite</td></tr>
+        <tr><td><code>server/models.py</code></td><td>Pydantic-модели (валидация данных)</td></tr>
+        <tr><td><code>server/auth.py</code></td><td>Хеширование паролей и JWT-токены</td></tr>
+        <tr><td><code>server/requirements.txt</code></td><td>Список Python-зависимостей</td></tr>
+        <tr><td><code>server/karusel.db</code></td><td>Файл базы данных SQLite (создаётся автоматически)</td></tr>
+        <tr><td><code>static/public.css</code></td><td>Стили публичного экрана</td></tr>
+        <tr><td><code>static/admin.css</code></td><td>Стили админ-панели</td></tr>
+        <tr><td><code>templates/public.html</code></td><td>HTML публичного экрана</td></tr>
+        <tr><td><code>templates/admin.html</code></td><td>HTML админ-панели</td></tr>
+        <tr><td><code>esp32/karusel_esp32.ino</code></td><td>Прошивка для ESP32</td></tr>
+    </table>
+</div>
+
+<!-- ===== 6. ДОСТУПЫ ===== -->
+<h2 id="section6">6. Доступы по умолчанию</h2>
+<div class="card">
+    <table>
+        <tr><th>Параметр</th><th>Значение</th><th>Где изменить</th></tr>
+        <tr><td>Логин админа</td><td><code>admin</code></td><td>Пока только через БД</td></tr>
+        <tr><td>Пароль админа</td><td><code>admin123</code></td><td>Пока только через БД</td></tr>
+        <tr><td>Порт сервера</td><td><code>5050</code></td><td>Файл <code>main.py</code>, последняя строка</td></tr>
+        <tr><td>Порог джекпота (по умолчанию)</td><td><code>100</code></td><td>Админ-панель → По аппаратам → выбрать аппарат</td></tr>
+    </table>
+
+    <div class="warning">
+        <strong>Обязательно смените пароль администратора</strong> перед запуском в магазине!
+    </div>
+</div>
+
+<!-- ===== 7. УСТРАНЕНИЕ НЕПОЛАДОК ===== -->
+<h2 id="section7">7. Устранение неполадок</h2>
+
+<div class="card">
+    <h3>Сервер не запускается</h3>
+    <ul>
+        <li>Проверьте, что Python установлен: <code>python --version</code></li>
+        <li>Проверьте, что зависимости установлены: <code>python -m pip list</code></li>
+        <li>Проверьте, что файл <code>karusel.db</code> не повреждён. Если нужно — удалите его (создастся заново).</li>
+        <li>Убедитесь, что порт 5050 не занят другой программой.</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h3>Не открывается админка / публичный экран</h3>
+    <ul>
+        <li>Проверьте, что сервер запущен: откройте <code>http://localhost:5050/</code></li>
+        <li>Нажмите <strong>Ctrl+Shift+R</strong> (жёсткая перезагрузка без кеша)</li>
+        <li>Проверьте консоль браузера (F12 → Console) на наличие ошибок</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h3>ESP32 не отправляет данные</h3>
+    <ul>
+        <li>Проверьте, что ESP32 подключён к WiFi (светодиод горит)</li>
+        <li>Проверьте правильность <code>SERVER_URL</code> в прошивке (IP мини-ПК + порт 5050)</li>
+        <li>Проверьте, что <code>MACHINE_ID</code> уникален для каждой платы (1-10)</li>
+        <li>Откройте Serial Monitor в Arduino IDE (115200 бод) и смотрите логи</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h3>Очистка базы данных (полный сброс статистики)</h3>
+    <ol>
+        <li>Остановите сервер (Ctrl+C)</li>
+        <li>Удалите файл: <code>Remove-Item C:\karusel\server\karusel.db</code></li>
+        <li>Запустите сервер снова — база создастся заново со стартовыми настройками</li>
+    </ol>
+</div>
+
+<hr style="margin: 40px 0; border-color: var(--border);">
+<p style="text-align: center; color: #888; font-size: 14px;">
+    KARUSEL Win Tracker v1.0 · Май 2026<br>
+    Для вопросов и поддержки обратитесь к разработчику.
+</p>
+
+</body>
+</html>
