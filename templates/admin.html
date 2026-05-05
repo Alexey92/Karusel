@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARUSEL — Админ-панель</title>
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+
+    <!-- ЭКРАН ВХОДА -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>🔐 KARUSEL</h1>
+            <p class="login-subtitle">Админ-панель</p>
+            <input type="text" id="username" placeholder="Логин" value="admin">
+            <input type="password" id="password" placeholder="Пароль" value="admin123">
+            <button onclick="doLogin()">Войти</button>
+            <p id="login-error" class="error"></p>
+        </div>
+    </div>
+
+    <!-- ДАШБОРД (скрыт до входа) -->
+    <div id="dashboard" style="display: none;">
+        <div class="top-bar">
+            <h1>🎰 KARUSEL — Статистика</h1>
+            <div class="top-bar-right">
+                <span id="current-user"></span>
+                <button onclick="doLogout()" class="btn-logout">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Вкладки -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Обзор</button>
+            <button class="tab" onclick="showTab('machines')">По аппаратам</button>
+            <button class="tab" onclick="showTab('history')">История</button>
+        </div>
+
+        <!-- Вкладка: Обзор -->
+        <div id="tab-overview" class="tab-content active">
+            <h2>Все аппараты — сводка</h2>
+            <div class="cards-grid" id="overview-cards"></div>
+        </div>
+
+        <!-- Вкладка: По аппаратам -->
+        <div id="tab-machines" class="tab-content">
+            <h2>Детально по аппарату</h2>
+            <select id="machine-select" onchange="loadMachineDetail()">
+                <option value="">Выберите аппарат...</option>
+            </select>
+            <div id="machine-detail"></div>
+        </div>
+
+        <!-- Вкладка: История -->
+        <div id="tab-history" class="tab-content">
+            <h2>Последние выигрыши</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Аппарат</th>
+                        <th>Тип</th>
+                        <th>Время</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+            </table>
+            <div class="pagination">
+                <button onclick="loadHistory(0)">⟪ Первая</button>
+                <button onclick="loadHistory(currentOffset - 50)">⟵ Назад</button>
+                <span id="page-info"></span>
+                <button onclick="loadHistory(currentOffset + 50)">Вперёд ⟶</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── Глобальные переменные ──────────────────────────
+        let token = localStorage.getItem('karusel_token');
+        let currentOffset = 0;
+        const LIMIT = 50;
+
+        // ─── Проверка токена при загрузке ───────────────────
+        async function init() {
+            if (token) {
+                try {
+                    const resp = await fetch('/api/admin/check-auth', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (resp.ok) {
+                        showDashboard();
+                        return;
+                    }
+                } catch (e) {}
+                localStorage.removeItem('karusel_token');
+                token = null;
+            }
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        // ─── Вход ────────────────────────────────────────────
+        async function doLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+
+            try {
+                const resp = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    token = data.access_token;
+                    localStorage.setItem('karusel_token', token);
+                    showDashboard();
+                } else {
+                    const err = await resp.json();
+                    errorEl.textContent = err.detail || 'Ошибка входа';
+                }
+            } catch (e) {
+                errorEl.textContent = 'Сервер недоступен';
+            }
+        }
+
+        // ─── Выход ───────────────────────────────────────────
+        function doLogout() {
+            localStorage.removeItem('karusel_token');
+            token = null;
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        // ─── Показать дашборд ────────────────────────────────
+        function showDashboard() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('current-user').textContent = '👤 admin';
+            loadOverview();
+            loadMachineSelect();
+        }
+
+        // ─── Асинхронные запросы с токеном ───────────────────
+        async function apiGet(url) {
+            const resp = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resp.status === 401) {
+                doLogout();
+                throw new Error('Unauthorized');
+            }
+            return resp.json();
+        }
+
+        // ─── Вкладки ─────────────────────────────────────────
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'overview') loadOverview();
+            if (tabName === 'machines') loadMachineSelect();
+            if (tabName === 'history') loadHistory(0);
+        }
+
+        // ─── Обзор (все аппараты) ───────────────────────────
+        async function loadOverview() {
+            const data = await apiGet('/api/admin/stats');
+            const grid = document.getElementById('overview-cards');
+            grid.innerHTML = data.map(s => `
+                <div class="card">
+                    <div class="card-title">Автомат №${s.machine_id}</div>
+                    <div class="card-row"><span>За час:</span> <strong>${s.wins_hour}</strong></div>
+                    <div class="card-row"><span>За сегодня:</span> <strong>${s.wins_today}</strong></div>
+                    <div class="card-row"><span>За 24ч:</span> <strong>${s.wins_24h}</strong></div>
+                    <div class="card-row"><span>Всего:</span> <strong>${s.wins_total}</strong></div>
+                    <div class="card-row"><span>Последний:</span> <small>${s.last_win || '—'}</small></div>
+                    <div class="card-row jackpot">
+                        <span>🎯 До джекпота:</span>
+                        <strong>${s.jackpot_config?.current_win_count || 0} / ${s.jackpot_config?.win_count_for_jackpot || 100}</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ─── Выпадающий список аппаратов ────────────────────
+        async function loadMachineSelect() {
+            const machines = await apiGet('/api/admin/machines');
+            const select = document.getElementById('machine-select');
+            select.innerHTML = '<option value="">Выберите аппарат...</option>' +
+                machines.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+        }
+
+        async function loadMachineDetail() {
+            const id = document.getElementById('machine-select').value;
+            if (!id) return;
+            const s = await apiGet('/api/admin/stats/' + id);
+            document.getElementById('machine-detail').innerHTML = `
+                <div class="detail-card">
+                    <h3>Автомат №${s.machine_id}</h3>
+                    <table>
+                        <tr><td>Выигрышей за час:</td><td><strong>${s.wins_hour}</strong></td></tr>
+                        <tr><td>Выигрышей за сегодня:</td><td><strong>${s.wins_today}</strong></td></tr>
+                        <tr><td>Выигрышей за 24 часа:</td><td><strong>${s.wins_24h}</strong></td></tr>
+                        <tr><td>Всего выигрышей:</td><td><strong>${s.wins_total}</strong></td></tr>
+                        <tr><td>Последний выигрыш:</td><td>${s.last_win || '—'}</td></tr>
+                        <tr class="jackpot-row">
+                            <td>🎯 Счётчик джекпота:</td>
+                            <td><strong>${s.jackpot_config?.current_win_count || 0}</strong> / ${s.jackpot_config?.win_count_for_jackpot || 100}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ─── История ─────────────────────────────────────────
+        async function loadHistory(offset) {
+            if (offset < 0) offset = 0;
+            currentOffset = offset;
+            const data = await apiGet(`/api/admin/events?limit=${LIMIT}&offset=${offset}`);
+            const tbody = document.getElementById('history-body');
+            tbody.innerHTML = data.events.map(e => `
+                <tr>
+                    <td>${e.id}</td>
+                    <td>${e.machine_name}</td>
+                    <td>${e.event_type === 'jackpot' ? '🎰 ДЖЕКПОТ' : '🏆 Выигрыш'}</td>
+                    <td>${e.timestamp}</td>
+                </tr>
+            `).join('');
+
+            const pageNum = Math.floor(offset / LIMIT) + 1;
+            const totalPages = Math.ceil(data.total / LIMIT);
+            document.getElementById('page-info').textContent =
+                `Стр. ${pageNum} из ${totalPages} (всего ${data.total})`;
+        }
+
+        // ─── Запуск ──────────────────────────────────────────
+        init();
+    </script>
+</body>
+</html>

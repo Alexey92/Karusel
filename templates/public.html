@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARUSEL — Публичный экран</title>
+    <link rel="stylesheet" href="/static/public.css">
+    <!-- Автообновление страницы раз в час (на случай зависания) -->
+    <meta http-equiv="refresh" content="3600">
+</head>
+<body>
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="header">
+            <h1>🎰 KARUSEL 🎰</h1>
+            <p class="subtitle">Сегодня выигрывают здесь!</p>
+        </div>
+
+        <!-- Основные показатели -->
+        <div class="stats">
+            <!-- Блок: Выигрыши за 24 часа -->
+            <div class="stat-card">
+                <div class="stat-label">ВЫИГРЫШЕЙ ЗА 24 ЧАСА</div>
+                <div class="stat-value" id="wins24h">—</div>
+                <div class="stat-icon">🏆</div>
+            </div>
+
+            <!-- Блок: Последний выигрыш -->
+            <div class="stat-card">
+                <div class="stat-label">ПОСЛЕДНИЙ ПРИЗ</div>
+                <div class="stat-time" id="lastWinTime">—</div>
+                <div class="stat-detail" id="lastWinMachine">Ожидаем...</div>
+                <div class="stat-icon">⏱️</div>
+            </div>
+        </div>
+
+        <!-- Бегущая строка (для анимации) -->
+        <div class="footer">
+            <p>Играйте и выигрывайте! ✨</p>
+        </div>
+    </div>
+
+    <!-- JavaScript для автообновления данных -->
+    <script>
+        // Функция загрузки данных с сервера
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/public-stats');
+                const data = await response.json();
+
+                // Обновляем выигрыши за 24 часа
+                document.getElementById('wins24h').textContent = data.wins_24h;
+
+                // Обновляем последний выигрыш
+                if (data.last_win) {
+                    // Форматируем время: "15:22:30"
+                    const timestamp = new Date(data.last_win.timestamp + 'Z');
+                    const timeStr = timestamp.toLocaleTimeString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+
+                    document.getElementById('lastWinTime').textContent = timeStr;
+                    document.getElementById('lastWinMachine').textContent =
+                        'Аппарат ' + data.last_win.machine_name;
+                } else {
+                    document.getElementById('lastWinTime').textContent = '—';
+                    document.getElementById('lastWinMachine').textContent = 'Пока нет выигрышей';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                document.getElementById('wins24h').textContent = 'Ошибка';
+            }
+        }
+
+        // Загружаем данные сразу при открытии страницы
+        fetchStats();
+
+        // Обновляем данные каждые 5 секунд
+        setInterval(fetchStats, 5000);
+    </script>
+</body>
+</html>

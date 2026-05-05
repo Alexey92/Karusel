@@ -1,0 +1,153 @@
+/* ===== Сброс стилей ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Общие настройки ===== */
+body {
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* ===== Основной контейнер ===== */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 60px;
+    text-align: center;
+}
+
+/* ===== Заголовок ===== */
+.header {
+    margin-bottom: 80px;
+}
+
+.header h1 {
+    font-size: 96px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #f7971e, #ffd200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+}
+
+.subtitle {
+    font-size: 32px;
+    font-weight: 300;
+    color: #b8b8d0;
+    letter-spacing: 4px;
+}
+
+/* ===== Блоки со статистикой ===== */
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin-bottom: 80px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 60px 80px;
+    min-width: 440px;
+    position: relative;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 210, 0, 0.4);
+}
+
+.stat-label {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #b8b8d0;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 120px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #ffd200, #f7971e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.stat-time {
+    font-size: 72px;
+    font-weight: 700;
+    color: #ffd200;
+    line-height: 1;
+    margin-bottom: 12px;
+}
+
+.stat-detail {
+    font-size: 28px;
+    color: #b8b8d0;
+    font-weight: 400;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 40px;
+    opacity: 0.3;
+}
+
+/* ===== Нижняя строка ===== */
+.footer {
+    font-size: 28px;
+    color: #6b6b8a;
+    font-weight: 300;
+    letter-spacing: 3px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* ===== Адаптация под Full HD (1920×1080) ===== */
+@media (min-width: 1920px) {
+    .header h1 { font-size: 120px; }
+    .stat-value { font-size: 160px; }
+    .stat-time { font-size: 96px; }
+    .stat-card { padding: 80px 100px; }
+}
+
+/* ===== Адаптация под маленькие экраны ===== */
+@media (max-width: 900px) {
+    .stats {
+        flex-direction: column;
+        gap: 40px;
+    }
+    .stat-card {
+        min-width: auto;
+        padding: 40px 30px;
+    }
+    .header h1 { font-size: 48px; }
+    .stat-value { font-size: 72px; }
+    .stat-time { font-size: 48px; }
+}
