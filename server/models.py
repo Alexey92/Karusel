@@ -57,3 +57,21 @@ class EventHistoryItem(BaseModel):
     machine_name: str
     event_type: str
     timestamp: str
+
+
+class JackpotConfigResponse(BaseModel):
+    """Настройки главного приза."""
+    id: int
+    machine_id: int
+    win_count_for_jackpot: int
+    current_win_count: int
+
+
+class JackpotThresholdRequest(BaseModel):
+    """Запрос на изменение порога джекпота."""
+    win_count: int = Field(..., ge=1, le=10000, description="Количество выигрышей до джекпота")
+
+
+class JackpotCounterRequest(BaseModel):
+    """Запрос на ручную установку счётчика."""
+    count: int = Field(..., ge=0, le=10000, description="Текущее значение счётчика")

@@ -199,3 +199,115 @@ async def get_total_events_count() -> int:
     row = await db.execute_fetchall("SELECT COUNT(*) as count FROM events")
     await db.close()
     return row[0]["count"]
+	
+	
+async def increment_jackpot(machine_id: int) -> dict:
+    """
+    Увеличить счётчик главного приза на 1.
+    Если достигнут порог — вернуть флаг jackpot_triggered=True и сбросить счётчик.
+    """
+    db = await get_db()
+
+    # Получаем текущие настройки
+    row = await db.execute_fetchall(
+        "SELECT * FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    config = dict(row[0])
+    current = config["current_win_count"] + 1
+    threshold = config["win_count_for_jackpot"]
+
+    jackpot_triggered = False
+    if current >= threshold:
+        jackpot_triggered = True
+        current = 0  # сбрасываем счётчик
+
+    # Обновляем счётчик
+    await db.execute(
+        "UPDATE jackpot_config SET current_win_count = ? WHERE machine_id = ?",
+        (current, machine_id)
+    )
+    await db.commit()
+
+    # Получаем обновлённые данные
+    row = await db.execute_fetchall(
+        "SELECT * FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    await db.close()
+
+    result = dict(row[0])
+    result["jackpot_triggered"] = jackpot_triggered
+    result["threshold"] = threshold
+
+    if jackpot_triggered:
+        print(f"[JACKPOT] 🎰 СРАБОТАЛ ГЛАВНЫЙ ПРИЗ на аппарате {machine_id}! Счётчик сброшен.")
+
+    return result
+
+
+async def set_jackpot_threshold(machine_id: int, win_count: int) -> dict:
+    """Установить количество выигрышей до главного приза."""
+    db = await get_db()
+    await db.execute(
+        "UPDATE jackpot_config SET win_count_for_jackpot = ? WHERE machine_id = ?",
+        (win_count, machine_id)
+    )
+    await db.commit()
+
+    row = await db.execute_fetchall(
+        "SELECT * FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    await db.close()
+    print(f"[JACKPOT] Аппарат {machine_id}: порог изменён на {win_count}")
+    return dict(row[0])
+
+
+async def reset_jackpot(machine_id: int) -> dict:
+    """Сбросить счётчик главного приза вручную."""
+    db = await get_db()
+    await db.execute(
+        "UPDATE jackpot_config SET current_win_count = 0 WHERE machine_id = ?",
+        (machine_id,)
+    )
+    await db.commit()
+
+    row = await db.execute_fetchall(
+        "SELECT * FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    await db.close()
+    print(f"[JACKPOT] Аппарат {machine_id}: счётчик сброшен вручную")
+    return dict(row[0])
+
+
+async def set_jackpot_counter(machine_id: int, count: int) -> dict:
+    """Установить текущий счётчик главного приза вручную."""
+    db = await get_db()
+
+    # Получаем порог
+    row = await db.execute_fetchall(
+        "SELECT win_count_for_jackpot FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    threshold = dict(row[0])["win_count_for_jackpot"]
+
+    # Проверяем, не превышает ли значение порог
+    if count >= threshold:
+        count = 0  # если больше или равно — сбрасываем (аналог срабатывания)
+        print(f"[JACKPOT] Аппарат {machine_id}: ручная установка превысила порог, счётчик сброшен.")
+
+    await db.execute(
+        "UPDATE jackpot_config SET current_win_count = ? WHERE machine_id = ?",
+        (count, machine_id)
+    )
+    await db.commit()
+
+    row = await db.execute_fetchall(
+        "SELECT * FROM jackpot_config WHERE machine_id = ?",
+        (machine_id,)
+    )
+    await db.close()
+    print(f"[JACKPOT] Аппарат {machine_id}: счётчик установлен в {count} вручную")
+    return dict(row[0])

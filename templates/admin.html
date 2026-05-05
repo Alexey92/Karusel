@@ -15,7 +15,7 @@
             <p class="login-subtitle">Админ-панель</p>
             <input type="text" id="username" placeholder="Логин" value="admin">
             <input type="password" id="password" placeholder="Пароль" value="admin123">
-            <button onclick="doLogin()">Войти</button>
+            <button id="login-btn" type="button">Войти</button>
             <p id="login-error" class="error"></p>
         </div>
     </div>
@@ -81,6 +81,12 @@
         let currentOffset = 0;
         const LIMIT = 50;
 
+        // ─── Привязка кнопки (надёжный способ) ──────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('login-btn').addEventListener('click', doLogin);
+            init();
+        });
+
         // ─── Проверка токена при загрузке ───────────────────
         async function init() {
             if (token) {
@@ -104,6 +110,11 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('login-error');
+
+            if (!username || !password) {
+                errorEl.textContent = 'Введите логин и пароль';
+                return;
+            }
 
             try {
                 const resp = await fetch('/api/login', {
@@ -159,7 +170,6 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
-            event.target.classList.add('active');
 
             if (tabName === 'overview') loadOverview();
             if (tabName === 'machines') loadMachineSelect();
@@ -197,21 +207,52 @@
         async function loadMachineDetail() {
             const id = document.getElementById('machine-select').value;
             if (!id) return;
-            const s = await apiGet('/api/admin/stats/' + id);
+
+            const [stats, jackpot] = await Promise.all([
+                apiGet('/api/admin/stats/' + id),
+                apiGet('/api/admin/jackpot/' + id)
+            ]);
+
             document.getElementById('machine-detail').innerHTML = `
                 <div class="detail-card">
-                    <h3>Автомат №${s.machine_id}</h3>
+                    <h3>Автомат №${stats.machine_id}</h3>
                     <table>
-                        <tr><td>Выигрышей за час:</td><td><strong>${s.wins_hour}</strong></td></tr>
-                        <tr><td>Выигрышей за сегодня:</td><td><strong>${s.wins_today}</strong></td></tr>
-                        <tr><td>Выигрышей за 24 часа:</td><td><strong>${s.wins_24h}</strong></td></tr>
-                        <tr><td>Всего выигрышей:</td><td><strong>${s.wins_total}</strong></td></tr>
-                        <tr><td>Последний выигрыш:</td><td>${s.last_win || '—'}</td></tr>
-                        <tr class="jackpot-row">
-                            <td>🎯 Счётчик джекпота:</td>
-                            <td><strong>${s.jackpot_config?.current_win_count || 0}</strong> / ${s.jackpot_config?.win_count_for_jackpot || 100}</td>
-                        </tr>
+                        <tr><td>Выигрышей за час:</td><td><strong>${stats.wins_hour}</strong></td></tr>
+                        <tr><td>Выигрышей за сегодня:</td><td><strong>${stats.wins_today}</strong></td></tr>
+                        <tr><td>Выигрышей за 24 часа:</td><td><strong>${stats.wins_24h}</strong></td></tr>
+                        <tr><td>Всего выигрышей:</td><td><strong>${stats.wins_total}</strong></td></tr>
+                        <tr><td>Последний выигрыш:</td><td>${stats.last_win || '—'}</td></tr>
                     </table>
+                </div>
+
+                <div class="detail-card jackpot-controls">
+                    <h3>🎯 Управление главным призом</h3>
+
+                    <div class="jackpot-info">
+                        <div class="jackpot-big-number">
+                            <span id="jackpot-counter">${jackpot.current_win_count}</span>
+                            <span class="jackpot-sep">/</span>
+                            <span id="jackpot-threshold">${jackpot.win_count_for_jackpot}</span>
+                        </div>
+                        <p class="jackpot-label">текущий счётчик / порог</p>
+                    </div>
+
+                    <div class="jackpot-actions">
+                        <div class="jackpot-action-row">
+                            <label>Новый порог:</label>
+                            <input type="number" id="new-threshold" value="${jackpot.win_count_for_jackpot}" min="1" max="10000">
+                            <button onclick="updateThreshold(${id})">Установить</button>
+                        </div>
+                        <div class="jackpot-action-row">
+                            <label>Ручная корректировка счётчика:</label>
+                            <input type="number" id="new-counter" value="${jackpot.current_win_count}" min="0" max="10000">
+                            <button onclick="setCounter(${id})">Установить</button>
+                        </div>
+                        <div class="jackpot-action-row">
+                            <button onclick="resetJackpot(${id})" class="btn-danger">🔄 Сбросить счётчик</button>
+                        </div>
+                    </div>
+                    <p id="jackpot-message" class="jackpot-message"></p>
                 </div>
             `;
         }
@@ -231,14 +272,55 @@
                 </tr>
             `).join('');
 
-            const pageNum = Math.floor(offset / LIMIT) + 1;
-            const totalPages = Math.ceil(data.total / LIMIT);
+            const totalPages = Math.ceil(data.total / LIMIT) || 1;
             document.getElementById('page-info').textContent =
-                `Стр. ${pageNum} из ${totalPages} (всего ${data.total})`;
+                `Стр. ${Math.floor(offset / LIMIT) + 1} из ${totalPages} (всего ${data.total})`;
         }
 
-        // ─── Запуск ──────────────────────────────────────────
-        init();
+        // ─── Управление джекпотом ────────────────────────────
+        async function updateThreshold(machineId) {
+            const value = document.getElementById('new-threshold').value;
+            const resp = await fetch(`/api/admin/jackpot/${machineId}/threshold`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ win_count: parseInt(value) })
+            });
+            if (resp.ok) {
+                document.getElementById('jackpot-message').textContent = '✅ Порог обновлён';
+                setTimeout(() => loadMachineDetail(), 500);
+            }
+        }
+
+        async function setCounter(machineId) {
+            const value = document.getElementById('new-counter').value;
+            const resp = await fetch(`/api/admin/jackpot/${machineId}/counter`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ count: parseInt(value) })
+            });
+            if (resp.ok) {
+                document.getElementById('jackpot-message').textContent = '✅ Счётчик обновлён';
+                setTimeout(() => loadMachineDetail(), 500);
+            }
+        }
+
+        async function resetJackpot(machineId) {
+            if (!confirm('Точно сбросить счётчик главного приза?')) return;
+            const resp = await fetch(`/api/admin/jackpot/${machineId}/reset`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resp.ok) {
+                document.getElementById('jackpot-message').textContent = '✅ Счётчик сброшен';
+                setTimeout(() => loadMachineDetail(), 500);
+            }
+        }
     </script>
 </body>
 </html>

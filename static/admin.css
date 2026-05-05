@@ -121,3 +121,76 @@ body {
 }
 .pagination button:hover { background: #555; }
 #page-info { color: #888; font-size: 14px; }
+
+/* ===== Управление джекпотом ===== */
+.jackpot-controls {
+    margin-top: 20px;
+}
+.jackpot-info {
+    text-align: center;
+    margin: 20px 0;
+}
+.jackpot-big-number {
+    font-size: 48px;
+    font-weight: 900;
+}
+.jackpot-big-number span:first-child {
+    color: #ffd200;
+}
+.jackpot-sep {
+    color: #666;
+    margin: 0 8px;
+}
+.jackpot-label {
+    color: #888;
+    font-size: 14px;
+    margin-top: 4px;
+}
+.jackpot-actions {
+    margin-top: 20px;
+}
+.jackpot-action-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.jackpot-action-row label {
+    min-width: 200px;
+    color: #888;
+    font-size: 14px;
+}
+.jackpot-action-row input {
+    width: 100px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 14px;
+}
+.jackpot-action-row button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #ffd200;
+    color: #1a1a2e;
+    font-weight: 700;
+    cursor: pointer;
+}
+.jackpot-action-row button:hover {
+    background: #f7971e;
+}
+.btn-danger {
+    background: #e74c3c !important;
+    color: #fff !important;
+}
+.btn-danger:hover {
+    background: #c0392b !important;
+}
+.jackpot-message {
+    text-align: center;
+    margin-top: 12px;
+    font-weight: 600;
+    min-height: 20px;
+}
