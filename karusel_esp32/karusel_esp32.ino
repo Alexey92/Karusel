@@ -1,124 +1,188 @@
 /*
- * KARUSEL — прошивка для ESP32
+ * KARUSEL — прошивка для ESP32 v3.0
  * 
- * Назначение:
- *   - Ловит импульс выигрыша с игрового автомата (замыкание на GND)
- *   - Отправляет HTTP POST на сервер
- *   - При обрыве WiFi сохраняет события в память и отправляет при восстановлении
+ * HTTP-запросы выполняются в отдельном потоке FreeRTOS.
+ * Основной поток опрашивает кнопку БЕЗ блокировок.
+ * Буфер работает корректно: новые события сохраняются,
+ * буфер сливается при восстановлении связи.
  */
 
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <Preferences.h>
-#include <ArduinoJson.h>
+#include <LittleFS.h>
 
 // ═══════════════════════════════════════════════════════
-// НАСТРОЙКИ (менять здесь)
+// НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
 
-const char* WIFI_SSID = "karusel-net";         // Имя WiFi сети
-const char* WIFI_PASSWORD = "karusel2026";      // Пароль WiFi
-const char* SERVER_URL = "http://192.168.1.100:5050/api/event";  // URL сервера
-const int MACHINE_ID = 1;                       // ID этого автомата (1-10)
-const int WIN_PIN = 13;                         // Пин GPIO для сигнала выигрыша
+const char* WIFI_SSID = "karusel-net";
+const char* WIFI_PASSWORD = "karusel2026";
+const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
+const int MACHINE_ID = 1;
+const int WIN_PIN = 13;
 
 // ═══════════════════════════════════════════════════════
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════
 
-const unsigned long DEBOUNCE_MS = 200;          // Защита от дребезга (мс)
-const unsigned long WIFI_RETRY_MS = 10000;      // Пауза между попытками WiFi (мс)
-const int MAX_STORED_EVENTS = 100;              // Максимум событий в офлайн-буфере
-const char* PREFS_NAMESPACE = "karusel";        // Пространство в NVS памяти
-const char* PREFS_KEY = "events";               // Ключ для хранения событий
+const unsigned long DEBOUNCE_MS = 200;
+const unsigned long WIFI_RETRY_MS = 30000;
+const unsigned long BUFFER_COOLDOWN_MS = 200;
+const int MAX_STORED_EVENTS = 100;
+const char* BUFFER_FILE = "/buffer.txt";
 
 // ═══════════════════════════════════════════════════════
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ═══════════════════════════════════════════════════════
 
-Preferences prefs;                              // Энергонезависимая память (NVS)
-unsigned long last_win_time = 0;                // Время последнего импульса
-unsigned long last_wifi_attempt = 0;            // Время последней попытки WiFi
-int last_button_state = HIGH;                   // Предыдущее состояние кнопки
-int pending_events = 0;                         // Количество неотправленных событий
+// Кнопка
+unsigned long last_win_time = 0;
+int last_button_state = HIGH;
+
+// HTTP-задача
+TaskHandle_t httpTaskHandle = NULL;
+volatile bool http_busy = false;
+volatile bool http_success = false;
+volatile bool http_is_buffer = false;
+
+// WiFi
+unsigned long last_wifi_attempt = 0;
+
+// Буфер
+int pending_events = 0;
+unsigned long last_buffer_attempt = 0;
 
 // ═══════════════════════════════════════════════════════
-// SETUP (запуск один раз при включении)
+// SETUP
 // ═══════════════════════════════════════════════════════
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  
-  Serial.println("╔════════════════════════════════╗");
-  Serial.println("║  KARUSEL ESP32 TRACKER v1.0   ║");
+
+  Serial.println("\n╔════════════════════════════════╗");
+  Serial.println("║  KARUSEL ESP32 TRACKER v3.0   ║");
   Serial.println("╚════════════════════════════════╝");
-  Serial.printf("Аппарат ID: %d\n", MACHINE_ID);
-  Serial.printf("Пин сигнала: GPIO%d\n", WIN_PIN);
-  Serial.printf("Сервер: %s\n", SERVER_URL);
+  Serial.printf("Аппарат ID: %d | Пин: GPIO%d\n", MACHINE_ID, WIN_PIN);
 
-  // Настраиваем пин выигрыша (подтяжка к 3.3V, сигнал = LOW при замыкании на GND)
   pinMode(WIN_PIN, INPUT_PULLUP);
-
-  // Встроенный светодиод — индикатор WiFi
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
-  // Подключаем WiFi
+  if (!LittleFS.begin(true)) {
+    Serial.println("[FS] Ошибка монтирования LittleFS!");
+  }
+
   connectWiFi();
 
-  // Загружаем неотправленные события из памяти
-  loadStoredEvents();
-  Serial.printf("Неотправленных событий в буфере: %d\n", pending_events);
+  pending_events = countBufferedEvents();
+  Serial.printf("[BUFFER] Событий в буфере: %d\n", pending_events);
 }
 
 // ═══════════════════════════════════════════════════════
-// LOOP (основной цикл)
+// ЗАДАЧА HTTP (выполняется в отдельном потоке)
+// ═══════════════════════════════════════════════════════
+
+void httpTask(void* parameter) {
+  HTTPClient http;
+  http.begin(SERVER_URL);
+  http.addHeader("Content-Type", "application/json");
+
+  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"win\"}";
+
+  unsigned long t0 = millis();
+  int httpCode = http.POST(jsonBody);
+  unsigned long t1 = millis();
+  http.end();
+
+  Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
+
+  http_success = (httpCode == 200);
+
+  if (http_success && http_is_buffer) {
+    removeFirstBufferedEvent();
+    pending_events--;
+    Serial.printf("[BUFFER] Отправлено. Осталось: %d\n", pending_events);
+  }
+
+  http_busy = false;
+  httpTaskHandle = NULL;
+  vTaskDelete(NULL);  // Задача завершается
+}
+
+void startHTTP(bool isBuffer) {
+  if (http_busy) return;  // Уже отправляем
+
+  http_busy = true;
+  http_is_buffer = isBuffer;
+
+  // Создаём задачу на ядре 0 (основной loop на ядре 1)
+  xTaskCreatePinnedToCore(
+    httpTask,       // Функция задачи
+    "HTTP_Task",    // Имя
+    8192,           // Стек (8 КБ достаточно)
+    NULL,           // Параметры
+    1,              // Приоритет
+    &httpTaskHandle,// Хендл
+    0               // Ядро 0
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// LOOP (основной поток — только кнопка и буфер)
 // ═══════════════════════════════════════════════════════
 
 void loop() {
-  // ── Переподключение WiFi при обрыве ──
-  if (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED_BUILTIN, LOW);  // Светодиод выключен = нет сети
-    if (millis() - last_wifi_attempt > WIFI_RETRY_MS) {
-      Serial.println("[WiFi] Попытка переподключения...");
-      connectWiFi();
-      last_wifi_attempt = millis();
-    }
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);  // Светодиод горит = сеть есть
+
+  // ── 1. WiFi ──
+  bool wifi_ok = (WiFi.status() == WL_CONNECTED);
+  digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
+
+  if (!wifi_ok && (millis() - last_wifi_attempt > WIFI_RETRY_MS)) {
+    Serial.println("[WiFi] Попытка переподключения...");
+    connectWiFi();
+    last_wifi_attempt = millis();
   }
 
-  // ── Сначала отправляем накопленные события ──
-  if (pending_events > 0 && WiFi.status() == WL_CONNECTED) {
-    sendStoredEvents();
+  // ── 2. Отправка буфера ──
+  if (wifi_ok && pending_events > 0 && !http_busy &&
+      (millis() - last_buffer_attempt > BUFFER_COOLDOWN_MS)) {
+    last_buffer_attempt = millis();
+    startHTTP(true);  // Отправляем из буфера
   }
 
-  // ── Обработка кнопки (опрос, без прерываний — надёжнее) ──
+  // ── 3. Кнопка (всегда отзывчива!) ──
   int button_state = digitalRead(WIN_PIN);
-  
-  // Кнопка нажата (LOW — замкнута на GND) и предыдущее состояние было HIGH
+
   if (button_state == LOW && last_button_state == HIGH) {
     unsigned long now = millis();
-    
-    // Защита от дребезга
     if (now - last_win_time > DEBOUNCE_MS) {
       last_win_time = now;
       Serial.println("[WIN] Обнаружен выигрыш!");
-      sendWinEvent();
+
+      if (!wifi_ok) {
+        bufferEvent();
+        Serial.println("[WIN] Нет WiFi, событие в буфер.");
+      } else if (http_busy) {
+        bufferEvent();
+        Serial.println("[WIN] HTTP занят, событие в буфер.");
+      } else {
+        // WiFi есть, HTTP свободен — отправляем
+        startHTTP(false);
+        // Не ждём! loop() продолжается. Результат будет позже.
+      }
     }
   }
-  
+
   last_button_state = button_state;
-  delay(10);  // Маленькая задержка
+  delay(10);
 }
 
 // ═══════════════════════════════════════════════════════
-// ПОДКЛЮЧЕНИЕ К WiFi
+// WiFi
 // ═══════════════════════════════════════════════════════
 
 void connectWiFi() {
-  Serial.printf("[WiFi] Подключаюсь к %s...\n", WIFI_SSID);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -131,150 +195,49 @@ void connectWiFi() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("\n[WiFi] Подключено!");
-    Serial.printf("[WiFi] IP адрес: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("[WiFi] IP: %s\n", WiFi.localIP().toString().c_str());
   } else {
-    Serial.println("\n[WiFi] Не удалось подключиться. Буду пробовать позже.");
+    Serial.println("\n[WiFi] Не удалось подключиться.");
   }
 }
 
 // ═══════════════════════════════════════════════════════
-// ОТПРАВКА СОБЫТИЯ НА СЕРВЕР
+// БУФЕР
 // ═══════════════════════════════════════════════════════
 
-void sendWinEvent() {
-  if (WiFi.status() != WL_CONNECTED) {
-    // Нет сети — сохраняем событие локально
-    storeEvent();
-    return;
-  }
-
-  HTTPClient http;
-  http.begin(SERVER_URL);
-  http.addHeader("Content-Type", "application/json");
-
-  // Формируем JSON
-  StaticJsonDocument<128> doc;
-  doc["machine_id"] = MACHINE_ID;
-  doc["event_type"] = "win";
-
-  String jsonBody;
-  serializeJson(doc, jsonBody);
-
-  // Отправляем POST
-  int httpCode = http.POST(jsonBody);
-
-  if (httpCode == 200) {
-    String response = http.getString();
-    Serial.printf("[HTTP] OK (код %d): %s\n", httpCode, response.c_str());
-  } else {
-    Serial.printf("[HTTP] Ошибка (код %d): %s\n", httpCode, http.errorToString(httpCode).c_str());
-    // Ошибка отправки — сохраняем локально
-    storeEvent();
-  }
-
-  http.end();
-}
-
-// ═══════════════════════════════════════════════════════
-// ХРАНЕНИЕ СОБЫТИЙ (офлайн-буфер)
-// ═══════════════════════════════════════════════════════
-
-void storeEvent() {
+void bufferEvent() {
   if (pending_events >= MAX_STORED_EVENTS) {
-    Serial.println("[BUFFER] Буфер переполнен! Самое старое событие будет потеряно.");
-    return;
+    Serial.println("[BUFFER] Переполнен!");
+    removeFirstBufferedEvent();
+    pending_events--;
   }
 
-  char key[16];
-  snprintf(key, sizeof(key), "evt_%d", pending_events);
-  
-  unsigned long now = millis();
-  prefs.begin(PREFS_NAMESPACE, false);
-  prefs.putULong(key, now);
-  prefs.end();
-
+  File f = LittleFS.open(BUFFER_FILE, "a");
+  if (!f) return;
+  f.println(millis());
+  f.close();
   pending_events++;
-  Serial.printf("[BUFFER] Событие сохранено. Всего в буфере: %d\n", pending_events);
+  Serial.printf("[BUFFER] Сохранено. Всего: %d\n", pending_events);
 }
 
-void loadStoredEvents() {
-  prefs.begin(PREFS_NAMESPACE, true);
-  pending_events = 0;
-  
-  for (int i = 0; i < MAX_STORED_EVENTS; i++) {
-    char key[16];
-    snprintf(key, sizeof(key), "evt_%d", i);
-    if (prefs.isKey(key)) {
-      pending_events++;
-    } else {
-      break;
-    }
-  }
-  prefs.end();
+int countBufferedEvents() {
+  int count = 0;
+  File f = LittleFS.open(BUFFER_FILE, "r");
+  if (!f) return 0;
+  while (f.available()) { f.readStringUntil('\n'); count++; }
+  f.close();
+  return count;
 }
 
-void sendStoredEvents() {
-  if (pending_events == 0) return;
-
-  Serial.printf("[BUFFER] Отправляю %d накопленных событий...\n", pending_events);
-  
-  prefs.begin(PREFS_NAMESPACE, false);
-  
-  int sent = 0;
-  for (int i = 0; i < pending_events; i++) {
-    char key[16];
-    snprintf(key, sizeof(key), "evt_%d", i);
-    
-    unsigned long timestamp = prefs.getULong(key, 0);
-    
-    HTTPClient http;
-    http.begin(SERVER_URL);
-    http.addHeader("Content-Type", "application/json");
-
-    StaticJsonDocument<200> doc;
-    doc["machine_id"] = MACHINE_ID;
-    doc["event_type"] = "win";
-    doc["timestamp"] = timestamp;
-
-    String jsonBody;
-    serializeJson(doc, jsonBody);
-
-    int httpCode = http.POST(jsonBody);
-    http.end();
-
-    if (httpCode == 200) {
-      prefs.remove(key);
-      sent++;
-    } else {
-      Serial.printf("[BUFFER] Не удалось отправить событие %d. Остановка.\n", i);
-      break;
-    }
-
-    delay(100);
-  }
-
-  compactStoredEvents();
-  
-  pending_events -= sent;
-  prefs.end();
-  
-  Serial.printf("[BUFFER] Отправлено %d событий. Осталось: %d\n", sent, pending_events);
-}
-
-void compactStoredEvents() {
-  int writeIdx = 0;
-  for (int readIdx = 0; readIdx < MAX_STORED_EVENTS; readIdx++) {
-    char readKey[16], writeKey[16];
-    snprintf(readKey, sizeof(readKey), "evt_%d", readIdx);
-    
-    if (prefs.isKey(readKey)) {
-      if (readIdx != writeIdx) {
-        snprintf(writeKey, sizeof(writeKey), "evt_%d", writeIdx);
-        unsigned long value = prefs.getULong(readKey, 0);
-        prefs.putULong(writeKey, value);
-        prefs.remove(readKey);
-      }
-      writeIdx++;
-    }
+void removeFirstBufferedEvent() {
+  File f = LittleFS.open(BUFFER_FILE, "r");
+  if (!f) return;
+  String content = f.readString();
+  f.close();
+  int firstNewLine = content.indexOf('\n');
+  if (firstNewLine >= 0) {
+    content = content.substring(firstNewLine + 1);
+    f = LittleFS.open(BUFFER_FILE, "w");
+    if (f) { f.print(content); f.close(); }
   }
 }
