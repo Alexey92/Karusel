@@ -1,10 +1,11 @@
 /*
- * KARUSEL — прошивка для ESP32 v3.0
+ * KARUSEL — прошивка для ESP32 v3.2
  * 
- * HTTP-запросы выполняются в отдельном потоке FreeRTOS.
- * Основной поток опрашивает кнопку БЕЗ блокировок.
- * Буфер работает корректно: новые события сохраняются,
- * буфер сливается при восстановлении связи.
+ * HTTP-запросы в отдельном потоке FreeRTOS (не блокирует кнопку).
+ * Исправления v3.2:
+ * - Проверка на пустой буфер перед отправкой
+ * - Защита от бесконечного цикла при рассинхронизации счётчика
+ * - Синхронизация pending_events с файлом при обнаружении пустого буфера
  */
 
 #include <WiFi.h>
@@ -18,7 +19,7 @@
 const char* WIFI_SSID = "karusel-net";
 const char* WIFI_PASSWORD = "karusel2026";
 const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
-const int MACHINE_ID = 1;
+const int MACHINE_ID = 3;
 const int WIN_PIN = 13;
 
 // ═══════════════════════════════════════════════════════
@@ -40,10 +41,10 @@ unsigned long last_win_time = 0;
 int last_button_state = HIGH;
 
 // HTTP-задача
-TaskHandle_t httpTaskHandle = NULL;
 volatile bool http_busy = false;
+volatile bool http_done = false;
 volatile bool http_success = false;
-volatile bool http_is_buffer = false;
+volatile bool http_was_buffer = false;
 
 // WiFi
 unsigned long last_wifi_attempt = 0;
@@ -61,7 +62,7 @@ void setup() {
   delay(1000);
 
   Serial.println("\n╔════════════════════════════════╗");
-  Serial.println("║  KARUSEL ESP32 TRACKER v3.0   ║");
+  Serial.println("║  KARUSEL ESP32 TRACKER v3.2   ║");
   Serial.println("╚════════════════════════════════╝");
   Serial.printf("Аппарат ID: %d | Пин: GPIO%d\n", MACHINE_ID, WIN_PIN);
 
@@ -98,43 +99,61 @@ void httpTask(void* parameter) {
   Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
 
   http_success = (httpCode == 200);
+  http_done = true;
 
-  if (http_success && http_is_buffer) {
-    removeFirstBufferedEvent();
-    pending_events--;
-    Serial.printf("[BUFFER] Отправлено. Осталось: %d\n", pending_events);
-  }
-
-  http_busy = false;
-  httpTaskHandle = NULL;
-  vTaskDelete(NULL);  // Задача завершается
+  vTaskDelete(NULL);
 }
 
 void startHTTP(bool isBuffer) {
-  if (http_busy) return;  // Уже отправляем
+  if (http_busy) return;
+
+  // Для буфера: проверяем, что файл не пуст
+  if (isBuffer && isBufferEmpty()) {
+    Serial.println("[BUFFER] Файл пуст, отправка отменена. Синхронизация счётчика.");
+    pending_events = 0;
+    return;
+  }
 
   http_busy = true;
-  http_is_buffer = isBuffer;
+  http_done = false;
+  http_was_buffer = isBuffer;
 
-  // Создаём задачу на ядре 0 (основной loop на ядре 1)
   xTaskCreatePinnedToCore(
-    httpTask,       // Функция задачи
-    "HTTP_Task",    // Имя
-    8192,           // Стек (8 КБ достаточно)
-    NULL,           // Параметры
-    1,              // Приоритет
-    &httpTaskHandle,// Хендл
-    0               // Ядро 0
+    httpTask,
+    "HTTP_Task",
+    8192,
+    NULL,
+    1,
+    NULL,
+    0
   );
 }
 
 // ═══════════════════════════════════════════════════════
-// LOOP (основной поток — только кнопка и буфер)
+// LOOP
 // ═══════════════════════════════════════════════════════
 
 void loop() {
 
-  // ── 1. WiFi ──
+  // ── 1. ОБРАБОТКА ЗАВЕРШЁННОГО HTTP ──
+  if (http_busy && http_done) {
+    http_busy = false;
+
+    if (http_success) {
+      if (http_was_buffer) {
+        removeFirstBufferedEvent();
+        pending_events--;
+        Serial.printf("[BUFFER] Отправлено. Осталось: %d\n", pending_events);
+      }
+    } else {
+      if (!http_was_buffer) {
+        bufferEvent();
+        Serial.println("[WIN] Сервер недоступен, событие в буфер.");
+      }
+    }
+  }
+
+  // ── 2. WiFi ──
   bool wifi_ok = (WiFi.status() == WL_CONNECTED);
   digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
 
@@ -144,14 +163,20 @@ void loop() {
     last_wifi_attempt = millis();
   }
 
-  // ── 2. Отправка буфера ──
+  // ── 3. Отправка буфера ──
   if (wifi_ok && pending_events > 0 && !http_busy &&
       (millis() - last_buffer_attempt > BUFFER_COOLDOWN_MS)) {
     last_buffer_attempt = millis();
-    startHTTP(true);  // Отправляем из буфера
+
+    if (!isBufferEmpty()) {
+      startHTTP(true);
+    } else {
+      Serial.println("[BUFFER] Файл пуст, сбрасываю счётчик.");
+      pending_events = 0;
+    }
   }
 
-  // ── 3. Кнопка (всегда отзывчива!) ──
+  // ── 4. Кнопка ──
   int button_state = digitalRead(WIN_PIN);
 
   if (button_state == LOW && last_button_state == HIGH) {
@@ -167,9 +192,7 @@ void loop() {
         bufferEvent();
         Serial.println("[WIN] HTTP занят, событие в буфер.");
       } else {
-        // WiFi есть, HTTP свободен — отправляем
         startHTTP(false);
-        // Не ждём! loop() продолжается. Результат будет позже.
       }
     }
   }
@@ -204,6 +227,14 @@ void connectWiFi() {
 // ═══════════════════════════════════════════════════════
 // БУФЕР
 // ═══════════════════════════════════════════════════════
+
+bool isBufferEmpty() {
+  File f = LittleFS.open(BUFFER_FILE, "r");
+  if (!f) return true;
+  bool empty = !f.available();
+  f.close();
+  return empty;
+}
 
 void bufferEvent() {
   if (pending_events >= MAX_STORED_EVENTS) {
