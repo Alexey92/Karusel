@@ -31,6 +31,7 @@ const unsigned long WIFI_RETRY_MS = 30000;
 const unsigned long BUFFER_COOLDOWN_MS = 200;
 const int MAX_STORED_EVENTS = 100;
 const char* BUFFER_FILE = "/buffer.txt";
+const unsigned long MIN_SEND_INTERVAL_MS = 500;  // Минимум 500 мс между отправками
 
 // ═══════════════════════════════════════════════════════
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -45,6 +46,7 @@ volatile bool http_busy = false;
 volatile bool http_done = false;
 volatile bool http_success = false;
 volatile bool http_was_buffer = false;
+unsigned long last_send_time = 0;  // Время последней отправки HTTP
 
 // WiFi
 unsigned long last_wifi_attempt = 0;
@@ -177,12 +179,14 @@ void loop() {
   }
 
   // ── 4. Кнопка ──
+    // ── 4. Кнопка ──
   int button_state = digitalRead(WIN_PIN);
 
   if (button_state == LOW && last_button_state == HIGH) {
     unsigned long now = millis();
-    if (now - last_win_time > DEBOUNCE_MS) {
+    if (now - last_win_time > DEBOUNCE_MS && now - last_send_time > MIN_SEND_INTERVAL_MS) {
       last_win_time = now;
+      last_send_time = now;
       Serial.println("[WIN] Обнаружен выигрыш!");
 
       if (!wifi_ok) {

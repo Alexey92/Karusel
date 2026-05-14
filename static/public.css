@@ -151,3 +151,7 @@ body {
     .stat-value { font-size: 72px; }
     .stat-time { font-size: 48px; }
 }
+
+#screen-2 .stat-card, #screen-3 .stat-card {
+    min-width: 600px;
+}

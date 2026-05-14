@@ -8,7 +8,6 @@
 </head>
 <body>
 
-    <!-- ЭКРАН ВХОДА -->
     <div id="login-screen">
         <div class="login-box">
             <h1>🔐 KARUSEL</h1>
@@ -20,7 +19,6 @@
         </div>
     </div>
 
-    <!-- ДАШБОРД (скрыт до входа) -->
     <div id="dashboard" style="display: none;">
         <div class="top-bar">
             <h1>🎰 KARUSEL — Статистика</h1>
@@ -30,21 +28,21 @@
             </div>
         </div>
 
-        <!-- Вкладки -->
         <div class="tabs">
             <button class="tab active" onclick="showTab('overview')">Обзор</button>
             <button class="tab" onclick="showTab('machines')">По аппаратам</button>
+            <button class="tab" onclick="showTab('locations')">Адреса</button>
             <button class="tab" onclick="showTab('history')">История</button>
-			<button class="tab" onclick="showTab('settings')">Настройки</button>
+            <button class="tab" onclick="showTab('settings')">Настройки</button>
         </div>
 
-        <!-- Вкладка: Обзор -->
+        <!-- Обзор -->
         <div id="tab-overview" class="tab-content active">
             <h2>Все аппараты — сводка</h2>
             <div class="cards-grid" id="overview-cards"></div>
         </div>
 
-        <!-- Вкладка: По аппаратам -->
+        <!-- По аппаратам -->
         <div id="tab-machines" class="tab-content">
             <h2>Детально по аппарату</h2>
             <select id="machine-select" onchange="loadMachineDetail()">
@@ -53,18 +51,25 @@
             <div id="machine-detail"></div>
         </div>
 
-        <!-- Вкладка: История -->
+        <!-- Адреса -->
+        <div id="tab-locations" class="tab-content">
+            <h2>Управление адресами</h2>
+            <div class="form-row">
+                <input type="text" id="new-location-name" placeholder="Название нового адреса">
+                <button onclick="addLocation()" class="btn-small">Добавить адрес</button>
+            </div>
+            <table class="history-table" style="margin-top:20px;">
+                <thead><tr><th>ID</th><th>Название</th><th>Автоматов</th><th>Действия</th></tr></thead>
+                <tbody id="locations-body"></tbody>
+            </table>
+            <div id="location-machines" style="margin-top:20px;"></div>
+        </div>
+
+        <!-- История -->
         <div id="tab-history" class="tab-content">
             <h2>Последние выигрыши</h2>
             <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Аппарат</th>
-                        <th>Тип</th>
-                        <th>Время</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>ID</th><th>Адрес</th><th>Аппарат</th><th>Тип</th><th>Время</th></tr></thead>
                 <tbody id="history-body"></tbody>
             </table>
             <div class="pagination">
@@ -74,77 +79,50 @@
                 <button onclick="loadHistory(currentOffset + 50)">Вперёд ⟶</button>
             </div>
         </div>
-		
-		<!-- Вкладка: Настройки -->
-		<div id="tab-settings" class="tab-content">
-			<h2>Настройки аккаунта</h2>
-			<div class="settings-card">
-				<h3>🔒 Сменить пароль</h3>
-				<div class="form-group">
-					<label>Старый пароль:</label>
-					<input type="password" id="old-password" class="form-input">
-				</div>
-				<div class="form-group">
-					<label>Новый пароль:</label>
-					<input type="password" id="new-password" class="form-input">
-				</div>
-				<div class="form-group">
-					<label>Подтвердите новый пароль:</label>
-					<input type="password" id="confirm-password" class="form-input">
-				</div>
-				<button onclick="changePassword()" class="form-button">Сохранить новый пароль</button>
-				<p id="password-message" class="form-message"></p>
-			</div>
-		</div>
+
+        <!-- Настройки -->
+        <div id="tab-settings" class="tab-content">
+            <h2>Настройки аккаунта</h2>
+            <div class="settings-card">
+                <h3>🔒 Сменить пароль</h3>
+                <div class="form-group"><label>Старый пароль:</label><input type="password" id="old-password" class="form-input"></div>
+                <div class="form-group"><label>Новый пароль:</label><input type="password" id="new-password" class="form-input"></div>
+                <div class="form-group"><label>Подтвердите новый пароль:</label><input type="password" id="confirm-password" class="form-input"></div>
+                <button onclick="changePassword()" class="form-button">Сохранить новый пароль</button>
+                <p id="password-message" class="form-message"></p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ─── Глобальные переменные ──────────────────────────
         let token = localStorage.getItem('karusel_token');
         let currentOffset = 0;
         const LIMIT = 50;
 
-        // ─── Привязка кнопки (надёжный способ) ──────────────
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('login-btn').addEventListener('click', doLogin);
             init();
         });
 
-        // ─── Проверка токена при загрузке ───────────────────
         async function init() {
             if (token) {
                 try {
-                    const resp = await fetch('/api/admin/check-auth', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (resp.ok) {
-                        showDashboard();
-                        return;
-                    }
-                } catch (e) {}
+                    const resp = await fetch('/api/admin/check-auth', {headers:{'Authorization':`Bearer ${token}`}});
+                    if (resp.ok) { showDashboard(); return; }
+                } catch(e) {}
                 localStorage.removeItem('karusel_token');
                 token = null;
             }
             document.getElementById('login-screen').style.display = 'flex';
         }
 
-        // ─── Вход ────────────────────────────────────────────
         async function doLogin() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('login-error');
-
-            if (!username || !password) {
-                errorEl.textContent = 'Введите логин и пароль';
-                return;
-            }
-
+            if (!username || !password) { errorEl.textContent = 'Введите логин и пароль'; return; }
             try {
-                const resp = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
+                const resp = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
                 if (resp.ok) {
                     const data = await resp.json();
                     token = data.access_token;
@@ -154,12 +132,9 @@
                     const err = await resp.json();
                     errorEl.textContent = err.detail || 'Ошибка входа';
                 }
-            } catch (e) {
-                errorEl.textContent = 'Сервер недоступен';
-            }
+            } catch(e) { errorEl.textContent = 'Сервер недоступен'; }
         }
 
-        // ─── Выход ───────────────────────────────────────────
         function doLogout() {
             localStorage.removeItem('karusel_token');
             token = null;
@@ -167,7 +142,6 @@
             document.getElementById('dashboard').style.display = 'none';
         }
 
-        // ─── Показать дашборд ────────────────────────────────
         function showDashboard() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
@@ -176,81 +150,70 @@
             loadMachineSelect();
         }
 
-        // ─── Асинхронные запросы с токеном ───────────────────
         async function apiGet(url) {
-            const resp = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (resp.status === 401) {
-                doLogout();
-                throw new Error('Unauthorized');
-            }
+            const resp = await fetch(url, {headers:{'Authorization':`Bearer ${token}`}});
+            if (resp.status === 401) { doLogout(); throw new Error('Unauthorized'); }
             return resp.json();
         }
 
-        // ─── Вкладки ─────────────────────────────────────────
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
-
             if (tabName === 'overview') loadOverview();
             if (tabName === 'machines') loadMachineSelect();
+            if (tabName === 'locations') loadLocations();
             if (tabName === 'history') loadHistory(0);
         }
 
-        // ─── Обзор (все аппараты) ───────────────────────────
         async function loadOverview() {
             const data = await apiGet('/api/admin/stats');
             const grid = document.getElementById('overview-cards');
             grid.innerHTML = data.map(s => `
                 <div class="card">
-                    <div class="card-title">Автомат №${s.machine_id}</div>
-                    <div class="card-row"><span>За час:</span> <strong>${s.wins_hour}</strong></div>
-                    <div class="card-row"><span>За сегодня:</span> <strong>${s.wins_today}</strong></div>
-                    <div class="card-row"><span>За 24ч:</span> <strong>${s.wins_24h}</strong></div>
-                    <div class="card-row"><span>Всего:</span> <strong>${s.wins_total}</strong></div>
-                    <div class="card-row"><span>Последний:</span> <small>${s.last_win || '—'}</small></div>
-                    <div class="card-row jackpot">
-                        <span>🎯 До джекпота:</span>
-                        <strong>${s.jackpot_config?.current_win_count || 0} / ${s.jackpot_config?.win_count_for_jackpot || 100}</strong>
-                    </div>
+                    <div class="card-title">${s.machine_name || 'Автомат №'+s.machine_id} (ID:${s.machine_id})</div>
+                    <div class="card-row"><span>За час:</span><strong>${s.wins_hour}</strong></div>
+                    <div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
+                    <div class="card-row"><span>За 24ч:</span><strong>${s.wins_24h}</strong></div>
+                    <div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
+                    <div class="card-row"><span>Последний:</span><small>${s.last_win||'—'}</small></div>
+                    <div class="card-row jackpot"><span>🎯 Джекпот:</span><strong>${s.jackpot_config?.current_win_count||0}/${s.jackpot_config?.win_count_for_jackpot||0}</strong></div>
                 </div>
             `).join('');
         }
 
-        // ─── Выпадающий список аппаратов ────────────────────
         async function loadMachineSelect() {
-            const machines = await apiGet('/api/admin/machines');
+            const locations = await apiGet('/api/admin/locations');
             const select = document.getElementById('machine-select');
-            select.innerHTML = '<option value="">Выберите аппарат...</option>' +
-                machines.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+            let html = '<option value="">Выберите аппарат...</option>';
+            for (const loc of locations) {
+                const machines = await apiGet('/api/admin/locations/' + loc.id + '/machines');
+                for (const m of machines) {
+                    html += `<option value="${m.id}">${m.name} (${loc.name})</option>`;
+                }
+            }
+            select.innerHTML = html;
         }
 
         async function loadMachineDetail() {
             const id = document.getElementById('machine-select').value;
             if (!id) return;
-
-            const [stats, jackpot] = await Promise.all([
-                apiGet('/api/admin/stats/' + id),
-                apiGet('/api/admin/jackpot/' + id)
-            ]);
+            const stats = await apiGet('/api/admin/stats/' + id);
+            const jackpot = await apiGet('/api/admin/jackpot/' + stats.location_id);
 
             document.getElementById('machine-detail').innerHTML = `
                 <div class="detail-card">
-                    <h3>Автомат №${stats.machine_id}</h3>
+                    <h3>${stats.machine_name || 'Автомат №'+stats.machine_id} (ID:${stats.machine_id})</h3>
                     <table>
                         <tr><td>Выигрышей за час:</td><td><strong>${stats.wins_hour}</strong></td></tr>
                         <tr><td>Выигрышей за сегодня:</td><td><strong>${stats.wins_today}</strong></td></tr>
                         <tr><td>Выигрышей за 24 часа:</td><td><strong>${stats.wins_24h}</strong></td></tr>
                         <tr><td>Всего выигрышей:</td><td><strong>${stats.wins_total}</strong></td></tr>
-                        <tr><td>Последний выигрыш:</td><td>${stats.last_win || '—'}</td></tr>
+                        <tr><td>Последний выигрыш:</td><td>${stats.last_win||'—'}</td></tr>
                     </table>
                 </div>
-
                 <div class="detail-card jackpot-controls">
-                    <h3>🎯 Управление главным призом</h3>
-
+                    <h3>🎯 Джекпот адреса (ID:${stats.location_id})</h3>
                     <div class="jackpot-info">
                         <div class="jackpot-big-number">
                             <span id="jackpot-counter">${jackpot.current_win_count}</span>
@@ -259,20 +222,19 @@
                         </div>
                         <p class="jackpot-label">текущий счётчик / порог</p>
                     </div>
-
                     <div class="jackpot-actions">
                         <div class="jackpot-action-row">
                             <label>Новый порог:</label>
-                            <input type="number" id="new-threshold" value="${jackpot.win_count_for_jackpot}" min="1" max="10000">
-                            <button onclick="updateThreshold(${id})">Установить</button>
+                            <input type="number" id="new-threshold" value="${jackpot.win_count_for_jackpot}" min="1">
+                            <button onclick="updateThreshold(${stats.location_id})">Установить</button>
                         </div>
                         <div class="jackpot-action-row">
-                            <label>Ручная корректировка счётчика:</label>
-                            <input type="number" id="new-counter" value="${jackpot.current_win_count}" min="0" max="10000">
-                            <button onclick="setCounter(${id})">Установить</button>
+                            <label>Корректировка счётчика:</label>
+                            <input type="number" id="new-counter" value="${jackpot.current_win_count}" min="0">
+                            <button onclick="setCounter(${stats.location_id})">Установить</button>
                         </div>
                         <div class="jackpot-action-row">
-                            <button onclick="resetJackpot(${id})" class="btn-danger">🔄 Сбросить счётчик</button>
+                            <button onclick="resetJackpot(${stats.location_id})" class="btn-danger">🔄 Сбросить счётчик</button>
                         </div>
                     </div>
                     <p id="jackpot-message" class="jackpot-message"></p>
@@ -280,7 +242,66 @@
             `;
         }
 
-        // ─── История ─────────────────────────────────────────
+        async function loadLocations() {
+            const locations = await apiGet('/api/admin/locations');
+            const tbody = document.getElementById('locations-body');
+            tbody.innerHTML = locations.map(l => `
+                <tr>
+                    <td>${l.id}</td>
+                    <td>${l.name}</td>
+                    <td>${l.machine_count}</td>
+                    <td>
+                        <button onclick="editLocation(${l.id},'${l.name}')">✏️</button>
+                        <button onclick="deleteLocation(${l.id})">🗑️</button>
+                        <button onclick="showLocationMachines(${l.id})">🔧</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function addLocation() {
+            const name = document.getElementById('new-location-name').value;
+            if (!name) return;
+            await fetch('/api/admin/locations', {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name})});
+            document.getElementById('new-location-name').value = '';
+            loadLocations();
+        }
+
+        async function editLocation(id, oldName) {
+            const name = prompt('Новое название:', oldName);
+            if (!name) return;
+            await fetch('/api/admin/locations/' + id, {method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name})});
+            loadLocations();
+        }
+
+        async function deleteLocation(id) {
+            if (!confirm('Удалить адрес и все его автоматы?')) return;
+            await fetch('/api/admin/locations/' + id, {method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
+            loadLocations();
+        }
+
+        async function showLocationMachines(locationId) {
+            const machines = await apiGet('/api/admin/locations/' + locationId + '/machines');
+            let html = '<h3>Автоматы</h3><ul>';
+            machines.forEach(m => { html += `<li>${m.name} (ID:${m.id}) <button onclick="deleteMachine(${m.id})">🗑️</button></li>`; });
+            html += '</ul><div class="form-row"><input type="text" id="new-machine-name" placeholder="Название автомата"><button onclick="addMachine(' + locationId + ')">Добавить</button></div>';
+            document.getElementById('location-machines').innerHTML = html;
+        }
+
+        async function addMachine(locationId) {
+            const name = document.getElementById('new-machine-name').value;
+            if (!name) return;
+            await fetch('/api/admin/locations/' + locationId + '/machines', {method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name})});
+            showLocationMachines(locationId);
+            loadLocations();
+        }
+
+        async function deleteMachine(machineId) {
+            if (!confirm('Удалить автомат?')) return;
+            await fetch('/api/admin/machines/' + machineId, {method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
+            loadLocations();
+        }
+
         async function loadHistory(offset) {
             if (offset < 0) offset = 0;
             currentOffset = offset;
@@ -289,110 +310,55 @@
             tbody.innerHTML = data.events.map(e => `
                 <tr>
                     <td>${e.id}</td>
+                    <td>${e.location_name}</td>
                     <td>${e.machine_name}</td>
-                    <td>${e.event_type === 'jackpot' ? '🎰 ДЖЕКПОТ' : '🏆 Выигрыш'}</td>
+                    <td>${e.event_type==='jackpot'?'🎰 ДЖЕКПОТ':'🏆 Выигрыш'}</td>
                     <td>${e.timestamp}</td>
                 </tr>
             `).join('');
-
             const totalPages = Math.ceil(data.total / LIMIT) || 1;
-            document.getElementById('page-info').textContent =
-                `Стр. ${Math.floor(offset / LIMIT) + 1} из ${totalPages} (всего ${data.total})`;
+            document.getElementById('page-info').textContent = `Стр. ${Math.floor(offset/LIMIT)+1} из ${totalPages} (всего ${data.total})`;
         }
 
-        // ─── Управление джекпотом ────────────────────────────
-        async function updateThreshold(machineId) {
+        async function updateThreshold(locId) {
             const value = document.getElementById('new-threshold').value;
-            const resp = await fetch(`/api/admin/jackpot/${machineId}/threshold`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ win_count: parseInt(value) })
-            });
-            if (resp.ok) {
-                document.getElementById('jackpot-message').textContent = '✅ Порог обновлён';
-                setTimeout(() => loadMachineDetail(), 500);
-            }
+            await fetch(`/api/admin/jackpot/${locId}/threshold`, {method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({win_count:parseInt(value)})});
+            document.getElementById('jackpot-message').textContent = '✅ Порог обновлён';
+            setTimeout(() => loadMachineDetail(), 500);
         }
 
-        async function setCounter(machineId) {
+        async function setCounter(locId) {
             const value = document.getElementById('new-counter').value;
-            const resp = await fetch(`/api/admin/jackpot/${machineId}/counter`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ count: parseInt(value) })
-            });
-            if (resp.ok) {
-                document.getElementById('jackpot-message').textContent = '✅ Счётчик обновлён';
-                setTimeout(() => loadMachineDetail(), 500);
-            }
+            await fetch(`/api/admin/jackpot/${locId}/counter`, {method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({count:parseInt(value)})});
+            document.getElementById('jackpot-message').textContent = '✅ Счётчик обновлён';
+            setTimeout(() => loadMachineDetail(), 500);
         }
 
-        async function resetJackpot(machineId) {
-            if (!confirm('Точно сбросить счётчик главного приза?')) return;
-            const resp = await fetch(`/api/admin/jackpot/${machineId}/reset`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (resp.ok) {
-                document.getElementById('jackpot-message').textContent = '✅ Счётчик сброшен';
-                setTimeout(() => loadMachineDetail(), 500);
-            }
+        async function resetJackpot(locId) {
+            if (!confirm('Точно сбросить счётчик?')) return;
+            await fetch(`/api/admin/jackpot/${locId}/reset`, {method:'POST',headers:{'Authorization':`Bearer ${token}`}});
+            document.getElementById('jackpot-message').textContent = '✅ Счётчик сброшен';
+            setTimeout(() => loadMachineDetail(), 500);
         }
-		
-		
-		async function changePassword() {
-			const oldPass = document.getElementById('old-password').value;
-			const newPass = document.getElementById('new-password').value;
-			const confirmPass = document.getElementById('confirm-password').value;
-			const msgEl = document.getElementById('password-message');
 
-			// Проверки на стороне клиента
-			if (!oldPass || !newPass || !confirmPass) {
-				msgEl.innerHTML = '<span style="color:#e74c3c;">Заполните все поля</span>';
-				return;
-			}
-			if (newPass !== confirmPass) {
-				msgEl.innerHTML = '<span style="color:#e74c3c;">Новые пароли не совпадают</span>';
-				return;
-			}
-			if (newPass.length < 4) {
-				msgEl.innerHTML = '<span style="color:#e74c3c;">Пароль должен быть не менее 4 символов</span>';
-				return;
-			}
-
-			try {
-				const resp = await fetch('/api/admin/change-password', {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({
-						old_password: oldPass,
-						new_password: newPass
-					})
-				});
-
-				const data = await resp.json();
-
-				if (resp.ok) {
-					msgEl.innerHTML = '<span style="color:#2ecc71;">✅ Пароль успешно изменён!</span>';
-					document.getElementById('old-password').value = '';
-					document.getElementById('new-password').value = '';
-					document.getElementById('confirm-password').value = '';
-				} else {
-					msgEl.innerHTML = `<span style="color:#e74c3c;">❌ ${data.detail || 'Ошибка'}</span>`;
-				}
-			} catch (e) {
-				msgEl.innerHTML = '<span style="color:#e74c3c;">Сервер недоступен</span>';
-			}
-		}
+        async function changePassword() {
+            const oldPass = document.getElementById('old-password').value;
+            const newPass = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('confirm-password').value;
+            const msgEl = document.getElementById('password-message');
+            if (!oldPass || !newPass || !confirmPass) { msgEl.innerHTML = '<span style="color:#e74c3c;">Заполните все поля</span>'; return; }
+            if (newPass !== confirmPass) { msgEl.innerHTML = '<span style="color:#e74c3c;">Новые пароли не совпадают</span>'; return; }
+            if (newPass.length < 4) { msgEl.innerHTML = '<span style="color:#e74c3c;">Пароль должен быть не менее 4 символов</span>'; return; }
+            try {
+                const resp = await fetch('/api/admin/change-password', {method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({old_password:oldPass,new_password:newPass})});
+                const data = await resp.json();
+                if (resp.ok) {
+                    msgEl.innerHTML = '<span style="color:#2ecc71;">✅ Пароль успешно изменён!</span>';
+                } else {
+                    msgEl.innerHTML = `<span style="color:#e74c3c;">❌ ${data.detail||'Ошибка'}</span>`;
+                }
+            } catch(e) { msgEl.innerHTML = '<span style="color:#e74c3c;">Сервер недоступен</span>'; }
+        }
     </script>
 </body>
 </html>

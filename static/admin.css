@@ -249,3 +249,14 @@ body {
     min-height: 20px;
     font-weight: 600;
 }
+
+.form-row {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 12px;
+}
+.form-row input {
+    padding: 8px 12px; border-radius: 6px; border: 1px solid #444; background: #1a1a2e; color: #fff; font-size: 14px; flex: 1;
+}
+.btn-small {
+    padding: 8px 16px; border: none; border-radius: 6px; background: #ffd200; color: #1a1a2e; font-weight: 700; cursor: pointer;
+}
+.btn-small:hover { background: #f7971e; }
