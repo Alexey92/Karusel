@@ -71,11 +71,14 @@ async def root():
     return {"status": "ok", "server": "KARUSEL Win Tracker", "version": "2.0.0"}
 
 
-@app.get("/screen")
-async def public_screen(request: Request, location_id: int = Query(None)):
-    """Публичный экран (опционально с фильтром по адресу)."""
-    return templates.TemplateResponse("public.html", {"request": request, "location_id": location_id or ""})
+@@app.get("/screen1")
+async def screen1(request: Request):
+    return templates.TemplateResponse("screen1.html", {"request": request})
 
+@app.get("/screen2")
+async def screen2(request: Request):
+    return templates.TemplateResponse("screen2.html", {"request": request})
+    
 
 @app.post("/api/event", response_model=EventResponse)
 async def receive_event(event: EventRequest):

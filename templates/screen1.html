@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARUSEL — Экран 1</title>
+    <link rel="stylesheet" href="/static/public.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 KARUSEL 🎰</h1>
+            <p class="subtitle">Сегодня выигрывают здесь!</p>
+        </div>
+
+        <div class="stats" id="screen-1">
+            <div class="stat-card">
+                <div class="stat-label">ВЫИГРЫШЕЙ ЗА 24 ЧАСА</div>
+                <div class="stat-value" id="wins24h">—</div>
+                <div class="stat-icon">🏆</div>
+            </div>
+            <div class="stat-card" id="last-win-card" style="display:none;">
+                <div class="stat-label">ПОСЛЕДНИЙ ПРИЗ</div>
+                <div class="stat-time" id="lastWinTime">—</div>
+                <div class="stat-detail" id="lastWinMachine"></div>
+                <div class="stat-icon">⏱️</div>
+            </div>
+        </div>
+
+        <div class="stats" id="screen-2" style="display:none;">
+            <div class="stat-card" style="min-width:600px;">
+                <div class="stat-label">ВСЕГО ВЫИГРЫШЕЙ</div>
+                <div class="stat-value" id="totalWins">—</div>
+                <div class="stat-icon">🎯</div>
+            </div>
+        </div>
+
+        <div class="stats" id="screen-3" style="display:none;">
+            <div class="stat-card" style="min-width:600px;">
+                <div class="stat-label">ОСТАЛОСЬ ДО ГЛАВНОГО ПРИЗА</div>
+                <div class="stat-value" id="jackpotRemaining">—</div>
+                <div class="stat-detail" id="jackpotDetail"></div>
+                <div class="stat-icon">🎁</div>
+            </div>
+        </div>
+
+        <div class="footer"><p>Играйте и выигрывайте! ✨</p></div>
+    </div>
+
+    <script>
+        const MONITOR_OFFSET = 0; // 0 = левый монитор
+        const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
+
+        function getCurrentScreen() {
+            const segment = Math.floor(new Date().getSeconds() / 20);
+            return ((segment + MONITOR_OFFSET) % 3) + 1;
+        }
+
+        function switchScreen() {
+            const n = getCurrentScreen();
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById('screen-' + i).style.display = (i === n) ? 'flex' : 'none';
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
+                const r = await fetch(url);
+                const d = await r.json();
+
+                document.getElementById('wins24h').textContent = d.wins_24h;
+                const card = document.getElementById('last-win-card');
+                if (d.last_win) {
+                    const t = new Date(d.last_win.timestamp + 'Z');
+                    if ((new Date() - t) / 3600000 <= 2) {
+                        document.getElementById('lastWinTime').textContent = t.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+                        document.getElementById('lastWinMachine').textContent = d.last_win.machine_name + ' (' + d.last_win.location_name + ')';
+                        card.style.display = '';
+                    } else { card.style.display = 'none'; }
+                } else { card.style.display = 'none'; }
+
+                document.getElementById('totalWins').textContent = d.total_wins;
+                const rem = (d.jackpot_threshold || 0) - (d.jackpot_current || 0);
+                document.getElementById('jackpotRemaining').textContent = rem > 0 ? rem : 0;
+                document.getElementById('jackpotDetail').textContent = `${d.jackpot_current || 0} / ${d.jackpot_threshold || 0}`;
+            } catch (e) { console.error(e); }
+        }
+
+        setInterval(function() { fetchData(); switchScreen(); }, 1000);
+        fetchData(); switchScreen();
+    </script>
+</body>
+</html>
