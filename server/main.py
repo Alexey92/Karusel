@@ -71,7 +71,7 @@ async def root():
     return {"status": "ok", "server": "KARUSEL Win Tracker", "version": "2.0.0"}
 
 
-@@app.get("/screen1")
+@app.get("/screen1")
 async def screen1(request: Request):
     return templates.TemplateResponse("screen1.html", {"request": request})
 
