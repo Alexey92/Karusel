@@ -1,11 +1,10 @@
 /*
- * KARUSEL — прошивка для ESP32 v3.2
+ * KARUSEL — прошивка для ESP32 v4.0
  * 
- * HTTP-запросы в отдельном потоке FreeRTOS (не блокирует кнопку).
- * Исправления v3.2:
- * - Проверка на пустой буфер перед отправкой
- * - Защита от бесконечного цикла при рассинхронизации счётчика
- * - Синхронизация pending_events с файлом при обнаружении пустого буфера
+ * Поддержка двух сигналов: WIN (GPIO13) и PLAY (GPIO14).
+ * HTTP-запросы в отдельном потоке FreeRTOS (не блокирует кнопки).
+ * Минимальный интервал между отправками: 500 мс.
+ * Буфер на LittleFS с указанием типа события.
  */
 
 #include <WiFi.h>
@@ -19,34 +18,38 @@
 const char* WIFI_SSID = "karusel-net";
 const char* WIFI_PASSWORD = "karusel2026";
 const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
-const int MACHINE_ID = 3;
-const int WIN_PIN = 13;
+const int MACHINE_ID = 1;
+const int WIN_PIN = 13;   // Сигнал "Выигрыш"
+const int PLAY_PIN = 14;  // Сигнал "Игра"
 
 // ═══════════════════════════════════════════════════════
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════
 
 const unsigned long DEBOUNCE_MS = 200;
+const unsigned long MIN_SEND_INTERVAL_MS = 500;  // Минимум между отправками
 const unsigned long WIFI_RETRY_MS = 30000;
 const unsigned long BUFFER_COOLDOWN_MS = 200;
 const int MAX_STORED_EVENTS = 100;
 const char* BUFFER_FILE = "/buffer.txt";
-const unsigned long MIN_SEND_INTERVAL_MS = 500;  // Минимум 500 мс между отправками
 
 // ═══════════════════════════════════════════════════════
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ═══════════════════════════════════════════════════════
 
-// Кнопка
+// Кнопки
 unsigned long last_win_time = 0;
-int last_button_state = HIGH;
+unsigned long last_play_time = 0;
+unsigned long last_send_time = 0;
+int last_win_state = HIGH;
+int last_play_state = HIGH;
 
 // HTTP-задача
 volatile bool http_busy = false;
 volatile bool http_done = false;
 volatile bool http_success = false;
 volatile bool http_was_buffer = false;
-unsigned long last_send_time = 0;  // Время последней отправки HTTP
+String http_event_type = "win";
 
 // WiFi
 unsigned long last_wifi_attempt = 0;
@@ -64,11 +67,12 @@ void setup() {
   delay(1000);
 
   Serial.println("\n╔════════════════════════════════╗");
-  Serial.println("║  KARUSEL ESP32 TRACKER v3.2   ║");
+  Serial.println("║  KARUSEL ESP32 TRACKER v4.0   ║");
   Serial.println("╚════════════════════════════════╝");
-  Serial.printf("Аппарат ID: %d | Пин: GPIO%d\n", MACHINE_ID, WIN_PIN);
+  Serial.printf("Аппарат ID: %d | WIN: GPIO%d | PLAY: GPIO%d\n", MACHINE_ID, WIN_PIN, PLAY_PIN);
 
   pinMode(WIN_PIN, INPUT_PULLUP);
+  pinMode(PLAY_PIN, INPUT_PULLUP);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
@@ -91,14 +95,14 @@ void httpTask(void* parameter) {
   http.begin(SERVER_URL);
   http.addHeader("Content-Type", "application/json");
 
-  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"win\"}";
+  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + http_event_type + "\"}";
 
   unsigned long t0 = millis();
   int httpCode = http.POST(jsonBody);
   unsigned long t1 = millis();
   http.end();
 
-  Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
+  Serial.printf("[HTTP] Код: %d, время: %lu мс, тип: %s\n", httpCode, t1 - t0, http_event_type.c_str());
 
   http_success = (httpCode == 200);
   http_done = true;
@@ -106,12 +110,11 @@ void httpTask(void* parameter) {
   vTaskDelete(NULL);
 }
 
-void startHTTP(bool isBuffer) {
+void startHTTP(bool isBuffer, String eventType = "win") {
   if (http_busy) return;
 
-  // Для буфера: проверяем, что файл не пуст
   if (isBuffer && isBufferEmpty()) {
-    Serial.println("[BUFFER] Файл пуст, отправка отменена. Синхронизация счётчика.");
+    Serial.println("[BUFFER] Файл пуст, отправка отменена.");
     pending_events = 0;
     return;
   }
@@ -119,16 +122,9 @@ void startHTTP(bool isBuffer) {
   http_busy = true;
   http_done = false;
   http_was_buffer = isBuffer;
+  http_event_type = eventType;
 
-  xTaskCreatePinnedToCore(
-    httpTask,
-    "HTTP_Task",
-    8192,
-    NULL,
-    1,
-    NULL,
-    0
-  );
+  xTaskCreatePinnedToCore(httpTask, "HTTP_Task", 8192, NULL, 1, NULL, 0);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -149,8 +145,8 @@ void loop() {
       }
     } else {
       if (!http_was_buffer) {
-        bufferEvent();
-        Serial.println("[WIN] Сервер недоступен, событие в буфер.");
+        bufferEvent(http_event_type);
+        Serial.printf("[%s] Сервер недоступен, событие в буфер.\n", http_event_type == "win" ? "WIN" : "PLAY");
       }
     }
   }
@@ -171,37 +167,46 @@ void loop() {
     last_buffer_attempt = millis();
 
     if (!isBufferEmpty()) {
-      startHTTP(true);
+      // Читаем тип события из файла
+      String etype = readFirstEventType();
+      startHTTP(true, etype);
     } else {
-      Serial.println("[BUFFER] Файл пуст, сбрасываю счётчик.");
       pending_events = 0;
     }
   }
 
-  // ── 4. Кнопка ──
-    // ── 4. Кнопка ──
-  int button_state = digitalRead(WIN_PIN);
-
-  if (button_state == LOW && last_button_state == HIGH) {
+  // ── 4. Кнопка WIN ──
+  int win_state = digitalRead(WIN_PIN);
+  if (win_state == LOW && last_win_state == HIGH) {
     unsigned long now = millis();
     if (now - last_win_time > DEBOUNCE_MS && now - last_send_time > MIN_SEND_INTERVAL_MS) {
       last_win_time = now;
       last_send_time = now;
       Serial.println("[WIN] Обнаружен выигрыш!");
 
-      if (!wifi_ok) {
-        bufferEvent();
-        Serial.println("[WIN] Нет WiFi, событие в буфер.");
-      } else if (http_busy) {
-        bufferEvent();
-        Serial.println("[WIN] HTTP занят, событие в буфер.");
-      } else {
-        startHTTP(false);
-      }
+      if (!wifi_ok) { bufferEvent("win"); Serial.println("[WIN] Нет WiFi, в буфер."); }
+      else if (http_busy) { bufferEvent("win"); Serial.println("[WIN] HTTP занят, в буфер."); }
+      else { startHTTP(false, "win"); }
     }
   }
+  last_win_state = win_state;
 
-  last_button_state = button_state;
+  // ── 5. Кнопка PLAY ──
+  int play_state = digitalRead(PLAY_PIN);
+  if (play_state == LOW && last_play_state == HIGH) {
+    unsigned long now = millis();
+    if (now - last_play_time > DEBOUNCE_MS && now - last_send_time > MIN_SEND_INTERVAL_MS) {
+      last_play_time = now;
+      last_send_time = now;
+      Serial.println("[PLAY] Обнаружена игра!");
+
+      if (!wifi_ok) { bufferEvent("play"); Serial.println("[PLAY] Нет WiFi, в буфер."); }
+      else if (http_busy) { bufferEvent("play"); Serial.println("[PLAY] HTTP занят, в буфер."); }
+      else { startHTTP(false, "play"); }
+    }
+  }
+  last_play_state = play_state;
+
   delay(10);
 }
 
@@ -212,14 +217,8 @@ void loop() {
 void connectWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
-
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) { delay(500); Serial.print("."); attempts++; }
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("\n[WiFi] Подключено!");
     Serial.printf("[WiFi] IP: %s\n", WiFi.localIP().toString().c_str());
@@ -229,7 +228,7 @@ void connectWiFi() {
 }
 
 // ═══════════════════════════════════════════════════════
-// БУФЕР
+// БУФЕР (LittleFS)
 // ═══════════════════════════════════════════════════════
 
 bool isBufferEmpty() {
@@ -240,7 +239,7 @@ bool isBufferEmpty() {
   return empty;
 }
 
-void bufferEvent() {
+void bufferEvent(String eventType) {
   if (pending_events >= MAX_STORED_EVENTS) {
     Serial.println("[BUFFER] Переполнен!");
     removeFirstBufferedEvent();
@@ -249,10 +248,10 @@ void bufferEvent() {
 
   File f = LittleFS.open(BUFFER_FILE, "a");
   if (!f) return;
-  f.println(millis());
+  f.printf("%lu,%s\n", millis(), eventType.c_str());
   f.close();
   pending_events++;
-  Serial.printf("[BUFFER] Сохранено. Всего: %d\n", pending_events);
+  Serial.printf("[BUFFER] Сохранено (%s). Всего: %d\n", eventType.c_str(), pending_events);
 }
 
 int countBufferedEvents() {
@@ -262,6 +261,16 @@ int countBufferedEvents() {
   while (f.available()) { f.readStringUntil('\n'); count++; }
   f.close();
   return count;
+}
+
+String readFirstEventType() {
+  File f = LittleFS.open(BUFFER_FILE, "r");
+  if (!f || !f.available()) return "win";
+  String line = f.readStringUntil('\n');
+  f.close();
+  int comma = line.indexOf(',');
+  if (comma > 0) return line.substring(comma + 1);
+  return "win";
 }
 
 void removeFirstBufferedEvent() {

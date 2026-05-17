@@ -260,3 +260,15 @@ body {
     padding: 8px 16px; border: none; border-radius: 6px; background: #ffd200; color: #1a1a2e; font-weight: 700; cursor: pointer;
 }
 .btn-small:hover { background: #f7971e; }
+
+@media (min-width: 2560px) {
+    body { font-size: 18px; }
+    .top-bar h1 { font-size: 30px; }
+    .tab { font-size: 18px; padding: 14px 30px; }
+    .card { padding: 28px; }
+    .card-title { font-size: 22px; }
+    .card-row { font-size: 16px; }
+    .history-table th, .history-table td { font-size: 16px; padding: 14px; }
+    .settings-card { max-width: 700px; }
+    .detail-card { max-width: 700px; }
+}

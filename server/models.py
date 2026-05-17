@@ -6,8 +6,8 @@ from typing import Optional
 
 
 class EventRequest(BaseModel):
-    machine_id: int = Field(..., ge=1, description="ID аппарата")
-    event_type: str = Field(default="win", pattern="^(win|jackpot)$")
+    machine_id: int = Field(..., ge=1)
+    event_type: str = Field(default="win", pattern="^(win|jackpot|play)$")
 
 
 class EventResponse(BaseModel):
@@ -46,6 +46,7 @@ class MachineStats(BaseModel):
     wins_today: int
     wins_24h: int
     wins_total: int
+    plays_total: int = 0
     last_win: Optional[str] = None
     jackpot_config: Optional[dict] = None
 

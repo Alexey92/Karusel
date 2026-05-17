@@ -155,3 +155,15 @@ body {
 #screen-2 .stat-card, #screen-3 .stat-card {
     min-width: 600px;
 }
+
+@media (min-width: 2560px) {
+    .container { max-width: 1800px; padding: 80px; }
+    .header h1 { font-size: 80px; }
+    .stat-value { font-size: 140px; }
+    .stat-time { font-size: 80px; }
+    .stat-card { padding: 60px 100px; min-width: 500px; }
+    .stat-label { font-size: 28px; }
+    .stat-detail { font-size: 32px; }
+    .subtitle { font-size: 40px; }
+    .footer { font-size: 32px; }
+}
