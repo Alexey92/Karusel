@@ -41,7 +41,9 @@ class LoginResponse(BaseModel):
 
 class MachineStats(BaseModel):
     machine_id: int
+    machine_name: str = ""
     location_id: Optional[int] = None
+    location_name: str = ""
     wins_hour: int
     wins_today: int
     wins_24h: int

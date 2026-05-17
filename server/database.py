@@ -50,25 +50,26 @@ async def add_event(machine_id: int, event_type: str = "win") -> dict:
     )
     await db.close()
     event = dict(row[0])
-    print(f"[EVENT] Выигрыш: {event['machine_name']} ({event['location_name']}), тип={event['event_type']}")
+    print(f"[EVENT] {event['event_type']}: {event['machine_name']} ({event['location_name']})")
     return event
 
 
 async def get_public_stats(location_id: int = None) -> dict:
     db = await get_db()
-    query_24h = "SELECT COUNT(*) as count FROM events e JOIN machines m ON e.machine_id = m.id WHERE e.timestamp >= datetime('now', '-24 hours', 'localtime')"
+    query_24h = "SELECT COUNT(*) as count FROM events e JOIN machines m ON e.machine_id = m.id WHERE e.timestamp >= datetime('now', '-24 hours', 'localtime') AND e.event_type != 'play'"
     query_last = """
         SELECT e.timestamp, m.name as machine_name, l.name as location_name
         FROM events e
         JOIN machines m ON e.machine_id = m.id
         JOIN locations l ON m.location_id = l.id
+        WHERE e.event_type != 'play'
     """
     params = []
     if location_id:
         query_24h += " AND m.location_id = ?"
-        query_last += " WHERE m.location_id = ?"
+        query_last += " AND m.location_id = ?"
         params.append(location_id)
-    query_last += " AND e.event_type != 'play' ORDER BY e.timestamp DESC LIMIT 1"
+    query_last += " ORDER BY e.timestamp DESC LIMIT 1"
     row_24h = await db.execute_fetchall(query_24h, tuple(params))
     wins_24h = row_24h[0]["count"]
     row_last = await db.execute_fetchall(query_last, tuple(params))
@@ -108,7 +109,6 @@ async def update_admin_password(username: str, password_hash: str):
     await db.execute("UPDATE users SET password_hash = ? WHERE username = ?", (password_hash, username))
     await db.commit()
     await db.close()
-    print(f"[DB] Пароль пользователя '{username}' обновлён.")
 
 
 async def get_locations() -> list:
@@ -181,44 +181,60 @@ async def delete_machine(machine_id: int):
 
 async def get_machine_stats(machine_id: int) -> dict:
     db = await get_db()
+
+    # Имя автомата и адреса
+    row_info = await db.execute_fetchall(
+        "SELECT m.name as machine_name, m.location_id, l.name as location_name FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.id = ?",
+        (machine_id,)
+    )
+    info = dict(row_info[0]) if row_info else {}
+
     row_hour = await db.execute_fetchall(
         "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND timestamp >= datetime('now', '-1 hours', 'localtime')",
         (machine_id,)
     )
     wins_hour = row_hour[0]["count"]
+
     row_today = await db.execute_fetchall(
         "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND date(timestamp, 'localtime') = date('now', 'localtime')",
         (machine_id,)
     )
     wins_today = row_today[0]["count"]
+
     row_24h = await db.execute_fetchall(
         "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND timestamp >= datetime('now', '-24 hours', 'localtime')",
         (machine_id,)
     )
     wins_24h = row_24h[0]["count"]
+
     row_total = await db.execute_fetchall(
         "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type != 'play'",
         (machine_id,)
     )
     wins_total = row_total[0]["count"]
+
     row_plays = await db.execute_fetchall(
         "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type = 'play'",
         (machine_id,)
     )
     plays_total = row_plays[0]["count"]
+
     row_last = await db.execute_fetchall(
         "SELECT timestamp FROM events WHERE machine_id = ? ORDER BY timestamp DESC LIMIT 1",
         (machine_id,)
     )
     last_win = row_last[0]["timestamp"] if row_last else None
-    row_location = await db.execute_fetchall("SELECT location_id FROM machines WHERE id = ?", (machine_id,))
-    location_id = dict(row_location[0])["location_id"] if row_location else None
+
+    location_id = info.get("location_id")
     row_jackpot = await db.execute_fetchall("SELECT * FROM jackpot_config WHERE location_id = ?", (location_id,))
     jackpot = dict(row_jackpot[0]) if row_jackpot else None
+
     await db.close()
     return {
         "machine_id": machine_id,
+        "machine_name": info.get("machine_name", f"Автомат №{machine_id}"),
         "location_id": location_id,
+        "location_name": info.get("location_name", ""),
         "wins_hour": wins_hour,
         "wins_today": wins_today,
         "wins_24h": wins_24h,

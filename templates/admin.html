@@ -154,33 +154,63 @@
             if(t==='history')loadHistory(0);
         }
 
-        async function loadOverview(){
-            const data = await apiGet('/api/admin/stats');
-            const grid = document.getElementById('overview-cards');
-            const grouped = {};
-            for(const s of data){
-                const locId = s.location_id || '?';
-                if(!grouped[locId]) grouped[locId] = {name:s.location_name||'Адрес #'+locId, machines:[]};
-                grouped[locId].machines.push(s);
-            }
-            let html = '';
-            for(const [locId,g] of Object.entries(grouped)){
-                html += `<h3 style="color:#ffd200;margin:20px 0 10px;">📍 ${g.name}</h3><div class="cards-grid" style="margin-bottom:10px;">`;
-                html += g.machines.map(s=>`
-                    <div class="card">
-                        <div class="card-title">${s.machine_name||'Автомат №'+s.machine_id} (ID:${s.machine_id})</div>
-                        <div class="card-row"><span>За час:</span><strong>${s.wins_hour}</strong></div>
-                        <div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
-                        <div class="card-row"><span>За 24ч:</span><strong>${s.wins_24h}</strong></div>
-                        <div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
-                        <div class="card-row"><span>Игр:</span><strong>${s.plays_total||0}</strong></div>
-                        <div class="card-row"><span>Последний:</span><small>${s.last_win||'—'}</small></div>
-                    </div>
-                `).join('');
-                html += '</div>';
-            }
-            grid.innerHTML = html || '<p>Нет данных</p>';
-        }
+        async function loadOverview() {
+						const data = await apiGet('/api/admin/stats');
+						const locations = await apiGet('/api/admin/locations'); // все адреса с джекпотом
+						const grid = document.getElementById('overview-cards');
+
+						// Строим карту location_id → данные джекпота
+						const jackpotMap = {};
+						for (const loc of locations) {
+								try {
+										const jp = await apiGet('/api/admin/jackpot/' + loc.id);
+										jackpotMap[loc.id] = { current: jp.current_win_count, threshold: jp.win_count_for_jackpot };
+								} catch (e) {
+										jackpotMap[loc.id] = { current: 0, threshold: 0 };
+								}
+						}
+
+						// Группируем автоматы по location_id
+						const grouped = {};
+						for (const s of data) {
+								const locId = s.location_id || '?';
+								if (!grouped[locId]) {
+										grouped[locId] = {
+												name: s.location_name || 'Адрес #' + locId,
+												jackpot: jackpotMap[locId] || { current: 0, threshold: 0 },
+												machines: []
+										};
+								}
+								grouped[locId].machines.push(s);
+						}
+
+						let html = '';
+						for (const [locId, g] of Object.entries(grouped)) {
+								// Заголовок адреса со счётчиком джекпота
+								html += `
+										<div style="display:flex;align-items:center;gap:16px;margin:20px 0 10px;">
+												<h3 style="color:#ffd200;margin:0;">📍 ${g.name}</h3>
+												<span style="background:#16213e;padding:6px 14px;border-radius:8px;font-weight:700;color:#ffd200;">
+														🎯 Джекпот: ${g.jackpot.current} / ${g.jackpot.threshold}
+												</span>
+										</div>
+								`;
+								html += '<div class="cards-grid" style="margin-bottom:10px;">';
+								html += g.machines.map(s => `
+										<div class="card">
+												<div class="card-title">${s.machine_name || 'Автомат №' + s.machine_id} (ID:${s.machine_id})</div>
+												<div class="card-row"><span>За час:</span><strong>${s.wins_hour}</strong></div>
+												<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
+												<div class="card-row"><span>За 24ч:</span><strong>${s.wins_24h}</strong></div>
+												<div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
+												<div class="card-row"><span>Игр:</span><strong>${s.plays_total || 0}</strong></div>
+												<div class="card-row"><span>Последний:</span><small>${s.last_win || '—'}</small></div>
+										</div>
+								`).join('');
+								html += '</div>';
+						}
+						grid.innerHTML = html || '<p>Нет данных</p>';
+				}
 
         async function loadMachineSelect(){
             const locations = await apiGet('/api/admin/locations');
