@@ -5,165 +5,240 @@
     box-sizing: border-box;
 }
 
-/* ===== Общие настройки ===== */
+/* ===== Шрифты ===== */
 body {
-    font-family: 'Segoe UI', 'Arial', sans-serif;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    background: #ff9ed2;
+    background: linear-gradient(135deg, #ff9ed2 0%, #ffb6e1 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    color: #fff;
 }
 
-/* ===== Основной контейнер ===== */
+/* ===== Контейнер ===== */
 .container {
     width: 100%;
-    max-width: 1200px;
-    padding: 60px;
-    text-align: center;
+    height: 100vh;
+    max-width: 1920px;
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
 }
 
-/* ===== Заголовок ===== */
-.header {
-    margin-bottom: 80px;
+/* ===== HEADER ===== */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    position: relative;
 }
 
-.header h1 {
-    font-size: 96px;
+.header-text h1 {
+    font-size: 120px;
     font-weight: 900;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    background: linear-gradient(90deg, #f7971e, #ffd200);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 16px;
+    color: #ffffff;
+    letter-spacing: 4px;
+    line-height: 1;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .subtitle {
-    font-size: 32px;
-    font-weight: 300;
-    color: #b8b8d0;
-    letter-spacing: 4px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
 }
 
-/* ===== Блоки со статистикой ===== */
-.stats {
+.subtitle .heart { display: inline-block; font-size: 28px; }
+
+.subtitle-small {
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 2px;
+}
+
+/* ===== Овечка (исправленная) ===== */
+.mascot-img {
+    height: 220px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+}
+
+/* ===== CARDS ===== */
+.stats-row {
     display: flex;
     justify-content: center;
-    gap: 80px;
-    margin-bottom: 80px;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 60px 80px;
-    min-width: 440px;
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 30px 40px;
+    min-width: 550px;
+    width: 550px;
+    height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(255, 70, 150, 0.2);
     position: relative;
-    backdrop-filter: blur(10px);
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    color: #ff6eaf;
 }
 
-.stat-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 210, 0, 0.4);
+.center-card { width: 650px; min-width: 650px; }
+
+/* Заголовок карточки */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 5px;
 }
 
-.stat-label {
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    color: #b8b8d0;
-    margin-bottom: 24px;
+.icon-circle {
+    width: 36px;
+    height: 36px;
+    background: #ffa8d4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+}
+
+.card-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffa8d4;
     text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Содержимое карточки */
+.card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
 }
 
 .stat-value {
     font-size: 120px;
     font-weight: 900;
-    background: linear-gradient(90deg, #ffd200, #f7971e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ff6eb3;
     line-height: 1;
-    margin-bottom: 8px;
+    letter-spacing: 2px;
 }
 
 .stat-time {
-    font-size: 72px;
-    font-weight: 700;
-    color: #ffd200;
+    font-size: 80px;
+    font-weight: 900;
+    color: #ff6eb3;
     line-height: 1;
-    margin-bottom: 12px;
 }
 
 .stat-detail {
-    font-size: 28px;
-    color: #b8b8d0;
-    font-weight: 400;
+    font-size: 18px;
+    color: #ffa8d4;
+    margin-top: 8px;
+    font-weight: 600;
 }
 
-.stat-icon {
+/* ===== БРЫЗГИ (спарклы) ===== */
+.sparkle-container {
     position: absolute;
-    top: 24px;
-    right: 24px;
-    font-size: 40px;
-    opacity: 0.3;
+    bottom: 35px;
+    width: 100%;
+    height: 20px;
+    pointer-events: none;
 }
 
-/* ===== Нижняя строка ===== */
+.sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #ffb6e1;
+    border-radius: 50%;
+}
+
+.sparkle-1 { left: 40px; bottom: 10px; }
+.sparkle-2 { left: 60px; bottom: -5px; }
+.sparkle-3 { right: 40px; bottom: 10px; }
+.sparkle-4 { right: 60px; bottom: -5px; }
+.sparkle-5 { left: 50px; bottom: -10px; width: 4px; height: 4px; }
+.sparkle-6 { right: 50px; bottom: -10px; width: 4px; height: 4px; }
+
+/* ===== FOOTER ===== */
 .footer {
-    font-size: 28px;
-    color: #6b6b8a;
-    font-weight: 300;
-    letter-spacing: 3px;
-    animation: pulse 2s ease-in-out infinite;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+.footer-inner {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    border-radius: 60px;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 400px;
 }
 
-/* ===== Адаптация под Full HD (1920×1080) ===== */
-@media (min-width: 1920px) {
-    .header h1 { font-size: 120px; }
-    .stat-value { font-size: 160px; }
-    .stat-time { font-size: 96px; }
-    .stat-card { padding: 80px 100px; }
+.footer-icon {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6eb3;
+    font-size: 20px;
 }
 
-/* ===== Адаптация под маленькие экраны ===== */
-@media (max-width: 900px) {
-    .stats {
-        flex-direction: column;
-        gap: 40px;
-    }
-    .stat-card {
-        min-width: auto;
-        padding: 40px 30px;
-    }
-    .header h1 { font-size: 48px; }
-    .stat-value { font-size: 72px; }
-    .stat-time { font-size: 48px; }
+.footer-text {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
-#screen-2 .stat-card, #screen-3 .stat-card {
-    min-width: 600px;
+.footer-main {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
 }
 
-@media (min-width: 2560px) {
-    .container { max-width: 1800px; padding: 80px; }
-    .header h1 { font-size: 80px; }
-    .stat-value { font-size: 140px; }
-    .stat-time { font-size: 80px; }
-    .stat-card { padding: 60px 100px; min-width: 500px; }
-    .stat-label { font-size: 28px; }
-    .stat-detail { font-size: 32px; }
-    .subtitle { font-size: 40px; }
-    .footer { font-size: 32px; }
+.footer-sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-arrow {
+    width: 36px;
+    height: 36px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff6eb3;
+    font-weight: bold;
+    font-size: 18px;
 }

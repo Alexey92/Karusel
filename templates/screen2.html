@@ -5,50 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KARUSEL — Экран 1</title>
     <link rel="stylesheet" href="/static/public.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎰 KARUSEL 🎰</h1>
-            <p class="subtitle">Сегодня выигрывают здесь!</p>
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-text">
+                <h1>KARUSEI</h1>
+                <p class="subtitle">Спасибо, что играете с нами! <span class="heart">♡</span></p>
+                <p class="subtitle-small">Ваши победы — наши общие радости</p>
+            </div>
+            <div class="header-mascot">
+                <img src="/static/sheep.png" alt="Mascot" class="mascot-img">
+            </div>
         </div>
 
-        <div class="stats" id="screen-1">
+        <!-- Stats Blocks -->
+        <div class="stats-row" id="screen-1">
+            <!-- Card 1: Wins 24h -->
             <div class="stat-card">
-                <div class="stat-label">ВЫИГРЫШЕЙ ЗА 24 ЧАСА</div>
-                <div class="stat-value" id="wins24h">—</div>
-                <div class="stat-icon">🏆</div>
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">★</span></div>
+                    <span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value" id="wins24h">—</div>
+                </div>
+                <!-- БРЫЗГИ -->
+                <div class="sparkle-container">
+                    <div class="sparkle sparkle-1"></div>
+                    <div class="sparkle sparkle-2"></div>
+                    <div class="sparkle sparkle-3"></div>
+                    <div class="sparkle sparkle-4"></div>
+                    <div class="sparkle sparkle-5"></div>
+                    <div class="sparkle sparkle-6"></div>
+                </div>
             </div>
+
+            <!-- Card 2: Last Win -->
             <div class="stat-card" id="last-win-card" style="display:none;">
-                <div class="stat-label">ПОСЛЕДНИЙ ПРИЗ</div>
-                <div class="stat-time" id="lastWinTime">—</div>
-                <div class="stat-detail" id="lastWinMachine"></div>
-                <div class="stat-icon">⏱️</div>
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">🏆</span></div>
+                    <span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-time" id="lastWinTime">—</div>
+                    <div class="stat-detail" id="lastWinMachine"></div>
+                </div>
+                <!-- БРЫЗГИ -->
+                <div class="sparkle-container">
+                    <div class="sparkle sparkle-1"></div>
+                    <div class="sparkle sparkle-2"></div>
+                    <div class="sparkle sparkle-3"></div>
+                    <div class="sparkle sparkle-4"></div>
+                    <div class="sparkle sparkle-5"></div>
+                    <div class="sparkle sparkle-6"></div>
+                </div>
             </div>
         </div>
 
-        <div class="stats" id="screen-2" style="display:none;">
-            <div class="stat-card" style="min-width:600px;">
-                <div class="stat-label">ВСЕГО ВЫИГРЫШЕЙ</div>
-                <div class="stat-value" id="totalWins">—</div>
-                <div class="stat-icon">🎯</div>
+        <!-- Screen 2 (Total Wins) -->
+        <div class="stats-row" id="screen-2" style="display:none;">
+            <div class="stat-card center-card">
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">🎯</span></div>
+                    <span class="card-label">ВСЕГО ВЫИГРЫШЕЙ</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value" id="totalWins">—</div>
+                </div>
+                <!-- БРЫЗГИ -->
+                <div class="sparkle-container">
+                    <div class="sparkle sparkle-1"></div>
+                    <div class="sparkle sparkle-2"></div>
+                    <div class="sparkle sparkle-3"></div>
+                    <div class="sparkle sparkle-4"></div>
+                    <div class="sparkle sparkle-5"></div>
+                    <div class="sparkle sparkle-6"></div>
+                </div>
             </div>
         </div>
 
-        <div class="stats" id="screen-3" style="display:none;">
-            <div class="stat-card" style="min-width:600px;">
-                <div class="stat-label">ОСТАЛОСЬ ДО ГЛАВНОГО ПРИЗА</div>
-                <div class="stat-value" id="jackpotRemaining">—</div>
-                <div class="stat-detail" id="jackpotDetail"></div>
-                <div class="stat-icon">🎁</div>
+        <!-- Screen 3 (Jackpot) -->
+        <div class="stats-row" id="screen-3" style="display:none;">
+            <div class="stat-card center-card">
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">🎁</span></div>
+                    <span class="card-label">ОСТАЛОСЬ ДО ГЛАВНОГО ПРИЗА</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value" id="jackpotRemaining">—</div>
+                    <div class="stat-detail" id="jackpotDetail"></div>
+                </div>
+                <!-- БРЫЗГИ -->
+                <div class="sparkle-container">
+                    <div class="sparkle sparkle-1"></div>
+                    <div class="sparkle sparkle-2"></div>
+                    <div class="sparkle sparkle-3"></div>
+                    <div class="sparkle sparkle-4"></div>
+                    <div class="sparkle sparkle-5"></div>
+                    <div class="sparkle sparkle-6"></div>
+                </div>
             </div>
         </div>
 
-        <div class="footer"><p>Играйте и выигрывайте! ✨</p></div>
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-inner">
+                <div class="footer-icon">🎁</div>
+                <div class="footer-text">
+                    <span class="footer-main">Новые призы каждый день!</span>
+                    <span class="footer-sub">Возвращайтесь завтра за новыми победами</span>
+                </div>
+                <div class="footer-arrow">></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const MONITOR_OFFSET = 1; // 0 = левый монитор
+        const MONITOR_OFFSET = 1;
         const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
 
         function getCurrentScreen() {
@@ -58,9 +136,9 @@
 
         function switchScreen() {
             const n = getCurrentScreen();
-            for (let i = 1; i <= 3; i++) {
-                document.getElementById('screen-' + i).style.display = (i === n) ? 'flex' : 'none';
-            }
+            document.getElementById('screen-1').style.display = (n === 1) ? 'flex' : 'none';
+            document.getElementById('screen-2').style.display = (n === 2) ? 'flex' : 'none';
+            document.getElementById('screen-3').style.display = (n === 3) ? 'flex' : 'none';
         }
 
         async function fetchData() {
@@ -70,6 +148,7 @@
                 const d = await r.json();
 
                 document.getElementById('wins24h').textContent = d.wins_24h;
+                
                 const card = document.getElementById('last-win-card');
                 if (d.last_win) {
                     const t = new Date(d.last_win.timestamp + 'Z');
@@ -81,6 +160,7 @@
                 } else { card.style.display = 'none'; }
 
                 document.getElementById('totalWins').textContent = d.total_wins;
+                
                 const rem = (d.jackpot_threshold || 0) - (d.jackpot_current || 0);
                 document.getElementById('jackpotRemaining').textContent = rem > 0 ? rem : 0;
                 document.getElementById('jackpotDetail').textContent = `${d.jackpot_current || 0} / ${d.jackpot_threshold || 0}`;
