@@ -103,8 +103,10 @@ body {
     min-width: 600px;
 }
 
-/* ===== Овечка (привязана к правой карточке на всех экранах) ===== */
-.sheep-card::before {
+/* ===== Овечка (для обычного монитора 1920x1080) ===== */
+
+/* Экран 1 (две карточки) */
+#screen-1 .sheep-card::before {
     content: '';
     position: absolute;
     top: -268px;
@@ -119,16 +121,52 @@ body {
     pointer-events: none;
 }
 
-/* Для экрана 2 (одна карточка по центру) - корректируем позицию */
+/* Экран 2 (одна карточка по центру) */
 #screen-2 .sheep-card::before {
-    right: -20px;
+    content: '';
+    position: absolute;
     top: -268px;
+    right: -20px;  /* Сдвигаем вправо, так как карточка по центру */
+    width: 280px;
+    height: 320px;
+    background-image: url('/static/sheep.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
+    pointer-events: none;
 }
 
-/* Для экрана 3 (одна карточка по центру) - корректируем позицию */
+/* Экран 3 (одна карточка по центру) */
 #screen-3 .sheep-card::before {
-    right: -20px;
+    content: '';
+    position: absolute;
     top: -268px;
+    right: -20px;
+    width: 280px;
+    height: 320px;
+    background-image: url('/static/sheep.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ===== Для широкоформатных экранов (3440x1440) ===== */
+/* Пока пусто — вы заполните позже, когда будете на телевизоре */
+@media (min-width: 3440px) {
+    #screen-1 .sheep-card::before {
+        /* тут будут ваши координаты */
+    }
+    
+    #screen-2 .sheep-card::before {
+        /* тут будут ваши координаты */
+    }
+    
+    #screen-3 .sheep-card::before {
+        /* тут будут ваши координаты */
+    }
 }
 
 .card-header {
@@ -189,7 +227,7 @@ body {
     font-weight: 600;
 }
 
-/* ===== ВСПЛЕСКИ (ваши настройки + градиент + ширина) ===== */
+/* ===== ВСПЛЕСКИ (базовые для 1920x1080) ===== */
 .splash-container {
     position: absolute;
     bottom: 20px;
@@ -202,23 +240,34 @@ body {
 
 .splash {
     position: absolute;
-    width: 40px;         /* Увеличили ширину */
-    height: 6px;         /* Увеличили толщину */
-    background: linear-gradient(90deg, #ff6eb3, #ffb6e1); /* Градиент */
+    width: 40px;
+    height: 6px;
+    background: linear-gradient(90deg, #ff6eb3, #ffb6e1);
     border-radius: 6px;
     transform-origin: center center;
-    box-shadow: 0 0 10px rgba(255, 110, 179, 0.3); /* Свечение */
+    box-shadow: 0 0 10px rgba(255, 110, 179, 0.3);
 }
 
-/* Левая группа — ваши настройки */
+/* Левая группа */
 .splash-left-1 { left: 45px; bottom: 50px; transform: rotate(-35deg); }
 .splash-left-2 { left: 40px; bottom: 70px; transform: rotate(-20deg); }
 .splash-left-3 { left: 35px; bottom: 90px; transform: rotate(5deg); }
 
-/* Правая группа — ваши настройки */
-.splash-right-1 { right: 95px; bottom: 160px; transform: rotate(-35deg); }
-.splash-right-2 { right: 90px; bottom: 140px; transform: rotate(-20deg); }
-.splash-right-3 { right: 85px; bottom: 120px; transform: rotate(-5deg); }
+/* Правая группа */
+.splash-right-1 { right: 95px; bottom: 180px; transform: rotate(-35deg); }
+.splash-right-2 { right: 90px; bottom: 160px; transform: rotate(-20deg); }
+.splash-right-3 { right: 85px; bottom: 140px; transform: rotate(-5deg); }
+
+/* ===== Для широкоформатных экранов (3440x1440) ===== */
+@media (min-width: 3440px) {
+    .splash-left-1 { left: 60px; bottom: 60px; }
+    .splash-left-2 { left: 55px; bottom: 80px; }
+    .splash-left-3 { left: 50px; bottom: 100px; }
+    
+    .splash-right-1 { right: 120px; bottom: 200px; }
+    .splash-right-2 { right: 115px; bottom: 180px; }
+    .splash-right-3 { right: 110px; bottom: 160px; }
+}
 
 /* ===== FOOTER ===== */
 .footer {
