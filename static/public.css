@@ -35,8 +35,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     position: relative;
+    padding-right: 40px;
+}
+
+.header-text {
+    flex: 1;
 }
 
 .header-text h1 {
@@ -56,21 +61,16 @@ body {
     letter-spacing: 0.5px;
 }
 
-.subtitle .heart { display: inline-block; font-size: 28px; }
+.subtitle .heart {
+    display: inline-block;
+    font-size: 28px;
+}
 
 .subtitle-small {
     font-size: 18px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.8);
     margin-top: 2px;
-}
-
-/* ===== Овечка (исправленная) ===== */
-.mascot-img {
-    height: 220px;
-    width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
 }
 
 /* ===== CARDS ===== */
@@ -80,15 +80,16 @@ body {
     gap: 40px;
     margin-bottom: 40px;
     flex-wrap: wrap;
+    position: relative;
 }
 
 .stat-card {
     background: #ffffff;
     border-radius: 30px;
     padding: 30px 40px;
-    min-width: 550px;
-    width: 550px;
-    height: 260px;
+    min-width: 500px;
+    width: 500px;
+    height: 240px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -97,9 +98,39 @@ body {
     color: #ff6eaf;
 }
 
-.center-card { width: 650px; min-width: 650px; }
+.center-card {
+    width: 600px;
+    min-width: 600px;
+}
 
-/* Заголовок карточки */
+/* ===== Овечка (привязана к правой карточке на всех экранах) ===== */
+.sheep-card::before {
+    content: '';
+    position: absolute;
+    top: -268px;
+    right: -20px;
+    width: 280px;
+    height: 320px;
+    background-image: url('/static/sheep.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Для экрана 2 (одна карточка по центру) - корректируем позицию */
+#screen-2 .sheep-card::before {
+    right: -20px;
+    top: -268px;
+}
+
+/* Для экрана 3 (одна карточка по центру) - корректируем позицию */
+#screen-3 .sheep-card::before {
+    right: -20px;
+    top: -268px;
+}
+
 .card-header {
     display: flex;
     align-items: center;
@@ -127,7 +158,6 @@ body {
     letter-spacing: 1px;
 }
 
-/* Содержимое карточки */
 .card-content {
     flex-grow: 1;
     display: flex;
@@ -159,29 +189,35 @@ body {
     font-weight: 600;
 }
 
-/* ===== БРЫЗГИ (спарклы) ===== */
-.sparkle-container {
+//* ===== ВСПЛЕСКИ (универсальный вариант) ===== */
+.splash-container {
     position: absolute;
-    bottom: 35px;
+    bottom: 20px;
     width: 100%;
-    height: 20px;
+    height: 40px;
     pointer-events: none;
+    overflow: visible;
+    z-index: 10;
 }
 
-.sparkle {
+.splash {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 18px;
+    height: 3px;
     background: #ffb6e1;
-    border-radius: 50%;
+    border-radius: 3px;
+    transform-origin: center center;
 }
 
-.sparkle-1 { left: 40px; bottom: 10px; }
-.sparkle-2 { left: 60px; bottom: -5px; }
-.sparkle-3 { right: 40px; bottom: 10px; }
-.sparkle-4 { right: 60px; bottom: -5px; }
-.sparkle-5 { left: 50px; bottom: -10px; width: 4px; height: 4px; }
-.sparkle-6 { right: 50px; bottom: -10px; width: 4px; height: 4px; }
+/* Левая группа */
+.splash-left-1 { left: 30px; bottom: 10px; transform: rotate(-35deg); }
+.splash-left-2 { left: 50px; bottom: 0px; transform: rotate(-15deg); }
+.splash-left-3 { left: 70px; bottom: -10px; transform: rotate(5deg); }
+
+/* Правая группа */
+.splash-right-1 { right: 30px; bottom: 10px; transform: rotate(35deg); }
+.splash-right-2 { right: 50px; bottom: 0px; transform: rotate(15deg); }
+.splash-right-3 { right: 70px; bottom: -10px; transform: rotate(-5deg); }
 
 /* ===== FOOTER ===== */
 .footer {
