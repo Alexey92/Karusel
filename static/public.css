@@ -37,11 +37,14 @@ body {
     align-items: flex-end;
     margin-bottom: 20px;
     position: relative;
-    padding-right: 40px;
+    width: 100%;
+    padding: 0 60px;
 }
 
 .header-text {
     flex: 1;
+    text-align: center;
+    padding-right: 0;
 }
 
 .header-text h1 {
@@ -73,6 +76,15 @@ body {
     margin-top: 2px;
 }
 
+/* ===== Овечка ===== */
+.header-mascot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-bottom: -30px;
+}
+
 /* ===== CARDS ===== */
 .stats-row {
     display: flex;
@@ -87,7 +99,6 @@ body {
     background: #ffffff;
     border-radius: 30px;
     padding: 30px 40px;
-    min-width: 500px;
     width: 500px;
     height: 240px;
     display: flex;
@@ -98,15 +109,15 @@ body {
     color: #ff6eaf;
 }
 
-.center-card {
-    width: 600px;
-    min-width: 600px;
+/* ===== Увеличенная карточка для одного экрана ===== */
+.stat-card.large {
+    width: 850px;        /* Было 750px — увеличили */
+    min-width: 850px;
+    height: 300px;       /* Было 280px — увеличили */
 }
 
-/* ===== Овечка (для обычного монитора 1920x1080) ===== */
-
-/* Экран 1 (две карточки) */
-#screen-1 .sheep-card::before {
+/* ===== Овечка на карточке ===== */
+.sheep-card::before {
     content: '';
     position: absolute;
     top: -268px;
@@ -121,54 +132,61 @@ body {
     pointer-events: none;
 }
 
-/* Экран 2 (одна карточка по центру) */
+/* ===== Экран 1 (две карточки) ===== */
+#screen-1 .header-text {
+    text-align: left;
+    padding-right: 0;
+}
+
+#screen-1 .stat-card {
+    width: 500px;
+}
+
+/* ===== Овечка на первой карточке, если вторая скрыта ===== */
+#screen-1 .sheep-card:first-child::before {
+    top: -268px;
+    right: -20px;
+}
+
+/* ===== Экран 2 (одна карточка) ===== */
+#screen-2 .header-text {
+    text-align: center;
+    padding-right: 0;
+}
+
+#screen-2 .stat-card.large {
+    width: 850px;
+    min-width: 850px;
+    height: 300px;
+}
+
 #screen-2 .sheep-card::before {
-    content: '';
-    position: absolute;
-    top: -268px;
-    right: -20px;  /* Сдвигаем вправо, так как карточка по центру */
-    width: 280px;
-    height: 320px;
-    background-image: url('/static/sheep.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 10;
-    pointer-events: none;
-}
-
-/* Экран 3 (одна карточка по центру) */
-#screen-3 .sheep-card::before {
-    content: '';
-    position: absolute;
     top: -268px;
     right: -20px;
     width: 280px;
     height: 320px;
-    background-image: url('/static/sheep.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 10;
-    pointer-events: none;
 }
 
-/* ===== Для широкоформатных экранов (3440x1440) ===== */
-/* Пока пусто — вы заполните позже, когда будете на телевизоре */
-@media (min-width: 3440px) {
-    #screen-1 .sheep-card::before {
-        /* тут будут ваши координаты */
-    }
-    
-    #screen-2 .sheep-card::before {
-        /* тут будут ваши координаты */
-    }
-    
-    #screen-3 .sheep-card::before {
-        /* тут будут ваши координаты */
-    }
+/* ===== Экран 3 (одна карточка) ===== */
+#screen-3 .header-text {
+    text-align: center;
+    padding-right: 0;
 }
 
+#screen-3 .stat-card.large {
+    width: 850px;
+    min-width: 850px;
+    height: 300px;
+}
+
+#screen-3 .sheep-card::before {
+    top: -270px;
+    right: -20px;
+    width: 280px;
+    height: 320px;
+}
+
+/* ===== Заголовки карточек ===== */
 .card-header {
     display: flex;
     align-items: center;
@@ -227,7 +245,7 @@ body {
     font-weight: 600;
 }
 
-/* ===== ВСПЛЕСКИ (базовые для 1920x1080) ===== */
+/* ===== ВСПЛЕСКИ ===== */
 .splash-container {
     position: absolute;
     bottom: 20px;
@@ -248,26 +266,13 @@ body {
     box-shadow: 0 0 10px rgba(255, 110, 179, 0.3);
 }
 
-/* Левая группа */
-.splash-left-1 { left: 45px; bottom: 50px; transform: rotate(-35deg); }
-.splash-left-2 { left: 40px; bottom: 70px; transform: rotate(-20deg); }
-.splash-left-3 { left: 35px; bottom: 90px; transform: rotate(5deg); }
+.splash-left-1 { left: -5px; bottom: 50px; transform: rotate(-35deg); }
+.splash-left-2 { left: -15px; bottom: 70px; transform: rotate(-20deg); }
+.splash-left-3 { left: -25px; bottom: 90px; transform: rotate(5deg); }
 
-/* Правая группа */
 .splash-right-1 { right: 95px; bottom: 180px; transform: rotate(-35deg); }
 .splash-right-2 { right: 90px; bottom: 160px; transform: rotate(-20deg); }
 .splash-right-3 { right: 85px; bottom: 140px; transform: rotate(-5deg); }
-
-/* ===== Для широкоформатных экранов (3440x1440) ===== */
-@media (min-width: 3440px) {
-    .splash-left-1 { left: 60px; bottom: 60px; }
-    .splash-left-2 { left: 55px; bottom: 80px; }
-    .splash-left-3 { left: 50px; bottom: 100px; }
-    
-    .splash-right-1 { right: 120px; bottom: 200px; }
-    .splash-right-2 { right: 115px; bottom: 180px; }
-    .splash-right-3 { right: 110px; bottom: 160px; }
-}
 
 /* ===== FOOTER ===== */
 .footer {
@@ -327,4 +332,29 @@ body {
     color: #ff6eb3;
     font-weight: bold;
     font-size: 18px;
+}
+
+/* ===== Широкоформатные экраны (3440x1440) ===== */
+@media (min-width: 3440px) {
+    #screen-1 .sheep-card:last-child::before {
+        top: -350px;
+        right: -40px;
+        width: 350px;
+        height: 380px;
+    }
+    
+    #screen-2 .sheep-card::before,
+    #screen-3 .sheep-card::before {
+        top: -350px;
+        right: -40px;
+        width: 350px;
+        height: 380px;
+    }
+
+    #screen-2 .stat-card.large,
+    #screen-3 .stat-card.large {
+        width: 950px;
+        min-width: 950px;
+        height: 320px;
+    }
 }

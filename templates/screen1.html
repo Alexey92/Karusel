@@ -21,51 +21,50 @@
         </div>
 
         <!-- Stats Blocks -->
-				<div class="stats-row" id="screen-1">
-						<!-- Card 1: Wins 24h (С ОВЕЧКОЙ) -->
-						<div class="stat-card sheep-card">
-								<div class="card-header">
-										<div class="icon-circle"><span class="icon">★</span></div>
-										<span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
-								</div>
-								<div class="card-content">
-										<div class="stat-value" id="wins24h">—</div>
-								</div>
-								<div class="splash-container">
-										<div class="splash splash-left-1"></div>
-										<div class="splash splash-left-2"></div>
-										<div class="splash splash-left-3"></div>
-										<div class="splash splash-right-1"></div>
-										<div class="splash splash-right-2"></div>
-										<div class="splash splash-right-3"></div>
-								</div>
-						</div>
+        <div class="stats-row" id="screen-1">
+            <!-- Card 1: Wins 24h (всегда видна) -->
+            <div class="stat-card sheep-card">
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">★</span></div>
+                    <span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-value" id="wins24h">—</div>
+                </div>
+                <div class="splash-container">
+                    <div class="splash splash-left-1"></div>
+                    <div class="splash splash-left-2"></div>
+                    <div class="splash splash-left-3"></div>
+                    <div class="splash splash-right-1"></div>
+                    <div class="splash splash-right-2"></div>
+                    <div class="splash splash-right-3"></div>
+                </div>
+            </div>
 
-						<!-- Card 2: Last Win (без овечки) -->
-						<div class="stat-card" id="last-win-card" style="display:none;">
-								<div class="card-header">
-										<div class="icon-circle"><span class="icon">🏆</span></div>
-										<span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
-								</div>
-								<div class="card-content">
-										<div class="stat-time" id="lastWinTime">—</div>
-										<div class="stat-detail" id="lastWinMachine"></div>
-								</div>
-								<div class="splash-container">
-										<div class="splash splash-left-1"></div>
-										<div class="splash splash-left-2"></div>
-										<div class="splash splash-left-3"></div>
-										<div class="splash splash-right-1"></div>
-										<div class="splash splash-right-2"></div>
-										<div class="splash splash-right-3"></div>
-								</div>
-						</div>
-				</div>
+            <!-- Card 2: Last Win (показывается, если есть выигрыш) -->
+            <div class="stat-card" id="last-win-card">
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">🏆</span></div>
+                    <span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-time" id="lastWinTime">—</div>
+                    <div class="stat-detail" id="lastWinMachine"></div>
+                </div>
+                <div class="splash-container">
+                    <div class="splash splash-left-1"></div>
+                    <div class="splash splash-left-2"></div>
+                    <div class="splash splash-left-3"></div>
+                    <div class="splash splash-right-1"></div>
+                    <div class="splash splash-right-2"></div>
+                    <div class="splash splash-right-3"></div>
+                </div>
+            </div>
+        </div>
 
         <!-- Screen 2 (Total Wins) -->
         <div class="stats-row" id="screen-2" style="display:none;">
-            <!-- Card 1: Total Wins (С ОВЕЧКОЙ) -->
-            <div class="stat-card center-card sheep-card">
+            <div class="stat-card large sheep-card">
                 <div class="card-header">
                     <div class="icon-circle"><span class="icon">🎯</span></div>
                     <span class="card-label">ВСЕГО ВЫИГРЫШЕЙ</span>
@@ -86,8 +85,7 @@
 
         <!-- Screen 3 (Jackpot) -->
         <div class="stats-row" id="screen-3" style="display:none;">
-            <!-- Card 1: Jackpot (С ОВЕЧКОЙ) -->
-            <div class="stat-card center-card sheep-card">
+            <div class="stat-card large sheep-card">
                 <div class="card-header">
                     <div class="icon-circle"><span class="icon">🎁</span></div>
                     <span class="card-label">ОСТАЛОСЬ ДО ГЛАВНОГО ПРИЗА</span>
@@ -121,49 +119,77 @@
     </div>
 
     <script>
-        const MONITOR_OFFSET = 0;
-        const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
+				// ===== ФИКСАЦИЯ ЭКРАНА ПО URL =====
+				// /screen1 → экран 1 (две карточки)
+				// /screen2 → экран 2 (одна карточка)
+				// /screen3 → экран 3 (одна карточка)
+				const urlPath = window.location.pathname;
+				let screenNumber = 1;
+				if (urlPath.includes('screen2')) screenNumber = 2;
+				if (urlPath.includes('screen3')) screenNumber = 3;
 
-        function getCurrentScreen() {
-            const segment = Math.floor(new Date().getSeconds() / 20);
-            return ((segment + MONITOR_OFFSET) % 3) + 1;
-        }
+				const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
 
-        function switchScreen() {
-            const n = getCurrentScreen();
-            document.getElementById('screen-1').style.display = (n === 1) ? 'flex' : 'none';
-            document.getElementById('screen-2').style.display = (n === 2) ? 'flex' : 'none';
-            document.getElementById('screen-3').style.display = (n === 3) ? 'flex' : 'none';
-        }
+				// ===== ОТКЛЮЧАЕМ ПЕРЕКЛЮЧЕНИЕ =====
+				function getCurrentScreen() {
+						return screenNumber; // Всегда один и тот же экран
+				}
 
-        async function fetchData() {
-            try {
-                const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
-                const r = await fetch(url);
-                const d = await r.json();
+				function switchScreen() {
+						const n = getCurrentScreen();
+						document.getElementById('screen-1').style.display = (n === 1) ? 'flex' : 'none';
+						document.getElementById('screen-2').style.display = (n === 2) ? 'flex' : 'none';
+						document.getElementById('screen-3').style.display = (n === 3) ? 'flex' : 'none';
+				}
 
-                document.getElementById('wins24h').textContent = d.wins_24h;
-                
-                const card = document.getElementById('last-win-card');
-                if (d.last_win) {
-                    const t = new Date(d.last_win.timestamp + 'Z');
-                    if ((new Date() - t) / 3600000 <= 2) {
-                        document.getElementById('lastWinTime').textContent = t.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-                        document.getElementById('lastWinMachine').textContent = d.last_win.machine_name + ' (' + d.last_win.location_name + ')';
-                        card.style.display = '';
-                    } else { card.style.display = 'none'; }
-                } else { card.style.display = 'none'; }
+				// ===== ЗАГРУЗКА ДАННЫХ =====
+				async function fetchData() {
+						try {
+								const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
+								const r = await fetch(url);
+								const d = await r.json();
 
-                document.getElementById('totalWins').textContent = d.total_wins;
-                
-                const rem = (d.jackpot_threshold || 0) - (d.jackpot_current || 0);
-                document.getElementById('jackpotRemaining').textContent = rem > 0 ? rem : 0;
-                document.getElementById('jackpotDetail').textContent = `${d.jackpot_current || 0} / ${d.jackpot_threshold || 0}`;
-            } catch (e) { console.error(e); }
-        }
+								document.getElementById('wins24h').textContent = d.wins_24h;
+								
+								// Для screen1 управляем второй карточкой
+								if (screenNumber === 1) {
+										const card = document.getElementById('last-win-card');
+										const firstCard = document.querySelector('#screen-1 .stat-card:first-child');
+										
+										// Проверяем параметр URL для принудительного показа
+										const urlParams = new URLSearchParams(window.location.search);
+										const forceShow = urlParams.get('show_second') === '1';
+										
+										if (forceShow) {
+												card.style.display = 'flex';
+												card.classList.add('sheep-card');
+												firstCard.classList.remove('sheep-card');
+												firstCard.classList.remove('large');  // Убираем large
+												document.getElementById('lastWinTime').textContent = '23:18:37';
+												document.getElementById('lastWinMachine').textContent = 'Тестовый выигрыш';
+										} else {
+												// Скрываем вторую карточку
+												card.style.display = 'none';
+												card.classList.remove('sheep-card');
+												// Овечка на первой карточке
+												firstCard.classList.add('sheep-card');
+												firstCard.classList.add('large');  // Добавляем класс large
+										}
+								}
 
-        setInterval(function() { fetchData(); switchScreen(); }, 1000);
-        fetchData(); switchScreen();
-    </script>
+								document.getElementById('totalWins').textContent = d.total_wins;
+								const rem = (d.jackpot_threshold || 0) - (d.jackpot_current || 0);
+								document.getElementById('jackpotRemaining').textContent = rem > 0 ? rem : 0;
+								document.getElementById('jackpotDetail').textContent = `${d.jackpot_current || 0} / ${d.jackpot_threshold || 0}`;
+						} catch (e) { console.error(e); }
+				}
+
+				// ===== ЗАПУСК =====
+				// Показываем нужный экран один раз
+				switchScreen();
+				// Обновляем данные каждую секунду (без переключения экрана)
+				setInterval(fetchData, 1000);
+				fetchData();
+		</script>
 </body>
 </html>

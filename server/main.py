@@ -79,6 +79,10 @@ async def screen1(request: Request):
 async def screen2(request: Request):
     return templates.TemplateResponse("screen2.html", {"request": request})
     
+@app.get("/screen3")
+async def screen2(request: Request):
+    return templates.TemplateResponse("screen3.html", {"request": request})
+    
 
 @app.post("/api/event", response_model=EventResponse)
 async def receive_event(event: EventRequest):
