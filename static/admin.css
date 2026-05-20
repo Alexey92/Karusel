@@ -261,6 +261,17 @@ body {
 }
 .btn-small:hover { background: #f7971e; }
 
+.card-section-title {
+    color: #ffd200;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 10px 0 6px;
+    padding-top: 8px;
+    border-top: 1px solid #2a2a4a;
+}
+
 @media (min-width: 2560px) {
     body { font-size: 18px; }
     .top-bar h1 { font-size: 30px; }

@@ -199,12 +199,14 @@
 								html += g.machines.map(s => `
 										<div class="card">
 												<div class="card-title">${s.machine_name || 'Автомат №' + s.machine_id} (ID:${s.machine_id})</div>
+												<div class="card-section-title">🏆 Выигрыши</div>
 												<div class="card-row"><span>За час:</span><strong>${s.wins_hour}</strong></div>
 												<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
 												<div class="card-row"><span>За 24ч:</span><strong>${s.wins_24h}</strong></div>
 												<div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
-												<div class="card-row"><span>Игр:</span><strong>${s.plays_total || 0}</strong></div>
 												<div class="card-row"><span>Последний:</span><small>${s.last_win || '—'}</small></div>
+												<div class="card-section-title">🎮 Игры</div>
+												<div class="card-row"><span>Всего:</span><strong>${s.plays_total || 0}</strong></div>
 										</div>
 								`).join('');
 								html += '</div>';
@@ -230,18 +232,22 @@
             if(!id) return;
             const stats = await apiGet('/api/admin/stats/'+id);
             document.getElementById('machine-detail').innerHTML = `
-                <div class="detail-card">
-                    <h3>${stats.machine_name||'Автомат №'+stats.machine_id} (ID:${stats.machine_id})</h3>
-                    <table>
-                        <tr><td>Выигрышей за час:</td><td><strong>${stats.wins_hour}</strong></td></tr>
-                        <tr><td>Выигрышей за сегодня:</td><td><strong>${stats.wins_today}</strong></td></tr>
-                        <tr><td>Выигрышей за 24ч:</td><td><strong>${stats.wins_24h}</strong></td></tr>
-                        <tr><td>Всего выигрышей:</td><td><strong>${stats.wins_total}</strong></td></tr>
-                        <tr><td>Всего игр:</td><td><strong>${stats.plays_total||0}</strong></td></tr>
-                        <tr><td>Последний выигрыш:</td><td>${stats.last_win||'—'}</td></tr>
-                    </table>
-                </div>
-            `;
+							<div class="detail-card">
+									<h3>${stats.machine_name || 'Автомат №'+stats.machine_id} (ID:${stats.machine_id})</h3>
+									<h4 style="color:#ffd200;margin-top:12px;">🏆 Выигрыши</h4>
+									<table>
+											<tr><td>За час:</td><td><strong>${stats.wins_hour}</strong></td></tr>
+											<tr><td>За сегодня:</td><td><strong>${stats.wins_today}</strong></td></tr>
+											<tr><td>За 24ч:</td><td><strong>${stats.wins_24h}</strong></td></tr>
+											<tr><td>Всего:</td><td><strong>${stats.wins_total}</strong></td></tr>
+											<tr><td>Последний:</td><td>${stats.last_win||'—'}</td></tr>
+									</table>
+									<h4 style="color:#ffd200;margin-top:12px;">🎮 Игры</h4>
+									<table>
+											<tr><td>Всего:</td><td><strong>${stats.plays_total||0}</strong></td></tr>
+									</table>
+							</div>
+					`;
         }
 
         async function loadLocations(){
