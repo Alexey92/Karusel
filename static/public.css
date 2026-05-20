@@ -189,7 +189,7 @@ body {
     font-weight: 600;
 }
 
-//* ===== ВСПЛЕСКИ (универсальный вариант) ===== */
+/* ===== ВСПЛЕСКИ (ваши настройки + градиент + ширина) ===== */
 .splash-container {
     position: absolute;
     bottom: 20px;
@@ -202,22 +202,23 @@ body {
 
 .splash {
     position: absolute;
-    width: 18px;
-    height: 3px;
-    background: #ffb6e1;
-    border-radius: 3px;
+    width: 40px;         /* Увеличили ширину */
+    height: 6px;         /* Увеличили толщину */
+    background: linear-gradient(90deg, #ff6eb3, #ffb6e1); /* Градиент */
+    border-radius: 6px;
     transform-origin: center center;
+    box-shadow: 0 0 10px rgba(255, 110, 179, 0.3); /* Свечение */
 }
 
-/* Левая группа */
-.splash-left-1 { left: 30px; bottom: 10px; transform: rotate(-35deg); }
-.splash-left-2 { left: 50px; bottom: 0px; transform: rotate(-15deg); }
-.splash-left-3 { left: 70px; bottom: -10px; transform: rotate(5deg); }
+/* Левая группа — ваши настройки */
+.splash-left-1 { left: 45px; bottom: 50px; transform: rotate(-35deg); }
+.splash-left-2 { left: 40px; bottom: 70px; transform: rotate(-20deg); }
+.splash-left-3 { left: 35px; bottom: 90px; transform: rotate(5deg); }
 
-/* Правая группа */
-.splash-right-1 { right: 30px; bottom: 10px; transform: rotate(35deg); }
-.splash-right-2 { right: 50px; bottom: 0px; transform: rotate(15deg); }
-.splash-right-3 { right: 70px; bottom: -10px; transform: rotate(-5deg); }
+/* Правая группа — ваши настройки */
+.splash-right-1 { right: 95px; bottom: 160px; transform: rotate(-35deg); }
+.splash-right-2 { right: 90px; bottom: 140px; transform: rotate(-20deg); }
+.splash-right-3 { right: 85px; bottom: 120px; transform: rotate(-5deg); }
 
 /* ===== FOOTER ===== */
 .footer {
