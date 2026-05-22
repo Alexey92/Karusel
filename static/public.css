@@ -369,3 +369,59 @@ body {
     margin-top: 5px;
     letter-spacing: 1px;
 }
+
+/* ===== Анимация выигрыша ===== */
+#win-animation .stat-card {
+    width: 850px;
+    min-width: 850px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#win-animation .card-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#win-animation .card-content img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 15px;
+}
+
+/* ===== Анимация появления картинки ===== */
+#win-overlay img {
+    animation: winFadeIn 0.8s ease-out;
+}
+
+@keyframes winFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Дополнительно: лёгкое свечение фона */
+#win-overlay {
+    animation: bgPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+    0% { background-color: #ff9ed2; }
+    100% { background-color: #ffb6e1; }
+}

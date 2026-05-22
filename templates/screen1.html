@@ -45,27 +45,27 @@
         </div>
 
         <!-- Screen 2: Последний выигрыш -->
-				<div class="stats-row" id="screen-2" style="display:none;">
-						<div class="stat-card sheep-card large">
-								<div class="card-header">
-										<div class="icon-circle"><span class="icon">🏆</span></div>
-										<span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
-								</div>
-								<div class="card-content">
-										<div class="stat-time" id="lastWinAgo">—</div>
-										<div class="win-time-ago" id="lastWinAgoLabel"></div>
-								</div>
-								<div class="splash-container">
-										<div class="splash splash-left-1"></div>
-										<div class="splash splash-left-2"></div>
-										<div class="splash splash-left-3"></div>
-										<div class="splash splash-right-1"></div>
-										<div class="splash splash-right-2"></div>
-										<div class="splash splash-right-3"></div>
-								</div>
-								<div class="live-badge">Прямой эфир</div>
-						</div>
-				</div>
+        <div class="stats-row" id="screen-2" style="display:none;">
+            <div class="stat-card sheep-card large">
+                <div class="card-header">
+                    <div class="icon-circle"><span class="icon">🏆</span></div>
+                    <span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
+                </div>
+                <div class="card-content">
+                    <div class="stat-time" id="lastWinAgo">—</div>
+                    <div class="win-time-ago" id="lastWinAgoLabel"></div>
+                </div>
+                <div class="splash-container">
+                    <div class="splash splash-left-1"></div>
+                    <div class="splash splash-left-2"></div>
+                    <div class="splash splash-left-3"></div>
+                    <div class="splash splash-right-1"></div>
+                    <div class="splash splash-right-2"></div>
+                    <div class="splash splash-right-3"></div>
+                </div>
+                <div class="live-badge">Прямой эфир</div>
+            </div>
+        </div>
 
         <!-- Screen 3: Всего выигрышей за 7 дней -->
         <div class="stats-row" id="screen-3" style="display:none;">
@@ -90,6 +90,18 @@
             </div>
         </div>
 
+        <!-- Анимация на весь экран -->
+				<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:#ff9ed2; justify-content:center; align-items:center;">
+						<img id="win-image-full" src="" alt="Поздравление" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:20px;">
+				</div>
+
+        <!-- Кнопка тестирования анимации -->
+        <div style="position: fixed; bottom: 100px; left: 20px; z-index: 999;">
+            <button onclick="testWinAnimation()" style="padding: 10px 20px; background: #fff; color: #ff6eb3; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+                🎉 Тест анимации
+            </button>
+        </div>
+
         <!-- Footer -->
         <div class="footer">
             <div class="footer-inner">
@@ -112,6 +124,11 @@
         let slides = [];
         let lastWinAvailable = false;
 
+        let isAnimating = false;
+        let animationTimer = null;
+        let animationInterval = null;
+        const winImages = ['win_1.png', 'win_2.png', 'win_3.png', 'win_4.png'];
+
         function updateSlides() {
             slides = ['screen-1'];
             if (lastWinAvailable) {
@@ -131,82 +148,128 @@
             document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
         }
 
-        // В formatTimeAgo
-				function formatTimeAgo(timestamp) {
-						if (typeof timestamp === 'number') {
-								timestamp = new Date(timestamp).toISOString();
-						}
-						
-						const now = new Date();
-						const then = new Date(timestamp);
-						const diffSeconds = Math.floor((now - then) / 1000);
-						
-						if (isNaN(diffSeconds)) {
-								return { display: '—', label: '' };
-						}
-						
-						const minutes = Math.floor(diffSeconds / 60);
-						const seconds = diffSeconds % 60;
-						
-						// Функция для правильного склонения слова "секунда"
-						function getSecondsWord(n) {
-								if (n % 10 === 1 && n % 100 !== 11) {
-										return 'секунда';
-								} else if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) {
-										return 'секунды';
-								} else {
-										return 'секунд';
-								}
-						}
-						
-						if (minutes === 0) {
-								return { 
-										display: `${seconds}`, 
-										label: `${seconds} ${getSecondsWord(seconds)} назад` 
-								};
-						} else {
-								const minuteWord = minutes % 10 === 1 && minutes % 100 !== 11 ? 'минуту' : 'минут';
-								return { 
-										display: `${minutes}:${String(seconds).padStart(2, '0')}`, 
-										label: `${minutes} ${minuteWord} ${seconds} ${getSecondsWord(seconds)} назад` 
-								};
-						}
-				}
+        function formatTimeAgo(timestamp) {
+            if (typeof timestamp === 'number') {
+                timestamp = new Date(timestamp).toISOString();
+            }
+
+            const now = new Date();
+            const then = new Date(timestamp);
+            const diffSeconds = Math.floor((now - then) / 1000);
+
+            if (isNaN(diffSeconds)) {
+                return { display: '—', label: '' };
+            }
+
+            const minutes = Math.floor(diffSeconds / 60);
+            const seconds = diffSeconds % 60;
+
+            function getSecondsWord(n) {
+                if (n % 10 === 1 && n % 100 !== 11) {
+                    return 'секунда';
+                } else if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) {
+                    return 'секунды';
+                } else {
+                    return 'секунд';
+                }
+            }
+
+            if (minutes === 0) {
+                return { 
+                    display: `${seconds}`, 
+                    label: `${seconds} ${getSecondsWord(seconds)} назад` 
+                };
+            } else {
+                const minuteWord = minutes % 10 === 1 && minutes % 100 !== 11 ? 'минуту' : 'минут';
+                return { 
+                    display: `${minutes}:${String(seconds).padStart(2, '0')}`, 
+                    label: `${minutes} ${minuteWord} ${seconds} ${getSecondsWord(seconds)} назад` 
+                };
+            }
+        }
 
         async function fetchData() {
-						try {
-								const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
-								const r = await fetch(url);
-								const d = await r.json();
+            try {
+                const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
+                const r = await fetch(url);
+                const d = await r.json();
 
-								document.getElementById('wins24h').textContent = d.wins_24h;
-								document.getElementById('totalWins').textContent = d.total_wins;
-								
-								// ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
-								lastWinAvailable = true;
+                document.getElementById('wins24h').textContent = d.wins_24h;
+                document.getElementById('totalWins').textContent = d.total_wins;
 
-								// ===== ТЕСТОВЫЕ ДАННЫЕ ДЛЯ SCREEN-2 =====
-								const testDate = new Date();
-								testDate.setMinutes(testDate.getMinutes() - 10);
-								testDate.setSeconds(testDate.getSeconds() - 23);
+                // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
+                lastWinAvailable = true;
 
-								const timeData = formatTimeAgo(testDate.getTime());
-								document.getElementById('lastWinAgo').textContent = timeData.display;
-								document.getElementById('lastWinAgoLabel').textContent = timeData.label;
-								// =============================================
-								
-								updateSlides();
-								switchScreen();
-						} catch (e) { console.error(e); }
+                // ===== ТЕСТОВЫЕ ДАННЫЕ ДЛЯ SCREEN-2 =====
+                const testDate = new Date();
+                testDate.setMinutes(testDate.getMinutes() - 10);
+                testDate.setSeconds(testDate.getSeconds() - 23);
+
+                const timeData = formatTimeAgo(testDate.getTime());
+                document.getElementById('lastWinAgo').textContent = timeData.display;
+                document.getElementById('lastWinAgoLabel').textContent = timeData.label;
+                // =============================================
+
+                updateSlides();
+                switchScreen();
+            } catch (e) { console.error(e); }
+        }
+
+        let currentWinImageIndex = 0;
+
+				function showWinAnimation() {
+						if (isAnimating) return;
+						isAnimating = true;
+						
+						// Останавливаем переключение экранов
+						if (animationInterval) {
+								clearInterval(animationInterval);
+								animationInterval = null;
+						}
+						
+						// Показываем overlay с картинкой
+						const overlay = document.getElementById('win-overlay');
+						const img = document.getElementById('win-image-full');
+						img.src = `/static/${winImages[currentWinImageIndex]}`;
+						overlay.style.display = 'flex';
+						
+						// Увеличиваем индекс для следующего раза
+						currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
+						
+						// Через 5 секунд скрываем
+						animationTimer = setTimeout(() => {
+								hideWinAnimation();
+						}, 5000);
 				}
 
-        // Переключение каждые 10 секунд
-        setInterval(function() {
-            currentSlide = (currentSlide + 1) % slides.length;
-            switchScreen();
-        }, 3000);
+        function hideWinAnimation() {
+            isAnimating = false;
+            document.getElementById('win-overlay').style.display = 'none';
+            if (animationTimer) {
+                clearTimeout(animationTimer);
+                animationTimer = null;
+            }
+            // Перезапускаем переключение
+            startSlideInterval();
+        }
 
-        // Запуск
+        function startSlideInterval() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            animationInterval = setInterval(function() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                switchScreen();
+            }, 3000);
+        }
+
+        function testWinAnimation() {
+            if (isAnimating) return;
+            showWinAnimation();
+        }
+
+        // Запускаем интервал при загрузке
+        startSlideInterval();
         fetchData();
     </script>
 </body>
