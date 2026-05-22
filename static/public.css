@@ -111,9 +111,9 @@ body {
 
 /* ===== Увеличенная карточка для одного экрана ===== */
 .stat-card.large {
-    width: 850px;        /* Было 750px — увеличили */
+    width: 850px;
     min-width: 850px;
-    height: 300px;       /* Было 280px — увеличили */
+    height: 300px;
 }
 
 /* ===== Овечка на карточке ===== */
@@ -124,7 +124,7 @@ body {
     right: -20px;
     width: 280px;
     height: 320px;
-    background-image: url('/static/sheep.png');
+    background-image: url('/static/img_sheep.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -132,58 +132,15 @@ body {
     pointer-events: none;
 }
 
-/* ===== Экран 1 (две карточки) ===== */
+/* ===== Экран 1 (Заголовок слева) ===== */
 #screen-1 .header-text {
     text-align: left;
-    padding-right: 0;
 }
 
-#screen-1 .stat-card {
-    width: 500px;
-}
-
-/* ===== Овечка на первой карточке, если вторая скрыта ===== */
-#screen-1 .sheep-card:first-child::before {
-    top: -268px;
-    right: -20px;
-}
-
-/* ===== Экран 2 (одна карточка) ===== */
-#screen-2 .header-text {
-    text-align: center;
-    padding-right: 0;
-}
-
-#screen-2 .stat-card.large {
-    width: 850px;
-    min-width: 850px;
-    height: 300px;
-}
-
-#screen-2 .sheep-card::before {
-    top: -268px;
-    right: -20px;
-    width: 280px;
-    height: 320px;
-}
-
-/* ===== Экран 3 (одна карточка) ===== */
+/* ===== Экран 2 и 3 (Заголовок по центру) ===== */
+#screen-2 .header-text,
 #screen-3 .header-text {
     text-align: center;
-    padding-right: 0;
-}
-
-#screen-3 .stat-card.large {
-    width: 850px;
-    min-width: 850px;
-    height: 300px;
-}
-
-#screen-3 .sheep-card::before {
-    top: -270px;
-    right: -20px;
-    width: 280px;
-    height: 320px;
 }
 
 /* ===== Заголовки карточек ===== */
@@ -207,8 +164,8 @@ body {
 }
 
 .card-label {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     color: #ffa8d4;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -238,12 +195,14 @@ body {
     line-height: 1;
 }
 
-.stat-detail {
-    font-size: 18px;
-    color: #ffa8d4;
-    margin-top: 8px;
+.prize-word {
+    font-size: 24px;
     font-weight: 600;
+    color: #ffa8d4;
+    margin-top: 5px;
+    letter-spacing: 1px;
 }
+
 
 /* ===== ВСПЛЕСКИ ===== */
 .splash-container {
@@ -273,6 +232,40 @@ body {
 .splash-right-1 { right: 95px; bottom: 180px; transform: rotate(-35deg); }
 .splash-right-2 { right: 90px; bottom: 160px; transform: rotate(-20deg); }
 .splash-right-3 { right: 85px; bottom: 140px; transform: rotate(-5deg); }
+
+/* ===== Эмблема "Прямой эфир" ===== */
+.live-badge {
+    position: absolute;
+    top: 300px;
+    right: 350px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 20;
+}
+
+.live-badge::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
 
 /* ===== FOOTER ===== */
 .footer {
@@ -334,15 +327,8 @@ body {
     font-size: 18px;
 }
 
-/* ===== Широкоформатные экраны (3440x1440) ===== */
+/* ===== Широкоформатные экраны ===== */
 @media (min-width: 3440px) {
-    #screen-1 .sheep-card:last-child::before {
-        top: -350px;
-        right: -40px;
-        width: 350px;
-        height: 380px;
-    }
-    
     #screen-2 .sheep-card::before,
     #screen-3 .sheep-card::before {
         top: -350px;
@@ -357,4 +343,29 @@ body {
         min-width: 950px;
         height: 320px;
     }
+}
+
+/* ===== Крупное время на screen-2 ===== */
+#screen-2 .stat-time {
+    font-size: 110px;
+    font-weight: 900;
+    color: #ff6eb3;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+#screen-2 .win-time-ago {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffa8d4;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
+#screen-2 .prize-word {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffa8d4;
+    margin-top: 5px;
+    letter-spacing: 1px;
 }
