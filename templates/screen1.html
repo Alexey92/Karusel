@@ -110,7 +110,9 @@
         }
 
         function getCurrentScreen() {
-            return slides[currentSlide % slides.length];
+            // Сдвиг для правого монитора: показываем следующий слайд
+						const index = (currentSlide + MONITOR_OFFSET) % slides.length;
+						return slides[index];
         }
 
         function switchScreen() {
@@ -170,19 +172,29 @@
                 document.getElementById('totalWins').textContent = d.total_wins;
 								
 								// Экран 2 — время последнего выигрыша
-								if (d.last_win) {
-										const result = formatTimeAgo(d.last_win.timestamp);
-										const parts = result.display.split(':');
-										document.getElementById('lastWinMinutes').textContent = parts[0] || '0';
-										document.getElementById('lastWinSeconds').textContent = parts[1] || '00';
-										lastWinAvailable = true;
+								if (d.last_win && d.last_win.timestamp) {
+										const now = new Date();
+										const then = new Date(d.last_win.timestamp + 'Z');
+										const diffMs = now - then;
+										const diffHours = diffMs / 3600000;
+
+										if (diffHours <= 2) {
+												const diffSeconds = Math.floor(diffMs / 1000);
+												const min = Math.floor(diffSeconds / 60);
+												const sec = diffSeconds % 60;
+												document.getElementById('lastWinMinutes').textContent = min;
+												document.getElementById('lastWinSeconds').textContent = String(sec).padStart(2, '0');
+												lastWinAvailable = true;
+										} else {
+												lastWinAvailable = false;
+										}
 								} else {
 										lastWinAvailable = false;
 								}
 
 								
                 // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
-                lastWinAvailable = true;
+                // lastWinAvailable = true;
 
 								/*
                 // ===== ТЕСТОВЫЕ ДАННЫЕ =====
@@ -207,7 +219,6 @@
 								*/
 
                 updateSlides();
-                switchScreen();
             } catch (e) { console.error(e); }
         }
 

@@ -110,7 +110,9 @@
         }
 
         function getCurrentScreen() {
-            return slides[currentSlide % slides.length];
+            // Сдвиг для правого монитора: показываем следующий слайд
+						const index = (currentSlide + MONITOR_OFFSET) % slides.length;
+						return slides[index];
         }
 
         function switchScreen() {
@@ -180,10 +182,11 @@
 										lastWinAvailable = false;
 								}
 
-								/*
+								
                 // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
                 // lastWinAvailable = true;
 
+								/*
                 // ===== ТЕСТОВЫЕ ДАННЫЕ =====
 								// Экран 1
 								const wins24h = 128;
@@ -206,7 +209,6 @@
 								*/
 
                 updateSlides();
-                switchScreen();
             } catch (e) { console.error(e); }
         }
 

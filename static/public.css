@@ -146,8 +146,8 @@ body {
 .screen1-overlay .live-dot-container {
     position: absolute;
     bottom: 320px; /* Отступ снизу */
-    left: 125%;
-    transform: translateX(-50%);
+    left: calc(100% + 30px);/* вместо 125% */
+    transform: none;
 		z-index: 3;
 }
 
@@ -228,8 +228,8 @@ body {
 .screen3-overlay .live-dot-container {
     position: absolute;
     bottom: 380px; /* Отступ снизу */
-    left: 131%;
-    transform: translateX(-50%);
+    left: calc(100% + 30px); /* вместо 131% */
+    transform: none;
 		z-index: 3;
 }
 
