@@ -235,3 +235,59 @@ body {
     z-index: 20;
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
+
+/* ===== Экран 2 - настройки ===== */
+.screen2-overlay {
+    position: absolute;
+    top: 56%;
+    left: 37%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+.screen2-digits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 140px;
+}
+
+.digit-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.digit {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 160px;
+    font-weight: 900;
+    color: #ff6eb3;
+    line-height: 1;
+}
+
+.live-dot-container {
+    position: absolute;
+    bottom: -152px; /* Отступ снизу */
+    left: 26%;
+    transform: translateX(-50%);
+}
+
+.live-dot {
+    width: 18px;
+    height: 18px;
+		border: 3px solid #fff; /* Белая обводка */
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse-live 1.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}

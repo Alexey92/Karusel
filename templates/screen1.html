@@ -48,17 +48,24 @@
         <!-- Screen 2: Последний выигрыш -->
 				<div id="screen-2" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
 						<div style="position:relative; width:100%; height:100%;">
-								<!-- Фон на весь экран -->
+								<!-- Фон на весь экран (ваши настройки) -->
 								<img src="/static/img_2.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
 								
-								<!-- Цифры -->
-								<div style="position:absolute; top:50%; left:35%; transform:translate(-50%, -50%); z-index:2; display:flex; align-items:center; justify-content:center; gap:20px; font-family: 'Montserrat', sans-serif;">
-										<div style="display:flex; flex-direction:column; align-items:center;">
-												<div id="lastWinMinutes" style="font-size:160px; font-weight:900; color:#ff6eb3; line-height:1;">—</div>
+								<!-- Цифры и мигающая точка (управление через CSS) -->
+								<div class="screen2-overlay">
+										<!-- Цифры -->
+										<div class="screen2-digits">
+												<div class="digit-group">
+														<div id="lastWinMinutes" class="digit">—</div>
+												</div>
+												<div class="digit-group">
+														<div id="lastWinSeconds" class="digit">—</div>
+												</div>
 										</div>
 										
-										<div style="display:flex; flex-direction:column; align-items:center;">
-												<div id="lastWinSeconds" style="font-size:160px; font-weight:900; color:#ff6eb3; line-height:1;">—</div>
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
 										</div>
 								</div>
 						</div>
