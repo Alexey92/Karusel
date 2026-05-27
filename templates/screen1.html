@@ -88,7 +88,7 @@
 
 
     <script>
-        const MONITOR_OFFSET = 0; // 0, 1, 2 для разных мониторов
+        const MONITOR_OFFSET = 0; // 0, 1 для разных мониторов
         const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
 
         // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
@@ -168,10 +168,23 @@
 
                 document.getElementById('wins24h').textContent = d.wins_24h;
                 document.getElementById('totalWins').textContent = d.total_wins;
+								
+								// Экран 2 — время последнего выигрыша
+								if (d.last_win) {
+										const result = formatTimeAgo(d.last_win.timestamp);
+										const parts = result.display.split(':');
+										document.getElementById('lastWinMinutes').textContent = parts[0] || '0';
+										document.getElementById('lastWinSeconds').textContent = parts[1] || '00';
+										lastWinAvailable = true;
+								} else {
+										lastWinAvailable = false;
+								}
 
+								
                 // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
                 lastWinAvailable = true;
 
+								/*
                 // ===== ТЕСТОВЫЕ ДАННЫЕ =====
 								// Экран 1
 								const wins24h = 128;
@@ -191,6 +204,7 @@
 								document.getElementById('totalWins').textContent = totalWins;
 								document.getElementById('prize-word-3').textContent = getPrizeWord(totalWins);
 								// =============================================
+								*/
 
                 updateSlides();
                 switchScreen();

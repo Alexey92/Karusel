@@ -15,177 +15,276 @@
         <div class="header-section">
             <div class="header-text">
                 <h1>KARUSEI</h1>
-                <p class="subtitle">Спасибо, что играете с нами! <span class="heart">♡</span></p>
-                <p class="subtitle-small">Ваши победы — наши общие радости</p>
             </div>
         </div>
 
         <!-- Stats Blocks -->
-        <div class="stats-row" id="screen-1">
-            <!-- Card 1: Wins 24h (всегда видна) -->
-            <div class="stat-card sheep-card">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">★</span></div>
-                    <span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-value" id="wins24h">—</div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-            </div>
+        <!-- Screen 1: Выиграно за 24 часа -->
+				<div id="screen-1" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<img src="/static/img_1.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								<div class="screen1-overlay">
+										<div class="screen1-digits">
+												<div id="wins24h" class="digit">—</div>
+												<div id="prize-word-1" class="prize-word">призов</div>
+										</div>
+										
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
+										</div>
+								</div>
+						</div>
+				</div>
 
-            <!-- Card 2: Last Win (показывается, если есть выигрыш) -->
-            <div class="stat-card" id="last-win-card">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">🏆</span></div>
-                    <span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-time" id="lastWinTime">—</div>
-                    <div class="stat-detail" id="lastWinMachine"></div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Screen 2: Последний выигрыш -->
+				<div id="screen-2" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<!-- Фон на весь экран (ваши настройки) -->
+								<img src="/static/img_2.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								
+								<!-- Цифры и мигающая точка (управление через CSS) -->
+								<div class="screen2-overlay">
+										<!-- Цифры -->
+										<div class="screen2-digits">
+												<div class="digit-group">
+														<div id="lastWinMinutes" class="digit">—</div>
+												</div>
+												<div class="digit-group">
+														<div id="lastWinSeconds" class="digit">—</div>
+												</div>
+										</div>
+										
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
+										</div>
+								</div>
+						</div>
+				</div>
 
-        <!-- Screen 2 (Total Wins) -->
-        <div class="stats-row" id="screen-2" style="display:none;">
-            <div class="stat-card large sheep-card">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">🎯</span></div>
-                    <span class="card-label">ВСЕГО ВЫИГРЫШЕЙ</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-value" id="totalWins">—</div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Screen 3: Всего выигрышей за 7 дней -->
+				<div id="screen-3" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<img src="/static/img_3.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								<div class="screen3-overlay">
+										<div class="screen3-digits">
+												<div id="totalWins" class="digit">—</div>
+												<div id="prize-word-3" class="prize-word">призов</div>
+										</div>
+										
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
+										</div>
+								</div>
+						</div>
+				</div>
 
-        <!-- Screen 3 (Jackpot) -->
-        <div class="stats-row" id="screen-3" style="display:none;">
-            <div class="stat-card large sheep-card">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">🎁</span></div>
-                    <span class="card-label">ОСТАЛОСЬ ДО ГЛАВНОГО ПРИЗА</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-value" id="jackpotRemaining">—</div>
-                    <div class="stat-detail" id="jackpotDetail"></div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-            </div>
-        </div>
+        <!-- Анимация на весь экран -->
+				<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:#ff9ed2; justify-content:center; align-items:center;">
+						<img id="win-image-full" src="" alt="Поздравление" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:20px;">
+				</div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-inner">
-                <div class="footer-icon">🎁</div>
-                <div class="footer-text">
-                    <span class="footer-main">Новые призы каждый день!</span>
-                    <span class="footer-sub">Возвращайтесь завтра за новыми победами</span>
-                </div>
-                <div class="footer-arrow">></div>
-            </div>
-        </div>
-    </div>
 
     <script>
-				// ===== ФИКСАЦИЯ ЭКРАНА ПО URL =====
-				// /screen1 → экран 1 (две карточки)
-				// /screen2 → экран 2 (одна карточка)
-				// /screen3 → экран 3 (одна карточка)
-				const urlPath = window.location.pathname;
-				let screenNumber = 1;
-				if (urlPath.includes('screen2')) screenNumber = 2;
-				if (urlPath.includes('screen3')) screenNumber = 3;
+        const MONITOR_OFFSET = 1; // 0, 1 для разных мониторов
+        const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
 
-				const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
+        // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
+        let currentSlide = 0;
+        let slides = [];
+        let lastWinAvailable = false;
 
-				// ===== ОТКЛЮЧАЕМ ПЕРЕКЛЮЧЕНИЕ =====
-				function getCurrentScreen() {
-						return screenNumber; // Всегда один и тот же экран
-				}
+        let isAnimating = false;
+        let animationTimer = null;
+        let animationInterval = null;
+        const winImages = ['win_1.png', 'win_2.png', 'win_3.png', 'win_4.png'];
 
-				function switchScreen() {
-						const n = getCurrentScreen();
-						document.getElementById('screen-1').style.display = (n === 1) ? 'flex' : 'none';
-						document.getElementById('screen-2').style.display = (n === 2) ? 'flex' : 'none';
-						document.getElementById('screen-3').style.display = (n === 3) ? 'flex' : 'none';
-				}
+        function updateSlides() {
+            slides = ['screen-1'];
+            if (lastWinAvailable) {
+                slides.push('screen-2');
+            }
+            slides.push('screen-3');
+        }
 
-				// ===== ЗАГРУЗКА ДАННЫХ =====
-				async function fetchData() {
-						try {
-								const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
-								const r = await fetch(url);
-								const d = await r.json();
+        function getCurrentScreen() {
+            return slides[currentSlide % slides.length];
+        }
 
-								document.getElementById('wins24h').textContent = d.wins_24h;
+        function switchScreen() {
+            const screenId = getCurrentScreen();
+            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
+            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
+            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
+        }
+
+        function formatTimeAgo(timestamp) {
+            if (typeof timestamp === 'number') {
+                timestamp = new Date(timestamp).toISOString();
+            }
+
+            const now = new Date();
+            const then = new Date(timestamp);
+            const diffSeconds = Math.floor((now - then) / 1000);
+
+            if (isNaN(diffSeconds)) {
+                return { display: '—', label: '' };
+            }
+
+            const minutes = Math.floor(diffSeconds / 60);
+            const seconds = diffSeconds % 60;
+
+            function getSecondsWord(n) {
+                if (n % 10 === 1 && n % 100 !== 11) {
+                    return 'секунда';
+                } else if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) {
+                    return 'секунды';
+                } else {
+                    return 'секунд';
+                }
+            }
+
+            if (minutes === 0) {
+                return { 
+                    display: `${seconds}`, 
+                    label: `${seconds} ${getSecondsWord(seconds)} назад` 
+                };
+            } else {
+                const minuteWord = minutes % 10 === 1 && minutes % 100 !== 11 ? 'минуту' : 'минут';
+                return { 
+                    display: `${minutes}:${String(seconds).padStart(2, '0')}`, 
+                    label: `${minutes} ${minuteWord} ${seconds} ${getSecondsWord(seconds)} назад` 
+                };
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
+                const r = await fetch(url);
+                const d = await r.json();
+
+                document.getElementById('wins24h').textContent = d.wins_24h;
+                document.getElementById('totalWins').textContent = d.total_wins;
 								
-								// Для screen1 управляем второй карточкой
-								if (screenNumber === 1) {
-										const card = document.getElementById('last-win-card');
-										const firstCard = document.querySelector('#screen-1 .stat-card:first-child');
-										
-										// Проверяем параметр URL для принудительного показа
-										const urlParams = new URLSearchParams(window.location.search);
-										const forceShow = urlParams.get('show_second') === '1';
-										
-										if (forceShow) {
-												card.style.display = 'flex';
-												card.classList.add('sheep-card');
-												firstCard.classList.remove('sheep-card');
-												document.getElementById('lastWinTime').textContent = '23:18:37';
-												document.getElementById('lastWinMachine').textContent = 'Тестовый выигрыш';
-										} else {
-												card.style.display = 'none';
-												card.classList.remove('sheep-card');
-												firstCard.classList.add('sheep-card');
-										}
+								// Экран 2 — время последнего выигрыша
+								if (d.last_win) {
+										const result = formatTimeAgo(d.last_win.timestamp);
+										const parts = result.display.split(':');
+										document.getElementById('lastWinMinutes').textContent = parts[0] || '0';
+										document.getElementById('lastWinSeconds').textContent = parts[1] || '00';
+										lastWinAvailable = true;
+								} else {
+										lastWinAvailable = false;
 								}
 
-								document.getElementById('totalWins').textContent = d.total_wins;
-								const rem = (d.jackpot_threshold || 0) - (d.jackpot_current || 0);
-								document.getElementById('jackpotRemaining').textContent = rem > 0 ? rem : 0;
-								document.getElementById('jackpotDetail').textContent = `${d.jackpot_current || 0} / ${d.jackpot_threshold || 0}`;
-						} catch (e) { console.error(e); }
+								/*
+                // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
+                // lastWinAvailable = true;
+
+                // ===== ТЕСТОВЫЕ ДАННЫЕ =====
+								// Экран 1
+								const wins24h = 128;
+								document.getElementById('wins24h').textContent = wins24h;
+								document.getElementById('prize-word-1').textContent = getPrizeWord(wins24h);
+
+								// Экран 2 
+								const testDate = new Date();
+								testDate.setMinutes(testDate.getMinutes() - 10);
+								testDate.setSeconds(testDate.getSeconds() - 23);
+
+								document.getElementById('lastWinMinutes').textContent = '10';
+								document.getElementById('lastWinSeconds').textContent = '23';
+								
+								// Экран 3
+								const totalWins = 56782;
+								document.getElementById('totalWins').textContent = totalWins;
+								document.getElementById('prize-word-3').textContent = getPrizeWord(totalWins);
+								// =============================================
+								*/
+
+                updateSlides();
+                switchScreen();
+            } catch (e) { console.error(e); }
+        }
+
+        let currentWinImageIndex = 0;
+
+				function showWinAnimation() {
+						if (isAnimating) return;
+						isAnimating = true;
+						
+						// Останавливаем переключение экранов
+						if (animationInterval) {
+								clearInterval(animationInterval);
+								animationInterval = null;
+						}
+						
+						// Показываем overlay с картинкой
+						const overlay = document.getElementById('win-overlay');
+						const img = document.getElementById('win-image-full');
+						img.src = `/static/${winImages[currentWinImageIndex]}`;
+						overlay.style.display = 'flex';
+						
+						// Увеличиваем индекс для следующего раза
+						currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
+						
+						// Через 5 секунд скрываем
+						animationTimer = setTimeout(() => {
+								hideWinAnimation();
+						}, 10000);
 				}
 
-				// ===== ЗАПУСК =====
-				// Показываем нужный экран один раз
-				switchScreen();
-				// Обновляем данные каждую секунду (без переключения экрана)
-				setInterval(fetchData, 1000);
-				fetchData();
-		</script>
+        function hideWinAnimation() {
+            isAnimating = false;
+            document.getElementById('win-overlay').style.display = 'none';
+            if (animationTimer) {
+                clearTimeout(animationTimer);
+                animationTimer = null;
+            }
+            // Перезапускаем переключение
+            startSlideInterval();
+        }
+
+        function startSlideInterval() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            animationInterval = setInterval(function() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                switchScreen();
+            }, 3000);
+        }
+
+        function testWinAnimation() {
+            if (isAnimating) return;
+            showWinAnimation();
+        }
+				
+				function getPrizeWord(n) {
+						const lastDigit = n % 10;
+						const lastTwoDigits = n % 100;
+						
+						if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+								return 'призов';
+						}
+						
+						if (lastDigit === 1) {
+								return 'приз';
+						}
+						
+						if (lastDigit >= 2 && lastDigit <= 4) {
+								return 'приза';
+						}
+						
+						return 'призов';
+				}
+
+        // Запускаем интервал при загрузке
+        startSlideInterval();
+        fetchData();
+    </script>
 </body>
 </html>

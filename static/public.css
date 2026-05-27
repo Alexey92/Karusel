@@ -18,6 +18,32 @@ body {
     color: #fff;
 }
 
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+}
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-Bold.ttf') format('truetype');
+    font-weight: 700;
+}
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/static/fonts/Montserrat-Black.ttf') format('truetype');
+    font-weight: 900;
+}
+@font-face {
+    font-family: 'Oswald';
+    src: url('/static/fonts/Oswald-Bold.ttf') format('truetype');
+    font-weight: 800;
+}
+
 /* ===== Контейнер ===== */
 .container {
     width: 100%;
@@ -27,8 +53,6 @@ body {
     margin: 0 !important;
     display: block;
 }
-
-
 
 
 
@@ -106,6 +130,7 @@ body {
 .screen1-digits {
     display: flex;
     align-items: center;
+		vertical-align: middle;
     justify-content: center;
     gap: 20px;
 }
@@ -121,7 +146,7 @@ body {
 .screen1-overlay .live-dot-container {
     position: absolute;
     bottom: 320px; /* Отступ снизу */
-    left: 93%;
+    left: 125%;
     transform: translateX(-50%);
 		z-index: 3;
 }
@@ -187,6 +212,7 @@ body {
 .screen3-digits {
     display: flex;
     align-items: center;
+		vertical-align: middle;
     justify-content: center;
     gap: 20px;
 }
@@ -202,7 +228,7 @@ body {
 .screen3-overlay .live-dot-container {
     position: absolute;
     bottom: 380px; /* Отступ снизу */
-    left: 91%;
+    left: 131%;
     transform: translateX(-50%);
 		z-index: 3;
 }
@@ -217,7 +243,7 @@ body {
     letter-spacing: -3px;
     text-transform: uppercase;
     line-height: 1;
-    margin-top: 30px; /* Выравнивание по высоте с цифрой */
+    margin-top: 10px; /* Выравнивание по высоте с цифрой */
 }
 
 /* ===== Мигающая точка "Прямой эфир" ===== */
