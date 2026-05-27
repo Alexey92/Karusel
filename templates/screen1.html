@@ -28,6 +28,11 @@
 												<div id="wins24h" class="digit">—</div>
 												<div id="prize-word-1" class="prize-word">призов</div>
 										</div>
+										
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
+										</div>
 								</div>
 						</div>
 				</div>
@@ -67,6 +72,11 @@
 												<div id="totalWins" class="digit">—</div>
 												<div id="prize-word-3" class="prize-word">призов</div>
 										</div>
+										
+										<!-- Мигающая точка -->
+										<div class="live-dot-container">
+												<div class="live-dot"></div>
+										</div>
 								</div>
 						</div>
 				</div>
@@ -104,15 +114,10 @@
         }
 
         function switchScreen() {
-//            const screenId = getCurrentScreen();
-//            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
-//            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
-//            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
-
-							// Фиксируем экран 2 для отладки
-							document.getElementById('screen-1').style.display = 'none';
-							document.getElementById('screen-2').style.display = 'none';
-							document.getElementById('screen-3').style.display = 'flex';
+            const screenId = getCurrentScreen();
+            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
+            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
+            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
         }
 
         function formatTimeAgo(timestamp) {

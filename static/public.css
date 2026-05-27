@@ -28,138 +28,12 @@ body {
     display: block;
 }
 
-/* ===== HEADER ===== */
-.header-text {
-    flex: 1;
-    text-align: left;
-    padding-left: 60px;
-    margin-top: -140px; /* Отступ сверху для отрыва от края */
-}
-
-.header-text h1 {
-    font-size: 140px;
-    font-weight: 900;
-    color: #ffffff;
-    letter-spacing: 4px;
-    line-height: 1;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-}
-/* ===== CARDS ===== */
-.stats-row {
-    display: flex;
-    justify-content: flex-start; /* Было center — сдвигаем влево */
-    gap: 40px;
-    margin-bottom: 40px;
-    flex-wrap: wrap;
-    position: relative;
-    padding-left: 60px; /* Добавляем отступ слева */
-		margin-top: 10px; /* Добавьте эту строку */
-}
-
-.stat-card {
-    background: #ffffff;
-    border-radius: 30px;
-    padding: 30px 40px;
-    width: 500px;
-    height: 240px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: 0 10px 30px rgba(255, 70, 150, 0.2);
-    position: relative;
-    color: #ff6eaf;
-}
-
-/* ===== Экран 1 (Заголовок слева) ===== */
-#screen-1 .header-text {
-    text-align: left;
-}
-
-/* ===== Экран 2 и 3 (Заголовок по центру) ===== */
-#screen-2 .header-text,
-#screen-3 .header-text {
-    text-align: center;
-}
-
-/* ===== Заголовки карточек ===== */
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 5px;
-}
-
-.icon-circle {
-    width: 36px;
-    height: 36px;
-    background: #ffa8d4;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 18px;
-}
-
-.card-label {
-    font-size: 28px;
-    font-weight: 800;
-    color: #ffa8d4;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.card-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.stat-value {
-    font-size: 120px;
-    font-weight: 900;
-    color: #ff6eb3;
-    line-height: 1;
-    letter-spacing: 2px;
-}
-
-.stat-time {
-    font-size: 80px;
-    font-weight: 900;
-    color: #ff6eb3;
-    line-height: 1;
-}
-
-.prize-word {
-    font-size: 24px;
-    font-weight: 600;
-    color: #ffa8d4;
-    margin-top: 5px;
-    letter-spacing: 1px;
-}
-
-
-
-/* ===== Широкоформатные экраны ===== */
-@media (min-width: 3440px) {
-    #screen-2 .stat-card.large,
-    #screen-3 .stat-card.large {
-        width: 950px;
-        min-width: 950px;
-        height: 320px;
-    }
-}
 
 
 
 
 
-/* ===== Анимация выигрыша (НЕ УДАЛЯТЬ) ===== */
+/* ===== Анимация выигрыша ===== */
 #win-animation .stat-card {
     width: 850px;
     min-width: 850px;
@@ -214,34 +88,13 @@ body {
 }
 
 
-/* ===== Эмблема "Прямой эфир" ===== */
-.live-badge {
-    position: absolute;
-    bottom: -80px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: inline-flex;
-    align-items: center;
-    gap: 15px;
-    background: transparent;
-    padding: 12px 40px;
-    border-radius: 30px;
-    font-size: 32px;
-    font-weight: 800;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border: 3px solid rgba(255, 255, 255, 0.6);
-    z-index: 20;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-}
 
 
 /* ===== Экран 1 - настройки ===== */
 .screen1-overlay {
     position: absolute;
-    top: 60%;
-    left: 35%;
+    top: 57%;
+    left: 37%;
     transform: translate(-50%, -50%);
     z-index: 2;
     display: flex;
@@ -263,6 +116,14 @@ body {
     font-weight: 900;
     color: #ff6eb3;
     line-height: 1;
+}
+
+.screen1-overlay .live-dot-container {
+    position: absolute;
+    bottom: 320px; /* Отступ снизу */
+    left: 93%;
+    transform: translateX(-50%);
+		z-index: 3;
 }
 
 /* ===== Экран 2 - настройки ===== */
@@ -299,27 +160,15 @@ body {
     line-height: 1;
 }
 
-.live-dot-container {
+.screen2-overlay .live-dot-container {
     position: absolute;
-    bottom: -152px; /* Отступ снизу */
+    bottom: -153px; /* Отступ снизу */
     left: 26%;
     transform: translateX(-50%);
+		z-index: 3;
 }
 
-.live-dot {
-    width: 18px;
-    height: 18px;
-		border: 2px solid #fff; /* Белая обводка */
-    background: #ff0000;
-    border-radius: 50%;
-    animation: pulse-live 1.5s ease-in-out infinite;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-}
 
-@keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
 
 
 /* ===== Экран 3 - настройки ===== */
@@ -350,18 +199,39 @@ body {
     line-height: 1;
 }
 
-
+.screen3-overlay .live-dot-container {
+    position: absolute;
+    bottom: 380px; /* Отступ снизу */
+    left: 91%;
+    transform: translateX(-50%);
+		z-index: 3;
+}
 
 
 /* ===== Слово "призов" после цифр ===== */
-
 .prize-word {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Oswald', sans-serif;
     font-size: 60px; /* Как у заголовка на картинке */
     font-weight: 800;
     color: #ff4d8f; /* Цвет заголовка на картинке */
-    letter-spacing: 1px;
+    letter-spacing: -3px;
     text-transform: uppercase;
     line-height: 1;
     margin-top: 30px; /* Выравнивание по высоте с цифрой */
+}
+
+/* ===== Мигающая точка "Прямой эфир" ===== */
+.live-dot {
+    width: 18px;
+    height: 18px;
+		border: 2px solid #fff; /* Белая обводка */
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse-live 1.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
 }
