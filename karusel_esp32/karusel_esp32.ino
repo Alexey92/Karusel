@@ -22,6 +22,11 @@ const int MACHINE_ID = 1;
 const int WIN_PIN = 13;   // Сигнал "Выигрыш"
 const int PLAY_PIN = 14;  // Сигнал "Игра"
 
+
+struct HttpParams {
+  String eventType;
+};
+
 // ═══════════════════════════════════════════════════════
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════
@@ -37,6 +42,7 @@ const char* BUFFER_FILE = "/buffer.txt";
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ═══════════════════════════════════════════════════════
 
+
 // Кнопки
 unsigned long last_win_time = 0;
 unsigned long last_play_time = 0;
@@ -49,7 +55,6 @@ volatile bool http_busy = false;
 volatile bool http_done = false;
 volatile bool http_success = false;
 volatile bool http_was_buffer = false;
-String http_event_type = "win";
 
 // WiFi
 unsigned long last_wifi_attempt = 0;
@@ -91,18 +96,22 @@ void setup() {
 // ═══════════════════════════════════════════════════════
 
 void httpTask(void* parameter) {
+  HttpParams* params = (HttpParams*)parameter;
+  String eventType = params->eventType;
+  delete params;  // Освобождаем память
+
   HTTPClient http;
   http.begin(SERVER_URL);
   http.addHeader("Content-Type", "application/json");
 
-  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + http_event_type + "\"}";
+  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + eventType + "\"}";
 
   unsigned long t0 = millis();
   int httpCode = http.POST(jsonBody);
   unsigned long t1 = millis();
   http.end();
 
-  Serial.printf("[HTTP] Код: %d, время: %lu мс, тип: %s\n", httpCode, t1 - t0, http_event_type.c_str());
+  Serial.printf("[HTTP] Код: %d, время: %lu мс, тип: %s\n", httpCode, t1 - t0, eventType.c_str());
 
   http_success = (httpCode == 200);
   http_done = true;
@@ -113,8 +122,16 @@ void httpTask(void* parameter) {
 void startHTTP(bool isBuffer, String eventType = "win") {
   if (http_busy) return;
 
+  // Не создаём задачу, если WiFi мёртв
+  if (WiFi.status() != WL_CONNECTED) {
+    if (!isBuffer) {
+      bufferEvent(eventType);
+      Serial.printf("[%s] Нет WiFi, событие в буфер.\n", eventType.c_str());
+    }
+    return;
+  }
+
   if (isBuffer && isBufferEmpty()) {
-    Serial.println("[BUFFER] Файл пуст, отправка отменена.");
     pending_events = 0;
     return;
   }
@@ -122,9 +139,11 @@ void startHTTP(bool isBuffer, String eventType = "win") {
   http_busy = true;
   http_done = false;
   http_was_buffer = isBuffer;
-  http_event_type = eventType;
 
-  xTaskCreatePinnedToCore(httpTask, "HTTP_Task", 8192, NULL, 1, NULL, 0);
+  HttpParams* params = new HttpParams;
+  params->eventType = eventType;
+
+  xTaskCreatePinnedToCore(httpTask, "HTTP_Task", 8192, params, 1, NULL, 0);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -133,7 +152,7 @@ void startHTTP(bool isBuffer, String eventType = "win") {
 
 void loop() {
 
-  // ── 1. ОБРАБОТКА ЗАВЕРШЁННОГО HTTP ──
+    // ── 1. ОБРАБОТКА ЗАВЕРШЁННОГО HTTP ──
   if (http_busy && http_done) {
     http_busy = false;
 
@@ -143,12 +162,11 @@ void loop() {
         pending_events--;
         Serial.printf("[BUFFER] Отправлено. Осталось: %d\n", pending_events);
       }
-    } else {
-      if (!http_was_buffer) {
-        bufferEvent(http_event_type);
-        Serial.printf("[%s] Сервер недоступен, событие в буфер.\n", http_event_type == "win" ? "WIN" : "PLAY");
+    } else if (!http_was_buffer) {
+        // Тип события уже сохранён в буфер при старте (в startHTTP при недоступности WiFi),
+        // а здесь мы просто логируем. bufferEvent не нужен, событие уже в буфере.
+        Serial.println("[HTTP] Сервер недоступен, событие уже в буфере.");
       }
-    }
   }
 
   // ── 2. WiFi ──
@@ -184,14 +202,17 @@ void loop() {
       last_send_time = now;
       Serial.println("[WIN] Обнаружен выигрыш!");
 
-      if (!wifi_ok) { bufferEvent("win"); Serial.println("[WIN] Нет WiFi, в буфер."); }
-      else if (http_busy) { bufferEvent("win"); Serial.println("[WIN] HTTP занят, в буфер."); }
-      else { startHTTP(false, "win"); }
+      if (http_busy) { 
+        bufferEvent("win"); Serial.println("[WIN] HTTP занят, в буфер."); 
+      }
+      else { 
+        startHTTP(false, "win"); 
+      }
     }
   }
   last_win_state = win_state;
 
-  // ── 5. Кнопка PLAY ──
+    // ── 5. Кнопка PLAY ──
   int play_state = digitalRead(PLAY_PIN);
   if (play_state == LOW && last_play_state == HIGH) {
     unsigned long now = millis();
@@ -200,12 +221,16 @@ void loop() {
       last_send_time = now;
       Serial.println("[PLAY] Обнаружена игра!");
 
-      if (!wifi_ok) { bufferEvent("play"); Serial.println("[PLAY] Нет WiFi, в буфер."); }
-      else if (http_busy) { bufferEvent("play"); Serial.println("[PLAY] HTTP занят, в буфер."); }
-      else { startHTTP(false, "play"); }
+      if (http_busy) { 
+        bufferEvent("play"); Serial.println("[PLAY] HTTP занят, в буфер."); 
+      }
+      else { 
+        startHTTP(false, "play"); 
+      }
     }
   }
   last_play_state = play_state;
+
 
   delay(10);
 }
