@@ -15,80 +15,80 @@
         <div class="header-section">
             <div class="header-text">
                 <h1>KARUSEI</h1>
-                <p class="subtitle">Спасибо, что играете с нами! <span class="heart">♡</span></p>
-                <p class="subtitle-small">Ваши победы — наши общие радости</p>
             </div>
         </div>
 
         <!-- Stats Blocks -->
         <!-- Screen 1: Выиграно за 24 часа -->
-        <div class="stats-row" id="screen-1">
-            <div class="stat-card sheep-card large">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">★</span></div>
-                    <span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-value" id="wins24h">—</div>
-                    <div class="prize-word">призов</div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-                <div class="live-badge">Прямой эфир</div>
-            </div>
-        </div>
+				<div class="stats-row" id="screen-1">
+						<div class="stat-card sheep-card large">
+								<div class="card-header">
+										<div class="icon-circle"><span class="icon">★</span></div>
+										<span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
+								</div>
+								<div class="card-content">
+										<div class="stat-value" id="wins24h">—</div>
+										<div class="prize-word">призов</div>
+								</div>
+								<div class="splash-container">
+										<div class="splash splash-left-1"></div>
+										<div class="splash splash-left-2"></div>
+										<div class="splash splash-left-3"></div>
+										<div class="splash splash-right-1"></div>
+										<div class="splash splash-right-2"></div>
+										<div class="splash splash-right-3"></div>
+								</div>
+								<div class="live-badge">Прямой эфир</div>
+								
+								<!-- ДОБАВЛЕНА КАРТИНКА (ЗАЙКА) -->
+								<img src="/static/IMG_2.png" alt="Mascot" class="mascot-image">
+						</div>
+				</div>
 
         <!-- Screen 2: Последний выигрыш -->
-        <div class="stats-row" id="screen-2" style="display:none;">
-            <div class="stat-card sheep-card large">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">🏆</span></div>
-                    <span class="card-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-time" id="lastWinAgo">—</div>
-                    <div class="win-time-ago" id="lastWinAgoLabel"></div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-                <div class="live-badge">Прямой эфир</div>
-            </div>
-        </div>
+				<div id="screen-2" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<!-- Фон на весь экран -->
+								<img src="/static/img_2.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								
+								<!-- Цифры -->
+								<div style="position:absolute; top:50%; left:35%; transform:translate(-50%, -50%); z-index:2; display:flex; align-items:center; justify-content:center; gap:20px; font-family: 'Montserrat', sans-serif;">
+										<div style="display:flex; flex-direction:column; align-items:center;">
+												<div id="lastWinMinutes" style="font-size:160px; font-weight:900; color:#ff6eb3; line-height:1;">—</div>
+										</div>
+										
+										<div style="display:flex; flex-direction:column; align-items:center;">
+												<div id="lastWinSeconds" style="font-size:160px; font-weight:900; color:#ff6eb3; line-height:1;">—</div>
+										</div>
+								</div>
+						</div>
+				</div>
 
         <!-- Screen 3: Всего выигрышей за 7 дней -->
-        <div class="stats-row" id="screen-3" style="display:none;">
-            <div class="stat-card sheep-card large">
-                <div class="card-header">
-                    <div class="icon-circle"><span class="icon">🎯</span></div>
-                    <span class="card-label">ВСЕГО ВЫИГРЫШЕЙ ЗА 7 ДНЕЙ</span>
-                </div>
-                <div class="card-content">
-                    <div class="stat-value" id="totalWins">—</div>
-                    <div class="prize-word">призов</div>
-                </div>
-                <div class="splash-container">
-                    <div class="splash splash-left-1"></div>
-                    <div class="splash splash-left-2"></div>
-                    <div class="splash splash-left-3"></div>
-                    <div class="splash splash-right-1"></div>
-                    <div class="splash splash-right-2"></div>
-                    <div class="splash splash-right-3"></div>
-                </div>
-                <div class="live-badge">Прямой эфир</div>
-            </div>
-        </div>
+				<div class="stats-row" id="screen-3" style="display:none;">
+						<div class="stat-card sheep-card large">
+								<div class="card-header">
+										<div class="icon-circle"><span class="icon">🎯</span></div>
+										<span class="card-label">ВСЕГО ВЫИГРЫШЕЙ ЗА 7 ДНЕЙ</span>
+								</div>
+								<div class="card-content">
+										<div class="stat-value" id="totalWins">—</div>
+										<div class="prize-word">призов</div>
+								</div>
+								<div class="splash-container">
+										<div class="splash splash-left-1"></div>
+										<div class="splash splash-left-2"></div>
+										<div class="splash splash-left-3"></div>
+										<div class="splash splash-right-1"></div>
+										<div class="splash splash-right-2"></div>
+										<div class="splash splash-right-3"></div>
+								</div>
+								<div class="live-badge">Прямой эфир</div>
+
+								<!-- ДОБАВЛЕНА КАРТИНКА (ТИГР) -->
+								<img src="/static/IMG_3.png" alt="Mascot" class="mascot-image">
+						</div>
+				</div>
 
         <!-- Анимация на весь экран -->
 				<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:#ff9ed2; justify-content:center; align-items:center;">
@@ -102,18 +102,6 @@
             </button>
         </div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-inner">
-                <div class="footer-icon">🎁</div>
-                <div class="footer-text">
-                    <span class="footer-main">Новые призы каждый день!</span>
-                    <span class="footer-sub">Возвращайтесь завтра за новыми победами</span>
-                </div>
-                <div class="footer-arrow">></div>
-            </div>
-        </div>
-    </div>
 
     <script>
         const MONITOR_OFFSET = 0; // 0, 1, 2 для разных мониторов
@@ -142,10 +130,15 @@
         }
 
         function switchScreen() {
-            const screenId = getCurrentScreen();
-            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
-            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
-            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
+//            const screenId = getCurrentScreen();
+//            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
+//            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
+//            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
+
+							// Фиксируем экран 2 для отладки
+							document.getElementById('screen-1').style.display = 'none';
+							document.getElementById('screen-2').style.display = 'flex';
+							document.getElementById('screen-3').style.display = 'none';
         }
 
         function formatTimeAgo(timestamp) {
@@ -201,14 +194,13 @@
                 lastWinAvailable = true;
 
                 // ===== ТЕСТОВЫЕ ДАННЫЕ ДЛЯ SCREEN-2 =====
-                const testDate = new Date();
-                testDate.setMinutes(testDate.getMinutes() - 10);
-                testDate.setSeconds(testDate.getSeconds() - 23);
+								const testDate = new Date();
+								testDate.setMinutes(testDate.getMinutes() - 10);
+								testDate.setSeconds(testDate.getSeconds() - 23);
 
-                const timeData = formatTimeAgo(testDate.getTime());
-                document.getElementById('lastWinAgo').textContent = timeData.display;
-                document.getElementById('lastWinAgoLabel').textContent = timeData.label;
-                // =============================================
+								document.getElementById('lastWinMinutes').textContent = '10';
+								document.getElementById('lastWinSeconds').textContent = '23';
+								// =============================================
 
                 updateSlides();
                 switchScreen();
@@ -239,7 +231,7 @@
 						// Через 5 секунд скрываем
 						animationTimer = setTimeout(() => {
 								hideWinAnimation();
-						}, 5000);
+						}, 10000);
 				}
 
         function hideWinAnimation() {

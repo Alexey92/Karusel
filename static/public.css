@@ -8,8 +8,8 @@
 /* ===== Шрифты ===== */
 body {
     font-family: 'Montserrat', sans-serif;
-    background: #ff9ed2;
-    background: linear-gradient(135deg, #ff9ed2 0%, #ffb6e1 100%);
+    background: #ff4d8f;
+    background: linear-gradient(135deg, #ff4d8f 0%, #ff6eb3 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -22,77 +22,40 @@ body {
 .container {
     width: 100%;
     height: 100vh;
-    max-width: 1920px;
-    padding: 40px 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block;
 }
 
 /* ===== HEADER ===== */
-.header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    position: relative;
-    width: 100%;
-    padding: 0 60px;
-}
-
 .header-text {
     flex: 1;
-    text-align: center;
-    padding-right: 0;
+    text-align: left;
+    padding-left: 60px;
+    margin-top: -140px; /* Отступ сверху для отрыва от края */
 }
 
 .header-text h1 {
-    font-size: 120px;
+    font-size: 140px;
     font-weight: 900;
     color: #ffffff;
     letter-spacing: 4px;
     line-height: 1;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
 }
-
-.subtitle {
-    font-size: 28px;
-    font-weight: 600;
-    color: #ffffff;
-    margin-top: 5px;
-    letter-spacing: 0.5px;
-}
-
-.subtitle .heart {
-    display: inline-block;
-    font-size: 28px;
-}
-
-.subtitle-small {
-    font-size: 18px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 2px;
-}
-
-/* ===== Овечка ===== */
-.header-mascot {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    flex-shrink: 0;
-    margin-bottom: -30px;
-}
-
 /* ===== CARDS ===== */
 .stats-row {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start; /* Было center — сдвигаем влево */
     gap: 40px;
     margin-bottom: 40px;
     flex-wrap: wrap;
     position: relative;
+    padding-left: 60px; /* Добавляем отступ слева */
+		margin-top: 10px; /* Добавьте эту строку */
 }
 
 .stat-card {
@@ -107,29 +70,6 @@ body {
     box-shadow: 0 10px 30px rgba(255, 70, 150, 0.2);
     position: relative;
     color: #ff6eaf;
-}
-
-/* ===== Увеличенная карточка для одного экрана ===== */
-.stat-card.large {
-    width: 850px;
-    min-width: 850px;
-    height: 300px;
-}
-
-/* ===== Овечка на карточке ===== */
-.sheep-card::before {
-    content: '';
-    position: absolute;
-    top: -268px;
-    right: -20px;
-    width: 280px;
-    height: 320px;
-    background-image: url('/static/img_sheep.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 10;
-    pointer-events: none;
 }
 
 /* ===== Экран 1 (Заголовок слева) ===== */
@@ -204,139 +144,9 @@ body {
 }
 
 
-/* ===== ВСПЛЕСКИ ===== */
-.splash-container {
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    height: 40px;
-    pointer-events: none;
-    overflow: visible;
-    z-index: 10;
-}
-
-.splash {
-    position: absolute;
-    width: 40px;
-    height: 6px;
-    background: linear-gradient(90deg, #ff6eb3, #ffb6e1);
-    border-radius: 6px;
-    transform-origin: center center;
-    box-shadow: 0 0 10px rgba(255, 110, 179, 0.3);
-}
-
-.splash-left-1 { left: -5px; bottom: 50px; transform: rotate(-35deg); }
-.splash-left-2 { left: -15px; bottom: 70px; transform: rotate(-20deg); }
-.splash-left-3 { left: -25px; bottom: 90px; transform: rotate(5deg); }
-
-.splash-right-1 { right: 95px; bottom: 180px; transform: rotate(-35deg); }
-.splash-right-2 { right: 90px; bottom: 160px; transform: rotate(-20deg); }
-.splash-right-3 { right: 85px; bottom: 140px; transform: rotate(-5deg); }
-
-/* ===== Эмблема "Прямой эфир" ===== */
-.live-badge {
-    position: absolute;
-    top: 300px;
-    right: 350px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    z-index: 20;
-}
-
-.live-badge::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #ff0000;
-    border-radius: 50%;
-    animation: pulse-live 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* ===== FOOTER ===== */
-.footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-}
-
-.footer-inner {
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(4px);
-    border-radius: 60px;
-    padding: 15px 30px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    min-width: 400px;
-}
-
-.footer-icon {
-    width: 40px;
-    height: 40px;
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ff6eb3;
-    font-size: 20px;
-}
-
-.footer-text {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.footer-main {
-    font-size: 16px;
-    font-weight: 700;
-    color: #fff;
-}
-
-.footer-sub {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.footer-arrow {
-    width: 36px;
-    height: 36px;
-    background: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ff6eb3;
-    font-weight: bold;
-    font-size: 18px;
-}
 
 /* ===== Широкоформатные экраны ===== */
 @media (min-width: 3440px) {
-    #screen-2 .sheep-card::before,
-    #screen-3 .sheep-card::before {
-        top: -350px;
-        right: -40px;
-        width: 350px;
-        height: 380px;
-    }
-
     #screen-2 .stat-card.large,
     #screen-3 .stat-card.large {
         width: 950px;
@@ -345,32 +155,11 @@ body {
     }
 }
 
-/* ===== Крупное время на screen-2 ===== */
-#screen-2 .stat-time {
-    font-size: 110px;
-    font-weight: 900;
-    color: #ff6eb3;
-    line-height: 1;
-    letter-spacing: 2px;
-}
 
-#screen-2 .win-time-ago {
-    font-size: 20px;
-    font-weight: 600;
-    color: #ffa8d4;
-    margin-top: 5px;
-    letter-spacing: 1px;
-}
 
-#screen-2 .prize-word {
-    font-size: 24px;
-    font-weight: 600;
-    color: #ffa8d4;
-    margin-top: 5px;
-    letter-spacing: 1px;
-}
 
-/* ===== Анимация выигрыша ===== */
+
+/* ===== Анимация выигрыша (НЕ УДАЛЯТЬ) ===== */
 #win-animation .stat-card {
     width: 850px;
     min-width: 850px;
@@ -400,7 +189,6 @@ body {
     border-radius: 15px;
 }
 
-/* ===== Анимация появления картинки ===== */
 #win-overlay img {
     animation: winFadeIn 0.8s ease-out;
 }
@@ -416,7 +204,6 @@ body {
     }
 }
 
-/* Дополнительно: лёгкое свечение фона */
 #win-overlay {
     animation: bgPulse 2s ease-in-out infinite alternate;
 }
@@ -424,4 +211,27 @@ body {
 @keyframes bgPulse {
     0% { background-color: #ff9ed2; }
     100% { background-color: #ffb6e1; }
+}
+
+
+/* ===== Эмблема "Прямой эфир" ===== */
+.live-badge {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    background: transparent;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    z-index: 20;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
