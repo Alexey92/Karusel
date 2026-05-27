@@ -20,28 +20,17 @@
 
         <!-- Stats Blocks -->
         <!-- Screen 1: Выиграно за 24 часа -->
-				<div class="stats-row" id="screen-1">
-						<div class="stat-card sheep-card large">
-								<div class="card-header">
-										<div class="icon-circle"><span class="icon">★</span></div>
-										<span class="card-label">ВЫИГРАНО ЗА 24 ЧАСА</span>
-								</div>
-								<div class="card-content">
-										<div class="stat-value" id="wins24h">—</div>
-										<div class="prize-word">призов</div>
-								</div>
-								<div class="splash-container">
-										<div class="splash splash-left-1"></div>
-										<div class="splash splash-left-2"></div>
-										<div class="splash splash-left-3"></div>
-										<div class="splash splash-right-1"></div>
-										<div class="splash splash-right-2"></div>
-										<div class="splash splash-right-3"></div>
-								</div>
-								<div class="live-badge">Прямой эфир</div>
+				<div id="screen-1" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<!-- Фон на весь экран -->
+								<img src="/static/img_1.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
 								
-								<!-- ДОБАВЛЕНА КАРТИНКА (ЗАЙКА) -->
-								<img src="/static/IMG_2.png" alt="Mascot" class="mascot-image">
+								<!-- Цифры -->
+								<div class="screen1-overlay">
+										<div class="screen1-digits">
+												<div id="wins24h" class="digit">—</div>
+										</div>
+								</div>
 						</div>
 				</div>
 
@@ -72,28 +61,17 @@
 				</div>
 
         <!-- Screen 3: Всего выигрышей за 7 дней -->
-				<div class="stats-row" id="screen-3" style="display:none;">
-						<div class="stat-card sheep-card large">
-								<div class="card-header">
-										<div class="icon-circle"><span class="icon">🎯</span></div>
-										<span class="card-label">ВСЕГО ВЫИГРЫШЕЙ ЗА 7 ДНЕЙ</span>
+				<div id="screen-3" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<!-- Фон на весь экран -->
+								<img src="/static/img_3.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								
+								<!-- Цифры -->
+								<div class="screen3-overlay">
+										<div class="screen3-digits">
+												<div id="totalWins" class="digit">—</div>
+										</div>
 								</div>
-								<div class="card-content">
-										<div class="stat-value" id="totalWins">—</div>
-										<div class="prize-word">призов</div>
-								</div>
-								<div class="splash-container">
-										<div class="splash splash-left-1"></div>
-										<div class="splash splash-left-2"></div>
-										<div class="splash splash-left-3"></div>
-										<div class="splash splash-right-1"></div>
-										<div class="splash splash-right-2"></div>
-										<div class="splash splash-right-3"></div>
-								</div>
-								<div class="live-badge">Прямой эфир</div>
-
-								<!-- ДОБАВЛЕНА КАРТИНКА (ТИГР) -->
-								<img src="/static/IMG_3.png" alt="Mascot" class="mascot-image">
 						</div>
 				</div>
 
@@ -143,8 +121,8 @@
 //            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
 
 							// Фиксируем экран 2 для отладки
-							document.getElementById('screen-1').style.display = 'none';
-							document.getElementById('screen-2').style.display = 'flex';
+							document.getElementById('screen-1').style.display = 'flex';
+							document.getElementById('screen-2').style.display = 'none';
 							document.getElementById('screen-3').style.display = 'none';
         }
 
@@ -200,13 +178,20 @@
                 // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
                 lastWinAvailable = true;
 
-                // ===== ТЕСТОВЫЕ ДАННЫЕ ДЛЯ SCREEN-2 =====
+                // ===== ТЕСТОВЫЕ ДАННЫЕ =====
+								// Экран 1
+								document.getElementById('wins24h').textContent = '128';
+
+								// Экран 2 
 								const testDate = new Date();
 								testDate.setMinutes(testDate.getMinutes() - 10);
 								testDate.setSeconds(testDate.getSeconds() - 23);
 
 								document.getElementById('lastWinMinutes').textContent = '10';
 								document.getElementById('lastWinSeconds').textContent = '23';
+								
+								// Экран 3
+								document.getElementById('totalWins').textContent = '56782';
 								// =============================================
 
                 updateSlides();
