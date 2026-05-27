@@ -143,14 +143,6 @@ body {
     line-height: 1;
 }
 
-.screen1-overlay .live-dot-container {
-    position: absolute;
-    bottom: 320px; /* Отступ снизу */
-    left: calc(100% + 30px);/* вместо 125% */
-    transform: none;
-		z-index: 3;
-}
-
 /* ===== Экран 2 - настройки ===== */
 .screen2-overlay {
     position: absolute;
@@ -185,15 +177,6 @@ body {
     line-height: 1;
 }
 
-.screen2-overlay .live-dot-container {
-    position: absolute;
-    bottom: -153px; /* Отступ снизу */
-    left: 26%;
-    transform: translateX(-50%);
-		z-index: 3;
-}
-
-
 
 
 /* ===== Экран 3 - настройки ===== */
@@ -225,13 +208,6 @@ body {
     line-height: 1;
 }
 
-.screen3-overlay .live-dot-container {
-    position: absolute;
-    bottom: 380px; /* Отступ снизу */
-    left: calc(100% + 30px); /* вместо 131% */
-    transform: none;
-		z-index: 3;
-}
 
 
 /* ===== Слово "призов" после цифр ===== */
@@ -250,7 +226,7 @@ body {
 .live-dot {
     width: 18px;
     height: 18px;
-		border: 2px solid #fff; /* Белая обводка */
+	border: 2px solid #fff; /* Белая обводка */
     background: #ff0000;
     border-radius: 50%;
     animation: pulse-live 1.5s ease-in-out infinite;

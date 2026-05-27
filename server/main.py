@@ -71,18 +71,10 @@ async def root():
     return {"status": "ok", "server": "KARUSEL Win Tracker", "version": "2.0.0"}
 
 
-@app.get("/screen1")
-async def screen1(request: Request):
-    return templates.TemplateResponse("screen1.html", {"request": request})
+@app.get("/screen")
+async def screen(request: Request):
+    return templates.TemplateResponse("screen.html", {"request": request})
 
-@app.get("/screen2")
-async def screen2(request: Request):
-    return templates.TemplateResponse("screen2.html", {"request": request})
-    
-@app.get("/screen3")
-async def screen2(request: Request):
-    return templates.TemplateResponse("screen3.html", {"request": request})
-    
 
 @app.post("/api/event", response_model=EventResponse)
 async def receive_event(event: EventRequest):
