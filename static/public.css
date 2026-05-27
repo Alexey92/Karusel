@@ -236,6 +236,35 @@ body {
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
+
+/* ===== Экран 1 - настройки ===== */
+.screen1-overlay {
+    position: absolute;
+    top: 60%;
+    left: 35%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.screen1-digits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.screen1-digits .digit {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 140px;
+    font-weight: 900;
+    color: #ff6eb3;
+    line-height: 1;
+}
+
 /* ===== Экран 2 - настройки ===== */
 .screen2-overlay {
     position: absolute;
@@ -262,7 +291,7 @@ body {
     align-items: center;
 }
 
-.digit {
+.screen2-digits .digit {
     font-family: 'Montserrat', sans-serif;
     font-size: 160px;
     font-weight: 900;
@@ -293,40 +322,11 @@ body {
 }
 
 
-/* ===== Экран 1 - настройки ===== */
-.screen1-overlay {
-    position: absolute;
-    top: 60%;
-    left: 35%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-.screen1-digits {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-.screen1-digits .digit {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 160px;
-    font-weight: 900;
-    color: #ff6eb3;
-    line-height: 1;
-}
-
-
 /* ===== Экран 3 - настройки ===== */
 .screen3-overlay {
     position: absolute;
-    top: 60%;
-    left: 35%;
+    top: 70%;
+    left: 37%;
     transform: translate(-50%, -50%);
     z-index: 2;
     display: flex;
@@ -344,8 +344,24 @@ body {
 
 .screen3-digits .digit {
     font-family: 'Montserrat', sans-serif;
-    font-size: 160px;
+    font-size: 100px;
     font-weight: 900;
     color: #ff6eb3;
     line-height: 1;
+}
+
+
+
+
+/* ===== Слово "призов" после цифр ===== */
+
+.prize-word {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 60px; /* Как у заголовка на картинке */
+    font-weight: 800;
+    color: #ff4d8f; /* Цвет заголовка на картинке */
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-top: 30px; /* Выравнивание по высоте с цифрой */
 }

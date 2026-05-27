@@ -22,13 +22,11 @@
         <!-- Screen 1: Выиграно за 24 часа -->
 				<div id="screen-1" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
 						<div style="position:relative; width:100%; height:100%;">
-								<!-- Фон на весь экран -->
 								<img src="/static/img_1.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
-								
-								<!-- Цифры -->
 								<div class="screen1-overlay">
 										<div class="screen1-digits">
 												<div id="wins24h" class="digit">—</div>
+												<div id="prize-word-1" class="prize-word">призов</div>
 										</div>
 								</div>
 						</div>
@@ -63,13 +61,11 @@
         <!-- Screen 3: Всего выигрышей за 7 дней -->
 				<div id="screen-3" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
 						<div style="position:relative; width:100%; height:100%;">
-								<!-- Фон на весь экран -->
 								<img src="/static/img_3.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
-								
-								<!-- Цифры -->
 								<div class="screen3-overlay">
 										<div class="screen3-digits">
 												<div id="totalWins" class="digit">—</div>
+												<div id="prize-word-3" class="prize-word">призов</div>
 										</div>
 								</div>
 						</div>
@@ -79,13 +75,6 @@
 				<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; background:#ff9ed2; justify-content:center; align-items:center;">
 						<img id="win-image-full" src="" alt="Поздравление" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:20px;">
 				</div>
-
-        <!-- Кнопка тестирования анимации -->
-        <div style="position: fixed; bottom: 100px; left: 20px; z-index: 999;">
-            <button onclick="testWinAnimation()" style="padding: 10px 20px; background: #fff; color: #ff6eb3; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
-                🎉 Тест анимации
-            </button>
-        </div>
 
 
     <script>
@@ -121,9 +110,9 @@
 //            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
 
 							// Фиксируем экран 2 для отладки
-							document.getElementById('screen-1').style.display = 'flex';
+							document.getElementById('screen-1').style.display = 'none';
 							document.getElementById('screen-2').style.display = 'none';
-							document.getElementById('screen-3').style.display = 'none';
+							document.getElementById('screen-3').style.display = 'flex';
         }
 
         function formatTimeAgo(timestamp) {
@@ -180,7 +169,9 @@
 
                 // ===== ТЕСТОВЫЕ ДАННЫЕ =====
 								// Экран 1
-								document.getElementById('wins24h').textContent = '128';
+								const wins24h = 128;
+								document.getElementById('wins24h').textContent = wins24h;
+								document.getElementById('prize-word-1').textContent = getPrizeWord(wins24h);
 
 								// Экран 2 
 								const testDate = new Date();
@@ -191,7 +182,9 @@
 								document.getElementById('lastWinSeconds').textContent = '23';
 								
 								// Экран 3
-								document.getElementById('totalWins').textContent = '56782';
+								const totalWins = 56782;
+								document.getElementById('totalWins').textContent = totalWins;
+								document.getElementById('prize-word-3').textContent = getPrizeWord(totalWins);
 								// =============================================
 
                 updateSlides();
@@ -251,6 +244,25 @@
             if (isAnimating) return;
             showWinAnimation();
         }
+				
+				function getPrizeWord(n) {
+						const lastDigit = n % 10;
+						const lastTwoDigits = n % 100;
+						
+						if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+								return 'призов';
+						}
+						
+						if (lastDigit === 1) {
+								return 'приз';
+						}
+						
+						if (lastDigit >= 2 && lastDigit <= 4) {
+								return 'приза';
+						}
+						
+						return 'призов';
+				}
 
         // Запускаем интервал при загрузке
         startSlideInterval();
