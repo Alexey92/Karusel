@@ -132,8 +132,8 @@
             document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
             document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
 						*/
-						document.getElementById('screen-1').style.display = 'none';
-						document.getElementById('screen-2').style.display = 'flex';
+						document.getElementById('screen-1').style.display = 'flex';
+						document.getElementById('screen-2').style.display = 'none';
 						document.getElementById('screen-3').style.display = 'none';
         }
 
@@ -213,12 +213,7 @@
 												document.getElementById('lastWinMinutes').textContent = min;
 												document.getElementById('lastWinSeconds').textContent = String(sec).padStart(2, '0');
 												
-												// Выравнивание: если минуты однозначные — сдвигаем секунды вправо
-										//		const secondsEl = document.getElementById('lastWinSeconds');
-										//		if (secondsEl) {
-										//				secondsEl.style.paddingLeft = (min < 10) ? '0px' : '0';
-										//		}
-										
+										// Выравнивание: если минуты однозначные — сдвигаем секунды вправо
 										const overlay = document.querySelector('.screen2-overlay');
 										const digits = document.querySelector('.screen2-digits');
 
