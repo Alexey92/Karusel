@@ -112,20 +112,20 @@ body {
 .screen2-overlay {
     position: absolute;
     top: 56%;		
-    left: 39%;	/* 37% */
+    left: 39%;	
     transform: translate(-50%, -50%);
     z-index: 10;
     display: flex;
     flex-direction: column;
-    align-items: center;	/* center */
+    align-items: center;	
     gap: 40px;
 }
 
 .screen2-digits {
     display: flex;
-    align-items: center;			/* center */
-    justify-content: center;	/* center */
-    gap: 160px;								/* 100px */
+    align-items: center;			
+    justify-content: center;	
+    gap: 160px;								
 }
 
 .digit-group {

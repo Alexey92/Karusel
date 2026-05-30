@@ -58,7 +58,7 @@
 								
 								<!-- Мигающая точка -->
 								<div class="live-dot-container" style="position:absolute; top:90.5%; left:27%; z-index:10;">
-									<div class="live-dot"></div>
+										<div class="live-dot"></div>
 								</div>
 						</div>
 				</div>
@@ -92,10 +92,9 @@
         const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
 				let lastWinsTotal = 0;
 
-
         // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
         let currentSlide = 0;
-        slides = ['screen-3']; // начальное значение, чтобы не был пустым
+        let slides = ['screen-3']; // начальное значение, чтобы не был пустым
         let lastWinAvailable = false;
 				let wins24h = 0;
 
@@ -200,7 +199,6 @@
 								}
 								lastWinsTotal = d.total_wins;
 
-                document.getElementById('wins24h').textContent = d.wins_24h;
                 document.getElementById('totalWins').textContent = d.total_wins;
 				
 								document.getElementById('prize-word-1').textContent = getPrizeWord(d.wins_24h);
@@ -220,91 +218,52 @@
 												document.getElementById('lastWinMinutes').textContent = min;
 												document.getElementById('lastWinSeconds').textContent = String(sec).padStart(2, '0');
 												
-										// Выравнивание: если минуты однозначные — сдвигаем секунды вправо
-										const overlay = document.querySelector('.screen2-overlay');
-										const digits = document.querySelector('.screen2-digits');
+												// Выравнивание: если минуты однозначные — сдвигаем секунды вправо
+												const overlay = document.querySelector('.screen2-overlay');
+												const digits = document.querySelector('.screen2-digits');
 
-										if (overlay && digits) {
-												if (min < 10) {
-														overlay.style.left = '39%';
-														digits.style.gap = '160px';
-												} else {
-														overlay.style.left = '37%';
-														digits.style.gap = '100px';
+												if (overlay && digits) {
+														if (min < 10) {
+																overlay.style.left = '39%';
+																digits.style.gap = '160px';
+														} else {
+																overlay.style.left = '37%';
+																digits.style.gap = '100px';
+														}
 												}
-										}
 												
 												lastWinAvailable = true;
-										} 
-										else {
+										} else {
 												lastWinAvailable = false;
 										}
-									} 
-									else {
+									} else {
 											lastWinAvailable = false;
 									}
-									
-									
-									// Выравнивание цифр относительно двоеточия 
-									const minutesGroup = document.querySelector('.screen2-overlay .digit-group:first-child');
-									if (minutesGroup) {
-											if (min < 10) {
-													minutesGroup.style.marginRight = '230px';
-											} else {
-													minutesGroup.style.marginRight = '200';
-											}
-									}
-									
-								
-                // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
-                // lastWinAvailable = true;
 
-				/*
-                // ===== ТЕСТОВЫЕ ДАННЫЕ =====
-				// Экран 1
-				const wins24h = 128;
-				document.getElementById('wins24h').textContent = wins24h;
-				document.getElementById('prize-word-1').textContent = getPrizeWord(wins24h);
-
-				// Экран 2 
-				const testDate = new Date();
-				testDate.setMinutes(testDate.getMinutes() - 10);
-				testDate.setSeconds(testDate.getSeconds() - 23);
-
-				document.getElementById('lastWinMinutes').textContent = '10';
-				document.getElementById('lastWinSeconds').textContent = '23';
-				
-				// Экран 3
-				const totalWins = 56782;
-				document.getElementById('totalWins').textContent = totalWins;
-				document.getElementById('prize-word-3').textContent = getPrizeWord(totalWins);
-				// =============================================
-				*/
-
-                updateSlides();
+									updateSlides();
             } catch (e) { console.error(e); }
         }
 
         let currentWinImageIndex = 0;
 
-			function showWinAnimation() {
-					if (isAnimating) return;
-					isAnimating = true;
-					
-					// Показываем overlay с картинкой
-					const overlay = document.getElementById('win-overlay');
-					const img = document.getElementById('win-image-full');
-					img.src = `/static/${winImages[currentWinImageIndex]}`;
-					overlay.style.display = 'flex';
-					
-					// Увеличиваем индекс для следующего раза
-					currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
-					
-					// Через 5 секунд скрываем
-					animationTimer = setTimeout(() => {
-							hideWinAnimation();
-					}, 10000);
-			}
+				function showWinAnimation() {
+						if (isAnimating) return;
+						isAnimating = true;
+						
+						// Показываем overlay с картинкой
+						const overlay = document.getElementById('win-overlay');
+						const img = document.getElementById('win-image-full');
+						img.src = `/static/${winImages[currentWinImageIndex]}`;
+						overlay.style.display = 'flex';
+						
+						// Увеличиваем индекс для следующего раза
+						currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
+						
+						// Через 5 секунд скрываем
+						animationTimer = setTimeout(() => {
+								hideWinAnimation();
+						}, 10000);
+				}
 
         function hideWinAnimation() {
             isAnimating = false;
@@ -337,6 +296,7 @@
 
         // Запускаем интервал при загрузке
         fetchData();
+				
 				setInterval(function() {
 					fetchData();
 					updateSlides();   // принудительно обновить перед switchScreen
