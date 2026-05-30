@@ -195,7 +195,7 @@
 								document.getElementById('wins24h').textContent = wins24h;
 				
 								// Проверка на новый выигрыш
-								if (d.total_wins > lastWinsTotal && lastWinsTotal > 0) {
+								if (d.total_wins > lastWinsTotal) {
 										showWinAnimation();
 								}
 								lastWinsTotal = d.total_wins;
@@ -315,10 +315,6 @@
             }
         }
 
-        function testWinAnimation() {
-            if (isAnimating) return;
-            showWinAnimation();
-        }
 				
 			function getPrizeWord(n) {
 				const lastDigit = n % 10;
