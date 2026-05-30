@@ -3,4 +3,7 @@ python main.py
 
 
 2. Имитация события
-Invoke-RestMethod -Uri http://localhost:5050/api/event -Method Post -ContentType "application/json" -Body '{"machine_id": 2}'
+Invoke-RestMethod -Uri http://localhost:5050/api/event -Method Post -ContentType "application/json" -Body '{"machine_id":1,"event_type":"win"}'
+
+
+

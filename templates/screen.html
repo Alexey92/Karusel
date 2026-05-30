@@ -20,107 +20,121 @@
 
         <!-- Stats Blocks -->
         <!-- Screen 1: Выиграно за 24 часа -->
-		<div id="screen-1" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
-			<div style="position:relative; width:100%; height:100%;">
-				<img src="/static/img_1.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
-				<div class="screen1-overlay">
-					<div class="screen1-digits">
-						<div id="wins24h" class="digit">—</div>
-						<div id="prize-word-1" class="prize-word">призов</div>
-					</div>
+				<div id="screen-1" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<img src="/static/img_1.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								<div class="screen1-overlay">
+										<div class="screen1-digits">
+												<div id="wins24h" class="digit">—</div>
+												<div id="prize-word-1" class="prize-word">призов</div>
+										</div>
+								</div>
+								
+								<!-- Мигающая точка -->
+								<div class="live-dot-container" style="position:absolute; top:15%; left:54%; z-index:10;">
+										<div class="live-dot"></div>
+								</div>
+						</div>
 				</div>
-				
-				<!-- Мигающая точка -->
-				<div class="live-dot-container" style="position:absolute; top:15%; left:54%; z-index:10;">
-					<div class="live-dot"></div>
-				</div>
-			</div>
-		</div>
 
         <!-- Screen 2: Последний выигрыш -->
-		<div id="screen-2" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
-			<div style="position:relative; width:100%; height:100%;">
-				<!-- Фон на весь экран (ваши настройки) -->
-				<img src="/static/img_2.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
-				
-				<!-- Цифры и мигающая точка (управление через CSS) -->
-				<div class="screen2-overlay">
-					<!-- Цифры -->
-					<div class="screen2-digits">
-						<div class="digit-group">
-							<div id="lastWinMinutes" class="digit">—</div>
+				<div id="screen-2" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<!-- Фон на весь экран (ваши настройки) -->
+								<img src="/static/img_2.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								
+								<!-- Цифры и мигающая точка (управление через CSS) -->
+								<div class="screen2-overlay">
+										<!-- Цифры -->
+										<div class="screen2-digits">
+												<div class="digit-group">
+														<div id="lastWinMinutes" class="digit">—</div>
+												</div>
+												<div class="digit-group">
+														<div id="lastWinSeconds" class="digit">—</div>
+												</div>
+										</div>
+								</div>
+								
+								<!-- Мигающая точка -->
+								<div class="live-dot-container" style="position:absolute; top:90.5%; left:27%; z-index:10;">
+									<div class="live-dot"></div>
+								</div>
 						</div>
-						<div class="digit-group">
-							<div id="lastWinSeconds" class="digit">—</div>
-						</div>
-					</div>
 				</div>
-				
-				<!-- Мигающая точка -->
-				<div class="live-dot-container" style="position:absolute; top:90.5%; left:27%; z-index:10;">
-					<div class="live-dot"></div>
-				</div>
-			</div>
-		</div>
 
         <!-- Screen 3: Всего выигрышей за 7 дней -->
-		<div id="screen-3" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
-			<div style="position:relative; width:100%; height:100%;">
-				<img src="/static/img_3.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
-				<div class="screen3-overlay">
-					<div class="screen3-digits">
-						<div id="totalWins" class="digit">—</div>
-						<div id="prize-word-3" class="prize-word">призов</div>
-					</div>
+				<div id="screen-3" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:100; padding:0; margin:0;">
+						<div style="position:relative; width:100%; height:100%;">
+								<img src="/static/img_3.png" alt="Фон" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 1;">
+								<div class="screen3-overlay">
+										<div class="screen3-digits">
+												<div id="totalWins" class="digit">—</div>
+												<div id="prize-word-3" class="prize-word">призов</div>
+										</div>
+								</div>
+								
+								<!-- Мигающая точка -->
+								<div class="live-dot-container" style="position:absolute; top:15%; left:54%; z-index:10;">
+										<div class="live-dot"></div>
+								</div>
+						</div>
 				</div>
-				
-				<!-- Мигающая точка -->
-				<div class="live-dot-container" style="position:absolute; top:15%; left:54%; z-index:10;">
-					<div class="live-dot"></div>
-				</div>
-			</div>
-		</div>
 
-		<!-- Анимация на весь экран -->
-		<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999;">
-			<img id="win-image-full" src="" alt="Поздравление" style="width:100%; height:100%; object-fit:fill;">
-		</div>
+				<!-- Анимация на весь экран -->
+				<div id="win-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999;">
+						<img id="win-image-full" src="" alt="Поздравление" style="width:100%; height:100%; object-fit:fill;">
+				</div>
 
 
     <script>
         const MONITOR_OFFSET = parseInt(new URLSearchParams(window.location.search).get('monitor') || '0');
         const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
-		let lastWinsTotal = 0;
+				let lastWinsTotal = 0;
 
 
         // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
         let currentSlide = 0;
         let slides = [];
         let lastWinAvailable = false;
+				let wins24h = 0;
 
         let isAnimating = false;
         let animationTimer = null;
         const winImages = ['win_1.png', 'win_2.png', 'win_3.png', 'win_4.png'];
 
         function updateSlides() {
-            slides = ['screen-1'];
-            if (lastWinAvailable) {
-                slides.push('screen-2');
-            }
-            slides.push('screen-3');
-        }
+						slides = [];
+						
+						// Слайд "Всего за 7 дней" — показывается всегда
+						slides.push('screen-3');
+						
+						// Слайд "За 24 часа" — только если больше 10 выигрышей
+						if (wins24h > 10) {
+								slides.push('screen-1');
+						}
+						
+						// Слайд "Последний выигрыш" — если lastWinAvailable
+						if (lastWinAvailable) {
+								slides.push('screen-2');
+						}
+				}
 
         function getCurrentScreen() {
-			const segment = Math.floor(new Date().getSeconds() / 3) % slides.length;
-			const index = (segment + MONITOR_OFFSET) % slides.length;
-			return slides[index];
-		}
+						const segment = Math.floor(new Date().getSeconds() / 3) % slides.length;
+						const index = (segment + MONITOR_OFFSET) % slides.length;
+						return slides[index];
+				}
 
         function switchScreen() {
-            const screenId = getCurrentScreen();
+            /*const screenId = getCurrentScreen();
             document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
             document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
             document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
+						*/
+						document.getElementById('screen-1').style.display = 'none';
+						document.getElementById('screen-2').style.display = 'flex';
+						document.getElementById('screen-3').style.display = 'none';
         }
 
         function formatTimeAgo(timestamp) {
@@ -168,40 +182,77 @@
                 const url = '/api/screen-data' + (LOCATION_ID ? '?location_id=' + LOCATION_ID : '');
                 const r = await fetch(url);
                 const d = await r.json();
+								
+								// Выигрышей за 24 часа
+								wins24h = d.wins_24h;
+								document.getElementById('wins24h').textContent = wins24h;
 				
-				// Проверка на новый выигрыш
-				if (d.total_wins > lastWinsTotal && lastWinsTotal > 0) {
-					showWinAnimation();
-				}
-				lastWinsTotal = d.total_wins;
+								// Проверка на новый выигрыш
+								if (d.total_wins > lastWinsTotal && lastWinsTotal > 0) {
+										showWinAnimation();
+								}
+								lastWinsTotal = d.total_wins;
 
                 document.getElementById('wins24h').textContent = d.wins_24h;
                 document.getElementById('totalWins').textContent = d.total_wins;
 				
-				document.getElementById('prize-word-1').textContent = getPrizeWord(d.wins_24h);
-				document.getElementById('prize-word-3').textContent = getPrizeWord(d.total_wins);
+								document.getElementById('prize-word-1').textContent = getPrizeWord(d.wins_24h);
+								document.getElementById('prize-word-3').textContent = getPrizeWord(d.total_wins);
 								
-				// Экран 2 — время последнего выигрыша
-				if (d.last_win && d.last_win.timestamp) {
-					const now = new Date();
-					const then = new Date(d.last_win.timestamp + 'Z');
-					const diffMs = now - then;
-					const diffHours = diffMs / 3600000;
+								// Экран 2 — время последнего выигрыша
+								if (d.last_win && d.last_win.timestamp) {
+										const now = new Date();
+										const then = new Date(d.last_win.timestamp + 'Z');
+										const diffMs = now - then;
+										const diffHours = diffMs / 3600000;
 
-					if (diffHours <= 2) {
-						const diffSeconds = Math.floor(diffMs / 1000);
-						const min = Math.floor(diffSeconds / 60);
-						const sec = diffSeconds % 60;
-						document.getElementById('lastWinMinutes').textContent = min;
-						document.getElementById('lastWinSeconds').textContent = String(sec).padStart(2, '0');
-						lastWinAvailable = true;
-					} else {
-						lastWinAvailable = false;
-					}
-				} else {
-					lastWinAvailable = false;
-				}
+										if (diffHours <= 2) {
+												const diffSeconds = Math.floor(diffMs / 1000);
+												const min = Math.floor(diffSeconds / 60);
+												const sec = diffSeconds % 60;
+												document.getElementById('lastWinMinutes').textContent = min;
+												document.getElementById('lastWinSeconds').textContent = String(sec).padStart(2, '0');
+												
+												// Выравнивание: если минуты однозначные — сдвигаем секунды вправо
+										//		const secondsEl = document.getElementById('lastWinSeconds');
+										//		if (secondsEl) {
+										//				secondsEl.style.paddingLeft = (min < 10) ? '0px' : '0';
+										//		}
+										
+										const overlay = document.querySelector('.screen2-overlay');
+										const digits = document.querySelector('.screen2-digits');
 
+										if (overlay && digits) {
+												if (min < 10) {
+														overlay.style.left = '39%';
+														digits.style.gap = '160px';
+												} else {
+														overlay.style.left = '37%';
+														digits.style.gap = '100px';
+												}
+										}
+												
+												lastWinAvailable = true;
+										} 
+										else {
+												lastWinAvailable = false;
+										}
+									} 
+									else {
+											lastWinAvailable = false;
+									}
+									
+									
+									// Выравнивание цифр относительно двоеточия 
+									const minutesGroup = document.querySelector('.screen2-overlay .digit-group:first-child');
+									if (minutesGroup) {
+											if (min < 10) {
+													minutesGroup.style.marginRight = '230px';
+											} else {
+													minutesGroup.style.marginRight = '200';
+											}
+									}
+									
 								
                 // ===== ОТЛАДКА: принудительно показываем все 3 экрана =====
                 // lastWinAvailable = true;
@@ -234,24 +285,24 @@
 
         let currentWinImageIndex = 0;
 
-		function showWinAnimation() {
-			if (isAnimating) return;
-			isAnimating = true;
-			
-			// Показываем overlay с картинкой
-			const overlay = document.getElementById('win-overlay');
-			const img = document.getElementById('win-image-full');
-			img.src = `/static/${winImages[currentWinImageIndex]}`;
-			overlay.style.display = 'flex';
-			
-			// Увеличиваем индекс для следующего раза
-			currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
-			
-			// Через 5 секунд скрываем
-			animationTimer = setTimeout(() => {
-					hideWinAnimation();
-			}, 10000);
-		}
+			function showWinAnimation() {
+					if (isAnimating) return;
+					isAnimating = true;
+					
+					// Показываем overlay с картинкой
+					const overlay = document.getElementById('win-overlay');
+					const img = document.getElementById('win-image-full');
+					img.src = `/static/${winImages[currentWinImageIndex]}`;
+					overlay.style.display = 'flex';
+					
+					// Увеличиваем индекс для следующего раза
+					currentWinImageIndex = (currentWinImageIndex + 1) % winImages.length;
+					
+					// Через 5 секунд скрываем
+					animationTimer = setTimeout(() => {
+							hideWinAnimation();
+					}, 10000);
+			}
 
         function hideWinAnimation() {
             isAnimating = false;
@@ -295,3 +346,4 @@
     </script>
 </body>
 </html>
+
