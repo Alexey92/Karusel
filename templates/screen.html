@@ -95,7 +95,7 @@
 
         // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
         let currentSlide = 0;
-        let slides = [];
+        slides = ['screen-3']; // начальное значение, чтобы не был пустым
         let lastWinAvailable = false;
 				let wins24h = 0;
 
@@ -121,21 +121,28 @@
 				}
 
         function getCurrentScreen() {
+						if (slides.length === 0) return 'screen-3'; // fallback
 						const segment = Math.floor(new Date().getSeconds() / 3) % slides.length;
 						const index = (segment + MONITOR_OFFSET) % slides.length;
 						return slides[index];
 				}
 
-        function switchScreen() {
-            /*const screenId = getCurrentScreen();
-            document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
-            document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
-            document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
-						*/
-						document.getElementById('screen-1').style.display = 'flex';
-						document.getElementById('screen-2').style.display = 'none';
+				function switchScreen() {
+						updateSlides(); // обновить перед каждым переключением
+						const screenId = getCurrentScreen();
+						if (!screenId || !document.getElementById(screenId)) return; // защита
+						document.getElementById('screen-1').style.display = (screenId === 'screen-1') ? 'flex' : 'none';
+						document.getElementById('screen-2').style.display = (screenId === 'screen-2') ? 'flex' : 'none';
+						document.getElementById('screen-3').style.display = (screenId === 'screen-3') ? 'flex' : 'none';
+						
+						/*
+						document.getElementById('screen-1').style.display = 'none';
+						document.getElementById('screen-2').style.display = 'flex';
 						document.getElementById('screen-3').style.display = 'none';
-        }
+						*/
+						
+				}
+
 
         function formatTimeAgo(timestamp) {
             if (typeof timestamp === 'number') {
@@ -334,10 +341,11 @@
 
         // Запускаем интервал при загрузке
         fetchData();
-		setInterval(function() {
-			fetchData();
-			switchScreen();
-		}, 1000);
+				setInterval(function() {
+					fetchData();
+					updateSlides();   // принудительно обновить перед switchScreen
+					switchScreen();
+				}, 1000);
     </script>
 </body>
 </html>
