@@ -79,14 +79,18 @@ async def screen(request: Request):
 @app.post("/api/event", response_model=EventResponse)
 async def receive_event(event: EventRequest):
     try:
-        jackpot_result = await increment_jackpot(event.machine_id)
         actual_event_type = event.event_type
-        if jackpot_result["jackpot_triggered"]:
-            actual_event_type = "jackpot"
+        
+        # Джекпот увеличивается только при выигрышах
+        if actual_event_type in ("win", "jackpot"):
+            jackpot_result = await increment_jackpot(event.machine_id)
+            if jackpot_result["jackpot_triggered"]:
+                actual_event_type = "jackpot"
 
         result = await add_event(event.machine_id, actual_event_type)
         response = EventResponse(**result)
-        if jackpot_result["jackpot_triggered"]:
+        
+        if actual_event_type == "jackpot":
             response.event_type = "jackpot"
 
         return response

@@ -204,7 +204,7 @@
 												<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
 												<div class="card-row"><span>За 24ч:</span><strong>${s.wins_24h}</strong></div>
 												<div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
-												<div class="card-row"><span>Последний:</span><small>${s.last_win || '—'}</small></div>
+												<div class="card-row"><span>Последний:</span><small>${s.last_win ? new Date(s.last_win + 'Z').toLocaleString('ru-RU') : '—'}</small></div>
 												<div class="card-section-title">🎮 Игры</div>
 												<div class="card-row"><span>Всего:</span><strong>${s.plays_total || 0}</strong></div>
 										</div>
@@ -240,7 +240,7 @@
 											<tr><td>За сегодня:</td><td><strong>${stats.wins_today}</strong></td></tr>
 											<tr><td>За 24ч:</td><td><strong>${stats.wins_24h}</strong></td></tr>
 											<tr><td>Всего:</td><td><strong>${stats.wins_total}</strong></td></tr>
-											<tr><td>Последний:</td><td>${stats.last_win||'—'}</td></tr>
+											<tr><td>Последний:</td><td>${stats.last_win ? new Date(stats.last_win + 'Z').toLocaleString('ru-RU') : '—'}</td></tr>
 									</table>
 									<h4 style="color:#ffd200;margin-top:12px;">🎮 Игры</h4>
 									<table>
@@ -331,7 +331,7 @@
                     <td>${e.location_name}</td>
                     <td>${e.machine_name}</td>
                     <td>${e.event_type==='jackpot'?'🎰 ДЖЕКПОТ':e.event_type==='play'?'🎮 Игра':'🏆 Выигрыш'}</td>
-                    <td>${e.timestamp}</td>
+                    <td>${new Date(e.timestamp + 'Z').toLocaleString('ru-RU')}</td>
                 </tr>
             `).join('');
             const tp = Math.ceil(data.total/LIMIT)||1;

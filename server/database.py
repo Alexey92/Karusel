@@ -56,7 +56,7 @@ async def add_event(machine_id: int, event_type: str = "win") -> dict:
 
 async def get_public_stats(location_id: int = None) -> dict:
     db = await get_db()
-    query_24h = "SELECT COUNT(*) as count FROM events e JOIN machines m ON e.machine_id = m.id WHERE e.timestamp >= datetime('now', '-24 hours', 'localtime') AND e.event_type != 'play'"
+    query_24h = "SELECT COUNT(*) as count FROM events e JOIN machines m ON e.machine_id = m.id WHERE e.timestamp >= datetime('now', '-24 hours') AND e.event_type != 'play'"
     query_last = """
         SELECT e.timestamp, m.name as machine_name, l.name as location_name
         FROM events e
@@ -190,19 +190,19 @@ async def get_machine_stats(machine_id: int) -> dict:
     info = dict(row_info[0]) if row_info else {}
 
     row_hour = await db.execute_fetchall(
-        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND timestamp >= datetime('now', '-1 hours', 'localtime')",
+        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type != 'play' AND timestamp >= datetime('now', '-1 hours')",
         (machine_id,)
     )
     wins_hour = row_hour[0]["count"]
 
     row_today = await db.execute_fetchall(
-        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND date(timestamp, 'localtime') = date('now', 'localtime')",
+        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type != 'play' AND date(timestamp) = date('now')",
         (machine_id,)
     )
     wins_today = row_today[0]["count"]
 
     row_24h = await db.execute_fetchall(
-        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND timestamp >= datetime('now', '-24 hours', 'localtime')",
+        "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type != 'play' AND timestamp >= datetime('now', '-24 hours')",
         (machine_id,)
     )
     wins_24h = row_24h[0]["count"]
