@@ -152,7 +152,7 @@ void startHTTP(bool isBuffer, String eventType = "win") {
 
 void loop() {
 
-    // ── 1. ОБРАБОТКА ЗАВЕРШЁННОГО HTTP ──
+  // ── 1. ОБРАБОТКА ЗАВЕРШЁННОГО HTTP ──
   if (http_busy && http_done) {
     http_busy = false;
 
@@ -175,7 +175,7 @@ void loop() {
 
   if (!wifi_ok && (millis() - last_wifi_attempt > WIFI_RETRY_MS)) {
     Serial.println("[WiFi] Попытка переподключения...");
-    connectWiFi();
+    connectWiFi();  // Теперь это мгновенная функция
     last_wifi_attempt = millis();
   }
 
@@ -212,7 +212,7 @@ void loop() {
   }
   last_win_state = win_state;
 
-    // ── 5. Кнопка PLAY ──
+  // ── 5. Кнопка PLAY ──
   int play_state = digitalRead(PLAY_PIN);
   if (play_state == LOW && last_play_state == HIGH) {
     unsigned long now = millis();
@@ -240,16 +240,10 @@ void loop() {
 // ═══════════════════════════════════════════════════════
 
 void connectWiFi() {
+  // Не ждём подключения — просто запускаем процесс
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) { delay(500); Serial.print("."); attempts++; }
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\n[WiFi] Подключено!");
-    Serial.printf("[WiFi] IP: %s\n", WiFi.localIP().toString().c_str());
-  } else {
-    Serial.println("\n[WiFi] Не удалось подключиться.");
-  }
+  Serial.printf("[WiFi] Подключение к %s запущено...\n", WIFI_SSID);
 }
 
 // ═══════════════════════════════════════════════════════

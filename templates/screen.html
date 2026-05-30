@@ -90,13 +90,14 @@
     <script>
         const MONITOR_OFFSET = parseInt(new URLSearchParams(window.location.search).get('monitor') || '0');
         const LOCATION_ID = new URLSearchParams(window.location.search).get('location_id') || '';
-				let lastWinsTotal = 0;
+				let lastWinsTotal = -1;
 
         // Слайды: 0 = wins24h, 1 = lastWin, 2 = totalWins7days
         let currentSlide = 0;
         let slides = ['screen-3']; // начальное значение, чтобы не был пустым
         let lastWinAvailable = false;
 				let wins24h = 0;
+
 
         let isAnimating = false;
         let animationTimer = null;
@@ -192,12 +193,15 @@
 								// Выигрышей за 24 часа
 								wins24h = d.wins_24h;
 								document.getElementById('wins24h').textContent = wins24h;
+								
 				
 								// Проверка на новый выигрыш
-								if (d.total_wins > lastWinsTotal) {
+								if (lastWinsTotal === -1) {
+										lastWinsTotal = d.total_wins;  // запомнили, сколько было до нас
+								} else if (d.total_wins > lastWinsTotal) {
 										showWinAnimation();
+										lastWinsTotal = d.total_wins;
 								}
-								lastWinsTotal = d.total_wins;
 
                 document.getElementById('totalWins').textContent = d.total_wins;
 				
