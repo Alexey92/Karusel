@@ -214,8 +214,9 @@
 										const then = new Date(d.last_win.timestamp + 'Z');
 										const diffMs = now - then;
 										const diffHours = diffMs / 3600000;
+										const diffMinutes = diffMs / 60000;
 
-										if (diffHours <= 2) {
+										if (diffMinutes <= 99) {
 												const diffSeconds = Math.floor(diffMs / 1000);
 												const min = Math.floor(diffSeconds / 60);
 												const sec = diffSeconds % 60;
