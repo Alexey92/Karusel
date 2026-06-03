@@ -302,7 +302,10 @@
 
         async function showLocationMachines(locId){
 			const machines = await apiGet('/api/admin/locations/'+locId+'/machines');
-			let html = '<h3>Автоматы</h3><table class="history-table"><thead><tr><th>Лок. ID</th><th>Название</th><th>Глоб. ID</th><th></th></tr></thead><tbody>';
+			// Получаем название адреса
+const locName = document.querySelector(`#thr-${locId}`)?.closest('tr')?.querySelector('td:nth-child(2)')?.textContent || '';
+let html = `<h3 style="color:#ffd200;margin-bottom:10px;">📍 ${locName} — автоматы</h3>`;
+html += '<table class="history-table"><thead><tr><th>Лок. ID</th><th>Название</th><th>Глоб. ID</th><th></th></tr></thead><tbody>';
 			machines.forEach(m=>{
 				html += `<tr>
 					<td><input type="number" id="local-${m.id}" value="${m.local_id}" style="width:60px;"></td>
