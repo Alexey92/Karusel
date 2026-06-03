@@ -57,7 +57,7 @@
                 <button onclick="addLocation()" class="btn-small">Добавить адрес</button>
             </div>
             <table class="history-table" style="margin-top:20px;">
-                <thead><tr><th>ID</th><th>Название</th><th>Автоматов</th><th>Джекпот (счётчик/порог)</th><th>Действия</th></tr></thead>
+                <thead><tr><th>ID</th><th>Название</th><th>Автоматов</th><th>API Key</th><th>Джекпот</th><th>Действия</th></tr></thead>
                 <tbody id="locations-body"></tbody>
             </table>
             <div id="location-machines" style="margin-top:20px;"></div>
@@ -261,6 +261,7 @@
                         <td>${l.id}</td>
                         <td>${l.name}</td>
                         <td>${l.machine_count}</td>
+		       <td><code style="font-size:11px;">${l.api_key || '—'}</code></td>
                         <td>
                             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                                 <span style="color:#ffd200;font-weight:700;">${jp.current_win_count}/${jp.win_count_for_jackpot}</span>
