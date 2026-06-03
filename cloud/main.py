@@ -26,7 +26,7 @@ get_current_user = auth.get_current_user
 
 
 from database import (
-    init_db, add_event, verify_api_key,
+    init_db, add_event, verify_api_key, find_or_create_machine,
     get_user, update_admin_password,
     get_locations, create_location, update_location, delete_location,
     get_machines, create_machine, delete_machine,
