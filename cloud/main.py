@@ -38,7 +38,7 @@ from models import (
     CloudEventRequest, EventResponse,
     LoginRequest, LoginResponse, MachineStats,
     JackpotConfigResponse, JackpotThresholdRequest, JackpotCounterRequest,
-    ChangePasswordRequest, LocationCreate, LocationUpdate, MachineCreate
+    ChangePasswordRequest, LocationCreate, LocationUpdate, MachineCreate, MachineUpdate
 )
 
 # Пути к общим папкам
@@ -164,7 +164,7 @@ async def admin_location_machines(location_id: int, username: str = Depends(get_
 
 @app.post("/api/admin/locations/{location_id}/machines")
 async def admin_create_machine(location_id: int, data: MachineCreate, username: str = Depends(get_current_user)):
-    return await create_machine(data.name, location_id)
+    return await create_machine(data.local_id, data.name, location_id)
 
 @app.delete("/api/admin/machines/{machine_id}")
 async def admin_delete_machine(machine_id: int, username: str = Depends(get_current_user)):

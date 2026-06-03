@@ -335,16 +335,16 @@
 		}
 
         async function addMachine(locId){
-			const localId = document.getElementById('new-machine-local').value;
-			const name = document.getElementById('new-machine-name').value;
-			if(!localId||!name) return;
-			await fetch('/api/admin/locations/'+locId+'/machines', {
-				method:'POST',
-				headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-				body:JSON.stringify({local_id:parseInt(localId),name:name})
-			});
-			showLocationMachines(locId); loadLocations();
-		}
+    const localId = document.getElementById('new-machine-local').value;
+    const name = document.getElementById('new-machine-name').value;
+    if(!localId||!name) return;
+    await fetch('/api/admin/locations/'+locId+'/machines', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+        body:JSON.stringify({local_id:parseInt(localId),name:name})
+    });
+    showLocationMachines(locId); loadLocations();
+}
 
         async function deleteMachine(mId){
             if(!confirm('Удалить автомат?')) return;
