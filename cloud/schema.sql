@@ -1,4 +1,3 @@
--- Таблица объектов (адресов)
 CREATE TABLE IF NOT EXISTS locations (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -6,25 +5,23 @@ CREATE TABLE IF NOT EXISTS locations (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Таблица автоматов
 CREATE TABLE IF NOT EXISTS machines (
     id SERIAL PRIMARY KEY,
+    local_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     location_id INTEGER REFERENCES locations(id),
-    created_at TIMESTAMP DEFAULT NOW()
+    UNIQUE(location_id, local_id)
 );
 
--- Таблица событий (глобальная)
 CREATE TABLE IF NOT EXISTS events (
     id SERIAL PRIMARY KEY,
     machine_id INTEGER REFERENCES machines(id),
     location_id INTEGER REFERENCES locations(id),
     event_type TEXT NOT NULL DEFAULT 'win',
     timestamp TIMESTAMP DEFAULT NOW(),
-    local_event_id INTEGER  -- ID события в локальной БД (для защиты от дублей)
+    local_event_id INTEGER
 );
 
--- Настройки джекпота для каждого объекта
 CREATE TABLE IF NOT EXISTS jackpot_config (
     id SERIAL PRIMARY KEY,
     location_id INTEGER UNIQUE REFERENCES locations(id),
@@ -32,7 +29,6 @@ CREATE TABLE IF NOT EXISTS jackpot_config (
     current_win_count INTEGER DEFAULT 0
 );
 
--- Пользователи (админы)
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
@@ -40,13 +36,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Индексы
 CREATE INDEX IF NOT EXISTS idx_events_machine ON events(machine_id);
 CREATE INDEX IF NOT EXISTS idx_events_location ON events(location_id);
 CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
-CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+CREATE INDEX IF NOT EXISTS idx_machines_location_local ON machines(location_id, local_id);
 
--- Администратор по умолчанию (пароль: admin123)
 INSERT INTO users (username, password_hash)
 VALUES ('admin', 'placeholder_hash_will_be_replaced')
 ON CONFLICT (username) DO NOTHING;

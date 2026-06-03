@@ -73,30 +73,27 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # ─── Приём событий от локальных серверов ──────────────────────
-
 @app.post("/api/event", response_model=EventResponse)
 async def receive_cloud_event(event: CloudEventRequest):
     if not await verify_api_key(event.location_id, event.api_key):
         raise HTTPException(status_code=403, detail="Неверный api_key")
 
     try:
+        # Найти или создать автомат по local_id
+        cloud_machine_id = await find_or_create_machine(event.location_id, event.machine_id)
+
         actual_event_type = event.event_type
         if actual_event_type in ("win", "jackpot"):
-            jackpot_result = await increment_jackpot(event.machine_id)
+            jackpot_result = await increment_jackpot(cloud_machine_id)
             if jackpot_result["jackpot_triggered"]:
                 actual_event_type = "jackpot"
 
-        result = await add_event(
-            event.machine_id,
-            event.location_id,
-            actual_event_type,
-            event.local_event_id
-        )
+        result = await add_event(cloud_machine_id, event.location_id, actual_event_type, event.local_event_id)
 
         if result.get("status") == "duplicate":
             return EventResponse(
                 event_id=result["id"],
-                machine_id=event.machine_id,
+                machine_id=cloud_machine_id,
                 machine_name="",
                 location_id=event.location_id,
                 location_name="",
@@ -150,6 +147,11 @@ async def admin_update_location(location_id: int, data: LocationUpdate, username
     await update_location(location_id, data.name)
     machines = await get_machines(location_id)
     return {"id": location_id, "name": data.name, "machine_count": len(machines)}
+    
+@app.put("/api/admin/machines/{machine_id}")
+async def admin_update_machine(machine_id: int, data: MachineUpdate, username: str = Depends(get_current_user)):
+    await update_machine(machine_id, data.local_id, data.name)
+    return {"status": "ok"}
 
 @app.delete("/api/admin/locations/{location_id}")
 async def admin_delete_location(location_id: int, username: str = Depends(get_current_user)):

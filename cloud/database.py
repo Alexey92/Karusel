@@ -5,7 +5,6 @@ import asyncpg
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://karusel:karusel@localhost:5432/karusel")
-
 pool = None
 
 async def get_pool():
@@ -26,14 +25,12 @@ async def init_db():
     p = await get_pool()
     async with p.acquire() as conn:
         with open(os.path.join(os.path.dirname(__file__), "schema.sql"), "r") as f:
-            schema = f.read()
-        await conn.execute(schema)
+            await conn.execute(f.read())
     print("[DB] База данных инициализирована.")
 
 async def add_event(machine_id: int, location_id: int, event_type: str, local_event_id: int = None) -> dict:
     p = await get_pool()
     async with p.acquire() as conn:
-        # Проверка на дубликат
         if local_event_id:
             existing = await conn.fetchrow(
                 "SELECT id FROM events WHERE location_id = $1 AND local_event_id = $2",
@@ -43,11 +40,7 @@ async def add_event(machine_id: int, location_id: int, event_type: str, local_ev
                 return {"status": "duplicate", "id": existing["id"]}
 
         row = await conn.fetchrow(
-            """
-            INSERT INTO events (machine_id, location_id, event_type, local_event_id)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, machine_id, location_id, event_type, timestamp
-            """,
+            "INSERT INTO events (machine_id, location_id, event_type, local_event_id) VALUES ($1, $2, $3, $4) RETURNING id, machine_id, location_id, event_type, timestamp",
             machine_id, location_id, event_type, local_event_id
         )
 
@@ -65,12 +58,30 @@ async def add_event(machine_id: int, location_id: int, event_type: str, local_ev
             "status": "ok"
         }
 
-async def verify_api_key(location_id: int, api_key: str) -> bool:
+async def find_or_create_machine(location_id: int, local_id: int, name: str = None) -> int:
+    """Найти автомат по location_id и local_id, если нет — создать."""
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
-            "SELECT api_key FROM locations WHERE id = $1", location_id
+            "SELECT id FROM machines WHERE location_id = $1 AND local_id = $2",
+            location_id, local_id
         )
+        if row:
+            return row["id"]
+
+        if not name:
+            name = f"Автомат №{local_id}"
+
+        row = await conn.fetchrow(
+            "INSERT INTO machines (local_id, name, location_id) VALUES ($1, $2, $3) ON CONFLICT (location_id, local_id) DO UPDATE SET name = $2 RETURNING id",
+            local_id, name, location_id
+        )
+        return row["id"]
+
+async def verify_api_key(location_id: int, api_key: str) -> bool:
+    p = await get_pool()
+    async with p.acquire() as conn:
+        row = await conn.fetchrow("SELECT api_key FROM locations WHERE id = $1", location_id)
         return row is not None and row["api_key"] == api_key
 
 async def get_user(username: str) -> dict:
@@ -97,10 +108,7 @@ async def create_location(name: str, api_key: str) -> dict:
             "INSERT INTO locations (name, api_key) VALUES ($1, $2) RETURNING id, name, api_key",
             name, api_key
         )
-        await conn.execute(
-            "INSERT INTO jackpot_config (location_id) VALUES ($1)",
-            row["id"]
-        )
+        await conn.execute("INSERT INTO jackpot_config (location_id) VALUES ($1)", row["id"])
         return dict(row)
 
 async def update_location(location_id: int, name: str):
@@ -121,7 +129,7 @@ async def get_machines(location_id: int = None) -> list:
     async with p.acquire() as conn:
         if location_id:
             rows = await conn.fetch(
-                "SELECT m.*, l.name as location_name FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.location_id = $1 ORDER BY m.id",
+                "SELECT m.*, l.name as location_name FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.location_id = $1 ORDER BY m.local_id",
                 location_id
             )
         else:
@@ -130,14 +138,24 @@ async def get_machines(location_id: int = None) -> list:
             )
         return [dict(r) for r in rows]
 
-async def create_machine(name: str, location_id: int) -> dict:
+async def create_machine(local_id: int, name: str, location_id: int) -> dict:
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
-            "INSERT INTO machines (name, location_id) VALUES ($1, $2) RETURNING id, name, location_id",
-            name, location_id
+            "INSERT INTO machines (local_id, name, location_id) VALUES ($1, $2, $3) ON CONFLICT (location_id, local_id) DO UPDATE SET name = $2 RETURNING id, local_id, name, location_id",
+            local_id, name, location_id
         )
         return dict(row)
+
+async def update_machine(machine_id: int, local_id: int = None, name: str = None):
+    p = await get_pool()
+    async with p.acquire() as conn:
+        if local_id is not None and name is not None:
+            await conn.execute("UPDATE machines SET local_id = $1, name = $2 WHERE id = $3", local_id, name, machine_id)
+        elif local_id is not None:
+            await conn.execute("UPDATE machines SET local_id = $1 WHERE id = $2", local_id, machine_id)
+        elif name is not None:
+            await conn.execute("UPDATE machines SET name = $1 WHERE id = $2", name, machine_id)
 
 async def delete_machine(machine_id: int):
     p = await get_pool()
@@ -149,43 +167,24 @@ async def get_machine_stats(machine_id: int) -> dict:
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
-            "SELECT m.name as machine_name, m.location_id, l.name as location_name FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.id = $1",
+            "SELECT m.name as machine_name, m.local_id, m.location_id, l.name as location_name FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.id = $1",
             machine_id
         )
         if not row:
             return {}
         info = dict(row)
 
-        wins_hour = await conn.fetchval(
-            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '1 hour'",
-            machine_id
-        )
-        wins_today = await conn.fetchval(
-            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND date(timestamp) = CURRENT_DATE",
-            machine_id
-        )
-        wins_24h = await conn.fetchval(
-            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '24 hours'",
-            machine_id
-        )
-        wins_total = await conn.fetchval(
-            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'",
-            machine_id
-        )
-        plays_total = await conn.fetchval(
-            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'",
-            machine_id
-        )
-        last_win = await conn.fetchval(
-            "SELECT timestamp FROM events WHERE machine_id = $1 ORDER BY timestamp DESC LIMIT 1",
-            machine_id
-        )
-        jackpot = await conn.fetchrow(
-            "SELECT * FROM jackpot_config WHERE location_id = $1", info["location_id"]
-        )
+        wins_hour = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '1 hour'", machine_id)
+        wins_today = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND date(timestamp) = CURRENT_DATE", machine_id)
+        wins_24h = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '24 hours'", machine_id)
+        wins_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'", machine_id)
+        plays_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'", machine_id)
+        last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 ORDER BY timestamp DESC LIMIT 1", machine_id)
+        jackpot = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", info["location_id"])
 
         return {
             "machine_id": machine_id,
+            "local_id": info["local_id"],
             "machine_name": info["machine_name"],
             "location_id": info["location_id"],
             "location_name": info["location_name"],
@@ -220,9 +219,7 @@ async def get_events_history(limit: int = 50, offset: int = 0, location_id: int 
         if location_id:
             query += " WHERE e.location_id = $1"
             params.append(location_id)
-        query += " ORDER BY e.timestamp DESC LIMIT ${} OFFSET ${}".format(
-            len(params) + 1, len(params) + 2
-        )
+        query += " ORDER BY e.timestamp DESC LIMIT $" + str(len(params)+1) + " OFFSET $" + str(len(params)+2)
         params.extend([limit, offset])
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
@@ -249,15 +246,13 @@ async def increment_jackpot(machine_id: int) -> dict:
             triggered = True
             current = 0
 
-        await conn.execute("UPDATE jackpot_config SET current_win_count = $1 WHERE location_id = $2",
-                          current, location["location_id"])
+        await conn.execute("UPDATE jackpot_config SET current_win_count = $1 WHERE location_id = $2", current, location["location_id"])
         return {"jackpot_triggered": triggered, "threshold": threshold}
 
 async def set_jackpot_threshold(location_id: int, win_count: int) -> dict:
     p = await get_pool()
     async with p.acquire() as conn:
-        await conn.execute("UPDATE jackpot_config SET win_count_for_jackpot = $1 WHERE location_id = $2",
-                          win_count, location_id)
+        await conn.execute("UPDATE jackpot_config SET win_count_for_jackpot = $1 WHERE location_id = $2", win_count, location_id)
         row = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", location_id)
         return dict(row)
 
@@ -274,7 +269,6 @@ async def set_jackpot_counter(location_id: int, count: int) -> dict:
         threshold = await conn.fetchval("SELECT win_count_for_jackpot FROM jackpot_config WHERE location_id = $1", location_id)
         if count >= threshold:
             count = 0
-        await conn.execute("UPDATE jackpot_config SET current_win_count = $1 WHERE location_id = $2",
-                          count, location_id)
+        await conn.execute("UPDATE jackpot_config SET current_win_count = $1 WHERE location_id = $2", count, location_id)
         row = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", location_id)
         return dict(row)

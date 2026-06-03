@@ -301,19 +301,50 @@
         }
 
         async function showLocationMachines(locId){
-            const machines = await apiGet('/api/admin/locations/'+locId+'/machines');
-            let html = '<h3>Автоматы</h3><ul>';
-            machines.forEach(m=>{html+=`<li>${m.name} (ID:${m.id}) <button onclick="deleteMachine(${m.id})">🗑️</button></li>`;});
-            html += `</ul><div class="form-row"><input type="text" id="new-machine-name" placeholder="Название автомата"><button onclick="addMachine(${locId})">Добавить</button></div>`;
-            document.getElementById('location-machines').innerHTML = html;
-        }
+			const machines = await apiGet('/api/admin/locations/'+locId+'/machines');
+			let html = '<h3>Автоматы</h3><table class="history-table"><thead><tr><th>Лок. ID</th><th>Название</th><th>Глоб. ID</th><th></th></tr></thead><tbody>';
+			machines.forEach(m=>{
+				html += `<tr>
+					<td><input type="number" id="local-${m.id}" value="${m.local_id}" style="width:60px;"></td>
+					<td><input type="text" id="name-${m.id}" value="${m.name}" style="width:150px;"></td>
+					<td>${m.id}</td>
+					<td>
+						<button onclick="saveMachine(${m.id})" class="btn-small">💾</button>
+						<button onclick="deleteMachine(${m.id})" class="btn-danger btn-small">🗑️</button>
+					</td>
+				</tr>`;
+			});
+			html += '</tbody></table>';
+			html += `<div class="form-row" style="margin-top:10px;">
+				<input type="number" id="new-machine-local" placeholder="Номер на объекте" style="width:100px;">
+				<input type="text" id="new-machine-name" placeholder="Название автомата">
+				<button onclick="addMachine(${locId})">Добавить</button>
+			</div>`;
+			document.getElementById('location-machines').innerHTML = html;
+		}
+		
+		async function saveMachine(machineId){
+			const localId = document.getElementById('local-'+machineId).value;
+			const name = document.getElementById('name-'+machineId).value;
+			await fetch('/api/admin/machines/'+machineId, {
+				method:'PUT',
+				headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+				body:JSON.stringify({local_id:parseInt(localId),name:name})
+			});
+			alert('Сохранено');
+		}
 
         async function addMachine(locId){
-            const name = document.getElementById('new-machine-name').value;
-            if(!name) return;
-            await fetch('/api/admin/locations/'+locId+'/machines',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name})});
-            showLocationMachines(locId); loadLocations();
-        }
+			const localId = document.getElementById('new-machine-local').value;
+			const name = document.getElementById('new-machine-name').value;
+			if(!localId||!name) return;
+			await fetch('/api/admin/locations/'+locId+'/machines', {
+				method:'POST',
+				headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+				body:JSON.stringify({local_id:parseInt(localId),name:name})
+			});
+			showLocationMachines(locId); loadLocations();
+		}
 
         async function deleteMachine(mId){
             if(!confirm('Удалить автомат?')) return;
