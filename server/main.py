@@ -22,7 +22,7 @@ from database import (
     increment_jackpot, set_jackpot_threshold, reset_jackpot, set_jackpot_counter
 )
 from models import (
-    EventRequest, EventResponse, PublicStatsResponse,
+    EventRequest, EventResponse, PublicStatsResponse, MachineUpdate, 
     LoginRequest, LoginResponse, MachineStats, EventHistoryItem,
     JackpotConfigResponse, JackpotThresholdRequest, JackpotCounterRequest,
     ChangePasswordRequest, LocationCreate, LocationUpdate, MachineCreate, LocationResponse
@@ -80,6 +80,16 @@ async def root():
 @app.get("/screen")
 async def screen(request: Request):
     return templates.TemplateResponse("screen.html", {"request": request})
+    
+@app.put("/api/admin/machines/{machine_id}")
+async def admin_update_machine(machine_id: int, data: MachineUpdate, username: str = Depends(get_current_user)):
+    from database import get_db
+    db = await get_db()
+    if data.name:
+        await db.execute("UPDATE machines SET name = ? WHERE id = ?", (data.name, machine_id))
+        await db.commit()
+    await db.close()
+    return {"status": "ok"}
 
 
 @app.post("/api/event", response_model=EventResponse)

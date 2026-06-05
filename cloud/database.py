@@ -151,11 +151,20 @@ async def update_machine(machine_id: int, local_id: int = None, name: str = None
     p = await get_pool()
     async with p.acquire() as conn:
         if local_id is not None and name is not None:
-            await conn.execute("UPDATE machines SET local_id = $1, name = $2 WHERE id = $3", local_id, name, machine_id)
+            await conn.execute(
+                "UPDATE machines SET local_id = $1, name = $2 WHERE id = $3",
+                local_id, name, machine_id
+            )
         elif local_id is not None:
-            await conn.execute("UPDATE machines SET local_id = $1 WHERE id = $2", local_id, machine_id)
+            await conn.execute(
+                "UPDATE machines SET local_id = $1 WHERE id = $2",
+                local_id, machine_id
+            )
         elif name is not None:
-            await conn.execute("UPDATE machines SET name = $1 WHERE id = $2", name, machine_id)
+            await conn.execute(
+                "UPDATE machines SET name = $1 WHERE id = $2",
+                name, machine_id
+            )
 
 async def delete_machine(machine_id: int):
     p = await get_pool()
