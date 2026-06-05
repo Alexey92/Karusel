@@ -29,7 +29,7 @@ from database import (
     init_db, add_event, verify_api_key, find_or_create_machine,
     get_user, update_admin_password,
     get_locations, create_location, update_location, delete_location,
-    get_machines, create_machine, delete_machine,
+    get_machines, create_machine, update_machine, delete_machine,
     get_machine_stats, get_all_machines_stats,
     get_events_history, get_total_events_count,
     increment_jackpot, set_jackpot_threshold, reset_jackpot, set_jackpot_counter
