@@ -144,7 +144,7 @@ async def login(login_data: LoginRequest):
 
 @app.get("/admin")
 async def admin_panel(request: Request):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse("admin.html", {"request": request, "is_cloud": False})
 
 
 @app.get("/api/admin/locations")

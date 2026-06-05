@@ -125,7 +125,7 @@ async def login(login_data: LoginRequest):
 
 @app.get("/admin")
 async def admin_panel(request: Request):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse("admin.html", {"request": request, "is_cloud": True})
 
 @app.get("/api/admin/locations")
 async def admin_locations(username: str = Depends(get_current_user)):
