@@ -99,3 +99,8 @@ class LocationResponse(BaseModel):
     id: int
     name: str
     machine_count: Optional[int] = 0
+    
+    
+class MachineUpdate(BaseModel):
+    local_id: Optional[int] = Field(None, ge=1)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
