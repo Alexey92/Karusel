@@ -20,8 +20,8 @@ const char* WIFI_SSID = "karusel-net";
 const char* WIFI_PASSWORD = "karusel2026";
 const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
 const int MACHINE_ID = 1;
-const int WIN_PIN = 13;
-const int PLAY_PIN = 14;
+const int WIN_PIN = 2;
+const int PLAY_PIN = 4;
 
 // ═══════════════════════════════════════════════════════
 // КОНСТАНТЫ
