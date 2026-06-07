@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARUSEL — Инструкция по эксплуатации</title>
+    <style>
+        :root {
+            --bg: #1a1a2e; --card: #16213e; --text: #e0e0e0;
+            --accent: #ffd200; --code-bg: #0d1117; --border: #2a2a4a;
+            --danger: #e74c3c; --success: #2ecc71;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 40px; max-width: 1100px; margin: 0 auto; }
+        h1 { font-size: 36px; color: var(--accent); margin-bottom: 8px; }
+        h2 { font-size: 24px; color: var(--accent); margin-top: 40px; margin-bottom: 16px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+        h3 { font-size: 18px; margin-top: 24px; margin-bottom: 8px; color: #fff; }
+        p { margin-bottom: 12px; }
+        a { color: var(--accent); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; }
+        code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; color: #58a6ff; }
+        pre { background: var(--code-bg); padding: 16px 20px; border-radius: 8px; overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5; }
+        pre code { background: none; padding: 0; color: #e6edf3; }
+        .note { background: rgba(255, 210, 0, 0.08); border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+        .warning { background: rgba(231, 76, 60, 0.08); border-left: 4px solid var(--danger); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; border: 1px solid var(--border); }
+        th { background: var(--card); padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 14px; color: #888; }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<h1>🎰 KARUSEL — Инструкция по эксплуатации</h1>
+
+<h2>Общая структура системы</h2>
+
+<div class="card">
+    <p><strong>Адрес (объект):</strong> игровые автоматы с ESP32 + локальный сервер (мини-ПК на Windows).</p>
+    <p>ESP32 отправляют события на локальный сервер. Сервер записывает их в локальную базу данных (<code>server/karusel.db</code>) и сразу пересылает на глобальный сервер. Информация на публичных экранах формируется из данных локальной базы.</p>
+    <p><strong>Офис:</strong> глобальный сервер (Mac). Принимает данные от локальных серверов и отдельных ESP32 (для адресов, где один автомат).</p>
+</div>
+
+<h2>Порядок администрирования</h2>
+
+<div class="card">
+    <h3>На локальном сервере</h3>
+    <ol>
+        <li>В админ-панели создайте адрес и игровые автоматы. ID автоматов проставляйте подряд, начиная с 1.</li>
+        <li>ESP32 для каждого автомата прошейте, заменив в строке 22 прошивки <code>MACHINE_ID</code> на реальный номер автомата.</li>
+        <li>Номера автоматов в админ-панели должны соответствовать реальным <code>MACHINE_ID</code> в ESP32.</li>
+    </ol>
+
+    <h3>На глобальном сервере</h3>
+    <ol>
+        <li>Создайте адрес, соответствующий реальному объекту. Названия могут не совпадать — адреса сопоставляются по ключу (API Key).</li>
+        <li>Автоматы можно создавать и редактировать вручную, но по умолчанию они создаются автоматически при поступлении первого события от локального сервера.</li>
+    </ol>
+</div>
+
+<h2>Ссылки</h2>
+
+<div class="card">
+    <table>
+        <tr><th>Страница</th><th>URL</th><th>Где работает</th></tr>
+        <tr><td>Публичный экран (левый)</td><td><code>http://192.168.1.100:5050/screen?monitor=0</code></td><td>Локальный</td></tr>
+        <tr><td>Публичный экран (правый)</td><td><code>http://192.168.1.100:5050/screen?monitor=1</code></td><td>Локальный</td></tr>
+        <tr><td>Админ-панель (локальная)</td><td><code>http://localhost:5050/admin</code></td><td>Локальный</td></tr>
+        <tr><td>Админ-панель (глобальная)</td><td><code>http://localhost:5050/admin</code> (на Mac)<br><code>http://194.186.104.79:5050/admin</code> (из интернета)</td><td>Глобальный</td></tr>
+        <tr><td>Проверка сервера</td><td><code>http://IP:5050/</code></td><td>Оба</td></tr>
+    </table>
+</div>
+
+<h2>Windows (локальный сервер)</h2>
+
+<div class="card">
+    <h3>1. Автозапуск при включении ПК</h3>
+    <p>Ярлык <code>start_server.bat</code> помещён в папку автозагрузки (<code>shell:startup</code>). Сервер запускается автоматически при старте Windows.</p>
+
+    <h3>2. Ручной запуск</h3>
+    <p>Дважды кликните <code>start_server.bat</code> в папке <code>C:\karusel\</code>.</p>
+
+    <h3>3. Настройка start_server.bat для конкретного адреса</h3>
+    <p>Откройте файл в Блокноте и пропишите:</p>
+    <pre><code>set KARUSEL_CLOUD_URL=http://194.186.104.79:5050/api/event
+set KARUSEL_CLOUD_KEY=ваш_api_key
+set KARUSEL_LOCATION_ID=id_адреса</code></pre>
+    <p><code>API Key</code> и <code>ID</code> смотрите в глобальной админ-панели во вкладке «Адреса».</p>
+
+    <h3>4. Публичный экран</h3>
+    <p>Откройте два окна браузера:</p>
+    <pre><code>http://192.168.1.100:5050/screen?monitor=0   (левый экран)
+http://192.168.1.100:5050/screen?monitor=1   (правый экран)</code></pre>
+    <p>Разнесите окна на разные мониторы, включите полноэкранный режим (F11).</p>
+
+    <h3>5. Админ-панель (локальная)</h3>
+    <p>Откройте браузер: <code>http://localhost:5050/admin</code>. Логин/пароль по умолчанию: <code>admin</code> / <code>admin123</code>. Рекомендуется сразу сменить пароль (вкладка «Настройки»).</p>
+
+    <h3>6. Очистка локальной базы данных</h3>
+    <p>Остановите сервер. Удалите файл <code>C:\karusel\server\karusel.db</code>. Запустите сервер снова — база создастся пустой.</p>
+    <div class="warning">Все локальные данные будут потеряны. Глобальная база не затрагивается.</div>
+</div>
+
+<h2>macOS (глобальный сервер)</h2>
+
+<div class="card">
+    <h3>1. Запуск сервера</h3>
+    <p>Откройте Terminal. Запустите скрипт:</p>
+    <pre><code>cd ~/Documents/karusel/cloud
+./start_cloud.sh</code></pre>
+    <p>Или двойным кликом в Finder.</p>
+
+    <h3>2. Админ-панель (глобальная)</h3>
+    <p>На Mac: <code>http://localhost:5050/admin</code>. Из интернета: <code>http://194.186.104.79:5050/admin</code>.</p>
+
+    <h3>3. Очистка глобальной базы данных</h3>
+    <p>Откройте Terminal и запустите скрипт:</p>
+    <pre><code>cd ~/Documents/karusel/cloud
+./reset_db.sh</code></pre>
+    <p>Или двойным кликом в Finder.</p>
+    <div class="warning">Все данные всех адресов будут удалены. Отменить невозможно.</div>
+</div>
+
+<h2>Минимальный набор действий для запуска нового мини-ПК</h2>
+
+<div class="card">
+    <h3>1. Установка Python</h3>
+    <p>Скачайте Python 3.12 с <a href="https://www.python.org/downloads/">python.org</a>. При установке отметьте галочку <strong>«Add Python to PATH»</strong>. Проверьте: <code>python --version</code>.</p>
+
+    <h3>2. Копирование проекта</h3>
+    <p>Скопируйте папку <code>karusel</code> на мини-ПК в <code>C:\karusel</code> (можно с флешки).</p>
+
+    <h3>3. Установка зависимостей Python</h3>
+    <pre><code>cd C:\karusel\server
+python -m pip install -r requirements.txt</code></pre>
+
+    <h3>4. Настройка роутера на объекте</h3>
+    <p>Подключитесь к роутеру, зайдите в <code>192.168.1.1</code>. Задайте SSID <code>karusel-net</code>, пароль <code>karusel2026</code> (пароль жёстко зашит в коде esp32, строка 20: изменение пароля только с перепрошивкой esp32). Закрепите IP мини-ПК как <code>192.168.1.100</code> через DHCP-резервацию.</p>
+
+    <h3>5. Настройка start_server.bat</h3>
+    <p>Откройте <code>C:\karusel\start_server.bat</code> в Блокноте:</p>
+    <pre><code>set KARUSEL_CLOUD_URL=http://194.186.104.79:5050/api/event
+set KARUSEL_CLOUD_KEY=ваш_api_key
+set KARUSEL_LOCATION_ID=id_адреса</code></pre>
+
+    <h3>6. Автозапуск</h3>
+    <p>Создайте ярлык для <code>start_server.bat</code>. Поместите его в <code>shell:startup</code>.</p>
+
+    <h3>7. Первый запуск</h3>
+    <p>Запустите <code>start_server.bat</code>. Откройте <code>http://localhost:5050/admin</code>. Войдите (admin/admin123). Создайте адрес и автоматы.</p>
+</div>
+
+<h2>Настройка роутера в офисе (TP-Link TL-MR6400)</h2>
+
+<div class="card">
+    <p>Роутер имеет статический IP <code>194.186.104.79</code>.</p>
+    <ol>
+        <li>Подключите Mac к роутеру, узнайте его локальный IP: <code>ipconfig getifaddr en0</code>.</li>
+        <li>Зайдите в роутер: <code>192.168.0.1</code>, логин/пароль <code>admin</code>/<code>admin</code>.</li>
+        <li>Перейдите в <strong>Forwarding → Virtual Servers</strong> → <strong>Add New</strong>.</li>
+        <li>Заполните: Service Port <code>5050</code>, Internal Port <code>5050</code>, IP Address — IP Mac, Protocol <code>ALL</code>, Status <code>Enabled</code>.</li>
+        <li>Нажмите <strong>Save</strong>.</li>
+    </ol>
+</div>
+
+<h2>Установка Python 3.12 и PostgreSQL на Mac</h2>
+
+<div class="card">
+    <h3>Python 3.12</h3>
+    <ol>
+        <li>Скачайте установщик с <a href="https://www.python.org/downloads/">python.org</a> (macOS 64-bit installer).</li>
+        <li>Запустите .pkg, следуйте инструкциям.</li>
+        <li>Проверьте: <code>python3.12 --version</code>.</li>
+    </ol>
+
+    <h3>PostgreSQL</h3>
+    <ol>
+        <li>Скачайте <a href="https://postgresapp.com/">Postgres.app</a>, откройте .dmg, перетащите в Программы.</li>
+        <li>Запустите Postgres.app, нажмите <strong>Initialize</strong>.</li>
+        <li>Откройте Terminal и выполните:
+            <pre><code>echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+createdb karusel
+psql -d karusel -c "CREATE USER karusel WITH PASSWORD 'karusel'; GRANT ALL PRIVILEGES ON DATABASE karusel TO karusel;"
+psql -d karusel -c "GRANT ALL ON SCHEMA public TO karusel;"</code></pre>
+        </li>
+        <li>Установите зависимости Python:
+            <pre><code>cd ~/Documents/karusel/cloud
+python3.12 -m pip install -r requirements.txt</code></pre>
+        </li>
+    </ol>
+</div>
+
+<h2>Работа с PostgreSQL (командная строка)</h2>
+
+<div class="card">
+    <h3>Подключение</h3>
+    <pre><code>psql -d karusel</code></pre>
+
+    <h3>Просмотр таблиц</h3>
+    <pre><code>\dt</code></pre>
+
+    <h3>Адреса и ключи</h3>
+    <pre><code>SELECT id, name, api_key FROM locations;</code></pre>
+
+    <h3>Последние 20 событий</h3>
+    <pre><code>SELECT e.id, l.name AS адрес, m.name AS автомат, e.event_type, e.timestamp
+FROM events e
+JOIN locations l ON e.location_id = l.id
+JOIN machines m ON e.machine_id = m.id
+ORDER BY e.timestamp DESC LIMIT 20;</code></pre>
+
+    <h3>Очистка всех данных</h3>
+    <pre><code>DELETE FROM events;
+DELETE FROM machines;
+DELETE FROM jackpot_config;
+DELETE FROM locations;</code></pre>
+
+    <h3>Сброс автоинкрементных счётчиков</h3>
+    <pre><code>ALTER SEQUENCE locations_id_seq RESTART WITH 1;
+ALTER SEQUENCE machines_id_seq RESTART WITH 1;
+ALTER SEQUENCE events_id_seq RESTART WITH 1;
+ALTER SEQUENCE jackpot_config_id_seq RESTART WITH 1;</code></pre>
+
+    <h3>Выход</h3>
+    <pre><code>\q</code></pre>
+</div>
+
+<h2>Доступы по умолчанию</h2>
+
+<div class="card">
+    <table>
+        <tr><td>Логин админа</td><td><code>admin</code></td></tr>
+        <tr><td>Пароль админа</td><td><code>admin123</code></td></tr>
+        <tr><td>Порт сервера</td><td><code>5050</code></td></tr>
+        <tr><td>Пользователь БД (Mac)</td><td><code>karusel / karusel</code></td></tr>
+        <tr><td>Wi-Fi объектов</td><td><code>karusel-net / karusel2026</code></td></tr>
+    </table>
+    <div class="warning">Обязательно смените пароль администратора перед запуском системы в работу.</div>
+</div>
+
+<hr style="margin:40px 0;border-color:var(--border);">
+<p style="text-align:center;color:#888;">KARUSEL Win Tracker</p>
+
+</body>
+</html>
