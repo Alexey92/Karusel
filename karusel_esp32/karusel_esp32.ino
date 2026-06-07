@@ -51,12 +51,21 @@ unsigned long last_buffer_attempt = 0;
 // ПРЕРЫВАНИЯ
 // ═══════════════════════════════════════════════════════
 
+volatile unsigned long last_win_interrupt = 0;
+volatile unsigned long last_play_interrupt = 0;
+
 void IRAM_ATTR onWin() {
+  unsigned long now = millis();
+  if (now - last_win_interrupt < 300) return;
+  last_win_interrupt = now;
   detachInterrupt(digitalPinToInterrupt(WIN_PIN));
   win_flag = true;
 }
 
 void IRAM_ATTR onPlay() {
+  unsigned long now = millis();
+  if (now - last_play_interrupt < 300) return;
+  last_play_interrupt = now;
   detachInterrupt(digitalPinToInterrupt(PLAY_PIN));
   play_flag = true;
 }
