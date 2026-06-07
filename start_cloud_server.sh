@@ -15,6 +15,6 @@ else
 fi
 
 # Запуск сервера
-cd ~/Documents/karusel/cloud
+cd ~/Documents/karusel/cloud_server
 echo "Запускаю облачный сервер..."
 python3.12 main.py
