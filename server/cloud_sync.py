@@ -42,6 +42,7 @@ async def sync_event_to_cloud(event: dict):
 async def save_to_pending(event: dict):
     """Сохранить неотправленное событие в pending_sync."""
     db = await aiosqlite.connect(DB_PATH)
+    db.row_factory = aiosqlite.Row  
     await db.execute(
         "INSERT INTO pending_sync (event_id, machine_id, event_type) VALUES (?, ?, ?)",
         (event["event_id"], event["machine_id"], event["event_type"])
@@ -52,8 +53,8 @@ async def save_to_pending(event: dict):
 
 async def sync_pending_events():
     """Фоновый процесс: отправляет неотправленные события каждые 30 секунд."""
-    # Создаём таблицу для pending_sync, если её нет
     db = await aiosqlite.connect(DB_PATH)
+    db.row_factory = aiosqlite.Row  # ← добавить
     await db.execute(
         "CREATE TABLE IF NOT EXISTS pending_sync (id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER, machine_id INTEGER, event_type TEXT)"
     )
@@ -63,6 +64,7 @@ async def sync_pending_events():
     while True:
         try:
             db = await aiosqlite.connect(DB_PATH)
+            db.row_factory = aiosqlite.Row  # ← добавить
             rows = await db.execute_fetchall("SELECT * FROM pending_sync ORDER BY id LIMIT 50")
             
             for row in rows:
