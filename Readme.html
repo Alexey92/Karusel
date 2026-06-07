@@ -241,5 +241,66 @@ ALTER SEQUENCE jackpot_config_id_seq RESTART WITH 1;</code></pre>
 <hr style="margin:40px 0;border-color:var(--border);">
 <p style="text-align:center;color:#888;">KARUSEL Win Tracker</p>
 
+
+
+
+<h2 id="wiring">Схема подключения ESP32 к автомату</h2>
+
+<div class="card">
+    <h3>Нумерация ножек оптрона PC817</h3>
+    <p>Возьмите оптрон в руки. Найдите <strong>кружочек (точку)</strong> на корпусе. Расположите оптрон так, чтобы точка была слева сверху, ножки смотрели вниз.</p>
+    <table>
+        <tr><th>Ножка</th><th>Где находится</th></tr>
+        <tr><td><strong>1</strong> (с точкой)</td><td>Слева сверху</td></tr>
+        <tr><td><strong>2</strong></td><td>Слева снизу</td></tr>
+        <tr><td><strong>3</strong></td><td>Справа снизу</td></tr>
+        <tr><td><strong>4</strong></td><td>Справа сверху</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Питание ESP32</h3>
+    <table>
+        <tr><th>Контакт ESP32</th><th>Подключение</th></tr>
+        <tr><td>3V3</td><td>Красная шина "+" на макетке</td></tr>
+        <tr><td>VIN</td><td>Питание 5V</td></tr>
+        <tr><td>GND</td><td>Синяя шина "-" на макетке</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Оптрон 1 — Выигрыши (WIN)</h3>
+    <table>
+        <tr><th>Ножка оптрона</th><th>Подключение</th></tr>
+        <tr><td>Ножка 1 (с точкой)</td><td>Резистор 1 кОм → Жёлтый провод датчика №1</td></tr>
+        <tr><td>Ножка 2</td><td>Фиолетовый провод датчика №1</td></tr>
+        <tr><td>Ножка 3</td><td>Синяя шина GND макетки</td></tr>
+        <tr><td>Ножка 4</td><td>D13 на ESP32</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Оптрон 2 — Игры (PLAY)</h3>
+    <table>
+        <tr><th>Ножка оптрона</th><th>Подключение</th></tr>
+        <tr><td>Ножка 1 (с точкой)</td><td>Резистор 1 кОм → Жёлтый провод датчика №2</td></tr>
+        <tr><td>Ножка 2</td><td>Фиолетовый провод датчика №2</td></tr>
+        <tr><td>Ножка 3</td><td>Синяя шина GND макетки</td></tr>
+        <tr><td>Ножка 4</td><td>D14 на ESP32</td></tr>
+    </table>
+</div>
+
+<div class="card">
+    <h3>Провода от датчиков автомата</h3>
+    <table>
+        <tr><th>Датчик</th><th>Цвет провода</th><th>Подключение</th></tr>
+        <tr><td rowspan="2">Датчик №1 (выигрыши)</td><td>Жёлтый</td><td>Резистор 1 кОм → Ножка 1 оптрона 1</td></tr>
+        <tr><td>Фиолетовый</td><td>Ножка 2 оптрона 1</td></tr>
+        <tr><td rowspan="2">Датчик №2 (игры)</td><td>Жёлтый</td><td>Резистор 1 кОм → Ножка 1 оптрона 2</td></tr>
+        <tr><td>Фиолетовый</td><td>Ножка 2 оптрона 2</td></tr>
+    </table>
+</div>
+
+</div>
 </body>
 </html>
