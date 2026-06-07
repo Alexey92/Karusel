@@ -13,8 +13,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "karusel.db")
 
 async def sync_event_to_cloud(event: dict):
     if not CLOUD_URL or not CLOUD_API_KEY:
-        return False  # облако не настроено — тихо пропускаем
-    """Отправить одно событие на облако. При ошибке сохранить в pending_sync."""
+        return False
+
     async with httpx.AsyncClient(timeout=10) as client:
         try:
             resp = await client.post(
@@ -32,10 +32,23 @@ async def sync_event_to_cloud(event: dict):
                 return True
             else:
                 print(f"[CLOUD] Ошибка {resp.status_code}: {resp.text}")
+                await save_to_pending(event)  # ← добавить
                 return False
         except Exception as e:
             print(f"[CLOUD] Ошибка соединения: {e}")
+            await save_to_pending(event)  # ← добавить
             return False
+
+async def save_to_pending(event: dict):
+    """Сохранить неотправленное событие в pending_sync."""
+    db = await aiosqlite.connect(DB_PATH)
+    await db.execute(
+        "INSERT INTO pending_sync (event_id, machine_id, event_type) VALUES (?, ?, ?)",
+        (event["event_id"], event["machine_id"], event["event_type"])
+    )
+    await db.commit()
+    await db.close()
+    print(f"[CLOUD] Событие {event['event_id']} сохранено в pending_sync.")
 
 async def sync_pending_events():
     """Фоновый процесс: отправляет неотправленные события каждые 30 секунд."""
