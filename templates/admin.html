@@ -93,7 +93,7 @@
     </div>
 
     <script>
-		const IS_CLOUD = {{ is_cloud|lower }};
+		const IS_CLOUD = {% if is_cloud %}true{% else %}false{% endif %};
         let token = localStorage.getItem('karusel_token');
         let currentOffset = 0;
         const LIMIT = 50;
