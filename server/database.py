@@ -179,7 +179,7 @@ async def delete_machine(machine_id: int):
     await db.close()
 
 
-async def get_machine_stats(machine_id: int) -> dict:
+async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str = None) -> dict:
     db = await get_db()
 
     # Имя автомата и адреса
@@ -218,6 +218,21 @@ async def get_machine_stats(machine_id: int) -> dict:
         (machine_id,)
     )
     plays_total = row_plays[0]["count"]
+    
+    wins_period = 0
+    plays_period = 0
+    if from_date and to_date:
+        row_wins_period = await db.execute_fetchall(
+            "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type != 'play' AND date(timestamp) BETWEEN ? AND ?",
+            (machine_id, from_date, to_date)
+        )
+        wins_period = row_wins_period[0]["count"]
+        
+        row_plays_period = await db.execute_fetchall(
+            "SELECT COUNT(*) as count FROM events WHERE machine_id = ? AND event_type = 'play' AND date(timestamp) BETWEEN ? AND ?",
+            (machine_id, from_date, to_date)
+        )
+        plays_period = row_plays_period[0]["count"]
 
     row_last = await db.execute_fetchall(
         "SELECT timestamp FROM events WHERE machine_id = ? ORDER BY timestamp DESC LIMIT 1",
@@ -241,15 +256,17 @@ async def get_machine_stats(machine_id: int) -> dict:
         "wins_total": wins_total,
         "plays_total": plays_total,
         "last_win": last_win,
-        "jackpot_config": jackpot
+        "jackpot_config": jackpot,
+        "wins_period": wins_period,
+        "plays_period": plays_period
     }
 
 
-async def get_all_machines_stats() -> list:
+async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
     machines = await get_machines()
     stats = []
     for m in machines:
-        s = await get_machine_stats(m["id"])
+        s = await get_machine_stats(m["id"], from_date, to_date)
         stats.append(s)
     return stats
 

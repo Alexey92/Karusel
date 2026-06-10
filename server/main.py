@@ -71,7 +71,6 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 # ─── Публичные эндпоинты ───────────────────────────────────────
-
 @app.get("/")
 async def root():
     return {"status": "ok", "server": "KARUSEL Win Tracker", "version": "2.0.0"}
@@ -80,6 +79,14 @@ async def root():
 @app.get("/screen")
 async def screen(request: Request):
     return templates.TemplateResponse("screen.html", {"request": request})
+    
+@app.get("/api/admin/stats")
+async def admin_all_stats(
+    from_date: str = Query(None),
+    to_date: str = Query(None),
+    username: str = Depends(get_current_user)
+):
+    return await get_all_machines_stats(from_date, to_date)
     
 @app.put("/api/admin/machines/{machine_id}")
 async def admin_update_machine(machine_id: int, data: MachineUpdate, username: str = Depends(get_current_user)):

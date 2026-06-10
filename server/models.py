@@ -51,6 +51,8 @@ class MachineStats(BaseModel):
     plays_total: int = 0
     last_win: Optional[str] = None
     jackpot_config: Optional[dict] = None
+    wins_period: int = 0
+    plays_period: int = 0
 
 
 class EventHistoryItem(BaseModel):

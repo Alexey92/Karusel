@@ -122,7 +122,6 @@ async def login(login_data: LoginRequest):
     return LoginResponse(access_token=create_access_token(login_data.username))
 
 # ─── Админка ────────────────────────────────────────────────
-
 @app.get("/admin")
 async def admin_panel(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request, "is_cloud": True})
@@ -135,6 +134,14 @@ async def admin_locations(username: str = Depends(get_current_user)):
         machines = await get_machines(loc["id"])
         result.append({**loc, "machine_count": len(machines)})
     return result
+    
+@app.get("/api/admin/stats")
+async def admin_all_stats(
+    from_date: str = Query(None),
+    to_date: str = Query(None),
+    username: str = Depends(get_current_user)
+):
+    return await get_all_machines_stats(from_date, to_date)
 
 @app.post("/api/admin/locations")
 async def admin_create_location(data: LocationCreate, username: str = Depends(get_current_user)):

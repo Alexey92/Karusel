@@ -172,7 +172,7 @@ async def delete_machine(machine_id: int):
         await conn.execute("DELETE FROM events WHERE machine_id = $1", machine_id)
         await conn.execute("DELETE FROM machines WHERE id = $1", machine_id)
 
-async def get_machine_stats(machine_id: int) -> dict:
+async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str = None) -> dict:
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
@@ -188,6 +188,19 @@ async def get_machine_stats(machine_id: int) -> dict:
         wins_24h = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '24 hours'", machine_id)
         wins_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'", machine_id)
         plays_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'", machine_id)
+        
+        wins_period = 0
+        plays_period = 0
+        if from_date and to_date:
+            wins_period = await conn.fetchval(
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND date(timestamp) BETWEEN $2 AND $3",
+                machine_id, from_date, to_date
+            ) or 0
+            plays_period = await conn.fetchval(
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND date(timestamp) BETWEEN $2 AND $3",
+                machine_id, from_date, to_date
+            ) or 0
+        
         last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 ORDER BY timestamp DESC LIMIT 1", machine_id)
         jackpot = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", info["location_id"])
 
@@ -203,14 +216,16 @@ async def get_machine_stats(machine_id: int) -> dict:
             "wins_total": wins_total or 0,
             "plays_total": plays_total or 0,
             "last_win": last_win.isoformat() if last_win else None,
-            "jackpot_config": dict(jackpot) if jackpot else None
+            "jackpot_config": dict(jackpot) if jackpot else None,
+            "wins_period": wins_period,
+            "plays_period": plays_period
         }
 
-async def get_all_machines_stats() -> list:
+async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
     machines = await get_machines()
     stats = []
     for m in machines:
-        s = await get_machine_stats(m["id"])
+        s = await get_machine_stats(m["id"], from_date, to_date)
         if s:
             stats.append(s)
     return stats
