@@ -1,0 +1,4 @@
+psql -d karusel -c "SHOW timezone;"
+
+Если вернёт UTC или GMT — нужно установить:
+psql -d karusel -c "SET timezone = 'Europe/Moscow';"
