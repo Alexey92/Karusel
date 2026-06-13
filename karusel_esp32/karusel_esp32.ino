@@ -86,7 +86,7 @@ void setup() {
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(10000);
+  delay(15000);
 
   Serial.println("\n╔════════════════════════════════╗");
   Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
@@ -154,8 +154,10 @@ void loop() {
     pending_wins += wins;
     pending_plays += plays;
 
+    
     if (pending_wins > 0 || pending_plays > 0) {
-    Serial.printf("Отправка: wins=%d, plays=%d\n", pending_wins, pending_plays);
+      delay(2000);
+      Serial.printf("Отправка: wins=%d, plays=%d\n", pending_wins, pending_plays);
 
       if (wifi_ok) {
         // Отправляем выигрыши
