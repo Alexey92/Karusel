@@ -6,12 +6,11 @@
  * Раз в секунду отправка всех накопленных событий.
  * Буфер: две переменные, сохраняются в NVS (энергонезависимая память).
  * Нет статуса сервера — если не отправилось, пробуем через секунду снова.
- * При старте задержка 15 секунд (ожидание стабилизации питания).
+ * При старте задержка 5 секунд (ожидание стабилизации питания).
  */
 
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <Preferences.h>
 
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
@@ -39,7 +38,7 @@ const int TEST_PLAY_OUT = 32;
 
 const unsigned long POLL_INTERVAL_MS = 1000;
 const unsigned long HTTP_TIMEOUT_MS = 3000;
-const unsigned long WIFI_RETRY_MS = 7000;
+const unsigned long WIFI_RETRY_MS = 10000;
 
 // ═══════════════════════════════════════════════════════
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -53,8 +52,6 @@ volatile int play_counter = 0;
 int pending_wins = 0;
 int pending_plays = 0;
 
-// NVS
-Preferences prefs;
 
 // WiFi
 unsigned long last_wifi_attempt = 0;
@@ -63,21 +60,27 @@ unsigned long last_poll_time = 0;
 // ═══════════════════════════════════════════════════════
 // ПРЕРЫВАНИЯ
 // ═══════════════════════════════════════════════════════
-
 volatile unsigned long last_win_interrupt = 0;
+volatile unsigned long last_play_interrupt = 0;
+const unsigned long MIN_PULSE_US = 80000;  // 80 мс в микросекундах
 
 void IRAM_ATTR onWin() {
+  unsigned long now = micros();
+  if (now - last_win_interrupt < MIN_PULSE_US) return;
+  last_win_interrupt = now;
   win_counter++;
 }
 
 void IRAM_ATTR onPlay() {
+  unsigned long now = micros();
+  if (now - last_play_interrupt < MIN_PULSE_US) return;
+  last_play_interrupt = now;
   play_counter++;
 }
 
 // ═══════════════════════════════════════════════════════
 // SETUP
 // ═══════════════════════════════════════════════════════
-
 void setup() {
   Serial.begin(115200);
 
@@ -104,13 +107,6 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(WIN_PIN), onWin, FALLING);
   attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
 
-  // Восстанавливаем неотправленные события из NVS
-  prefs.begin("karusel", false);
-  pending_wins = prefs.getInt("pend_win", 0);
-  pending_plays = prefs.getInt("pend_play", 0);
-  prefs.end();
-  Serial.printf("[NVS] Восстановлено: wins=%d, plays=%d\n", pending_wins, pending_plays);
-
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
@@ -121,11 +117,20 @@ void setup() {
 // ═══════════════════════════════════════════════════════
 
 void loop() {
-  testSignals();
+  //testSignals();
 
   // ── WiFi ──
   bool wifi_ok = (WiFi.status() == WL_CONNECTED);
   digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
+
+  static bool was_connected = false;
+  if (wifi_ok && !was_connected) {
+      was_connected = true;
+      Serial.printf("[WiFi] Подключено! IP: %s\n", WiFi.localIP().toString().c_str());
+  }
+  if (!wifi_ok) {
+      was_connected = false;
+  }
 
   if (!wifi_ok && (millis() - last_wifi_attempt > WIFI_RETRY_MS)) {
     Serial.println("[WiFi] Переподключение...");
@@ -148,12 +153,6 @@ void loop() {
 
     pending_wins += wins;
     pending_plays += plays;
-
-    // Сохраняем в NVS
-    prefs.begin("karusel", false);
-    prefs.putInt("pend_win", pending_wins);
-    prefs.putInt("pend_play", pending_plays);
-    prefs.end();
 
     if (pending_wins > 0 || pending_plays > 0) {
     Serial.printf("Отправка: wins=%d, plays=%d\n", pending_wins, pending_plays);
@@ -179,12 +178,6 @@ void loop() {
           }
         }
 
-        // Обновляем NVS после отправки
-        prefs.begin("karusel", false);
-        prefs.putInt("pend_win", pending_wins);
-        prefs.putInt("pend_play", pending_plays);
-        prefs.end();
-
         if (pending_wins == 0 && pending_plays == 0) {
           Serial.println("[OK] Все события отправлены.");
         }
@@ -200,7 +193,6 @@ void loop() {
 // ═══════════════════════════════════════════════════════
 // HTTP (синхронный)
 // ═══════════════════════════════════════════════════════
-
 bool sendHTTP(String eventType) {
   HTTPClient http;
   http.begin(SERVER_URL);
