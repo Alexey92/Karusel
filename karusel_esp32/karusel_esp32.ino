@@ -86,7 +86,7 @@ void setup() {
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(5000);
+  delay(10000);
 
   Serial.println("\n╔════════════════════════════════╗");
   Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
