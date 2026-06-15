@@ -16,17 +16,17 @@
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
 
-//const char* WIFI_SSID = "karusel-net";
-//const char* WIFI_PASSWORD = "karusel2026";
-//const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
+const char* WIFI_SSID = "karusel-net";
+const char* WIFI_PASSWORD = "karusel2026";
+const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
 const int MACHINE_ID = 2;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
-const char* SERVER_URL = "http://192.168.0.108:5050/api/event";
-const char* WIFI_SSID = "kv1313";
-const char* WIFI_PASSWORD = "93985666";
+//const char* SERVER_URL = "http://192.168.0.108:5050/api/event";
+//const char* WIFI_SSID = "kv1313";
+//const char* WIFI_PASSWORD = "93985666";
 
 const int TEST_WIN_OUT = 33;
 const int TEST_PLAY_OUT = 32;
