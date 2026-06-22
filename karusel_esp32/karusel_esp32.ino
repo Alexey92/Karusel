@@ -19,7 +19,7 @@
 const char* WIFI_SSID = "karusel-net";
 const char* WIFI_PASSWORD = "karusel2026";
 const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
-const int MACHINE_ID = 2;
+const int MACHINE_ID = 1;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
@@ -62,7 +62,7 @@ unsigned long last_poll_time = 0;
 // ═══════════════════════════════════════════════════════
 volatile unsigned long last_win_interrupt = 0;
 volatile unsigned long last_play_interrupt = 0;
-const unsigned long MIN_PULSE_US = 80000;  // 80 мс в микросекундах
+const unsigned long MIN_PULSE_US = 50000;  // 80 мс в микросекундах
 
 void IRAM_ATTR onWin() {
   unsigned long now = micros();
@@ -86,7 +86,7 @@ void setup() {
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(15000);
+  delay(7000);
 
   Serial.println("\n╔════════════════════════════════╗");
   Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
