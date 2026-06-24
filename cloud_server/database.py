@@ -54,7 +54,7 @@ async def add_event(machine_id: int, location_id: int, event_type: str, local_ev
             "location_id": row["location_id"],
             "location_name": location["name"] if location else "",
             "event_type": row["event_type"],
-            "timestamp": row["timestamp"].isoformat(),
+            "timestamp": row["timestamp"].strftime("%Y-%m-%d %H:%M:%S"),
             "status": "ok"
         }
 
@@ -201,7 +201,7 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
                 machine_id, from_date, to_date
             ) or 0
         
-        last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 ORDER BY timestamp DESC LIMIT 1", machine_id)
+        last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 AND event_type != 'play' ORDER BY timestamp DESC LIMIT 1", machine_id)
         jackpot = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", info["location_id"])
 
         return {

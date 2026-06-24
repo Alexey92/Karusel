@@ -235,7 +235,7 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         plays_period = row_plays_period[0]["count"]
 
     row_last = await db.execute_fetchall(
-        "SELECT timestamp FROM events WHERE machine_id = ? ORDER BY timestamp DESC LIMIT 1",
+        "SELECT timestamp FROM events WHERE machine_id = ? AND event_type != 'play' ORDER BY timestamp DESC LIMIT 1",
         (machine_id,)
     )
     last_win = row_last[0]["timestamp"] if row_last else None

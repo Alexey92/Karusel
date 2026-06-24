@@ -183,9 +183,6 @@ async def admin_machine_stats(machine_id: int, username: str = Depends(get_curre
     stats = await get_machine_stats(machine_id)
     return MachineStats(**stats)
 
-@app.get("/api/admin/stats")
-async def admin_all_stats(username: str = Depends(get_current_user)):
-    return await get_all_machines_stats()
 
 @app.get("/api/admin/events")
 async def admin_events(limit: int = 50, offset: int = 0, location_id: int = Query(None), username: str = Depends(get_current_user)):
