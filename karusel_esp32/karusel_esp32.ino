@@ -16,17 +16,21 @@
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
 
-const char* WIFI_SSID = "karusel-net";
-const char* WIFI_PASSWORD = "karusel2026";
-const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
+//const char* WIFI_SSID = "karusel-net";
+//const char* WIFI_PASSWORD = "karusel2026";
+//const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
 const int MACHINE_ID = 1;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 //const char* SERVER_URL = "http://192.168.0.108:5050/api/event";
-//const char* WIFI_SSID = "kv1313";
-//const char* WIFI_PASSWORD = "93985666";
+const char* SERVER_URL = "http://194.186.104.79:5050/api/event";
+const char* WIFI_SSID = "kv1313";
+const char* WIFI_PASSWORD = "93985666";
+
+const int LOCATION_ID = 1;  // ID адреса в облаке
+const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
 
 const int TEST_WIN_OUT = 33;
 const int TEST_PLAY_OUT = 32;
@@ -48,6 +52,9 @@ const unsigned long WIFI_RETRY_MS = 10000;
 volatile int win_counter = 0;
 volatile int play_counter = 0;
 
+volatile int raw_win_counter = 0;
+volatile int raw_play_counter = 0;
+
 // Неотправленные события (сохраняются в NVS)
 int pending_wins = 0;
 int pending_plays = 0;
@@ -60,22 +67,20 @@ unsigned long last_poll_time = 0;
 // ═══════════════════════════════════════════════════════
 // ПРЕРЫВАНИЯ
 // ═══════════════════════════════════════════════════════
-volatile unsigned long last_win_interrupt = 0;
-volatile unsigned long last_play_interrupt = 0;
-const unsigned long MIN_PULSE_US = 50000;  // 80 мс в микросекундах
-
 void IRAM_ATTR onWin() {
-  unsigned long now = micros();
-  if (now - last_win_interrupt < MIN_PULSE_US) return;
-  last_win_interrupt = now;
-  win_counter++;
+  delayMicroseconds(50);  // Ждём 50 мкс, пока дребезг затухнет
+  if (digitalRead(WIN_PIN) == LOW) {  // Пин всё ещё в LOW — реальный импульс
+    win_counter++;
+    raw_win_counter++;
+  }
 }
 
 void IRAM_ATTR onPlay() {
-  unsigned long now = micros();
-  if (now - last_play_interrupt < MIN_PULSE_US) return;
-  last_play_interrupt = now;
-  play_counter++;
+  delayMicroseconds(50);
+  if (digitalRead(PLAY_PIN) == LOW) {
+    play_counter++;
+    raw_play_counter++;
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -117,8 +122,6 @@ void setup() {
 // ═══════════════════════════════════════════════════════
 
 void loop() {
-  //testSignals();
-
   // ── WiFi ──
   bool wifi_ok = (WiFi.status() == WL_CONNECTED);
   digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
@@ -141,6 +144,9 @@ void loop() {
   // ── Отправка раз в секунду ──
   if (millis() - last_poll_time >= POLL_INTERVAL_MS) {
     last_poll_time = millis();
+
+    Serial.printf("raw: wins=%d, plays=%d\n", raw_win_counter, raw_play_counter);
+
 
 
     // Атомарное чтение и обнуление счётчиков
@@ -201,7 +207,12 @@ bool sendHTTP(String eventType) {
   http.addHeader("Content-Type", "application/json");
   http.setTimeout(HTTP_TIMEOUT_MS);
 
-  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + eventType + "\"}";
+  //String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + eventType + "\"}";
+  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + 
+    ",\"location_id\":" + String(1) +
+    ",\"api_key\":\"EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg\"" +
+    ",\"event_type\":\"" + eventType + "\"}";
+
 
   unsigned long t0 = millis();
   int httpCode = http.POST(jsonBody);
@@ -211,60 +222,4 @@ bool sendHTTP(String eventType) {
   Serial.printf("[HTTP] Код: %d, время: %lu мс, тип: %s\n", httpCode, t1 - t0, eventType.c_str());
 
   return (httpCode == 200);
-}
-
-
-// ═══════════════════════════════════════════════════════
-// ТЕСТОВАЯ ГЕНЕРАЦИЯ СИГНАЛОВ (для отладки)
-// Подключить: D35 к D13, D34 к D14
-// ═══════════════════════════════════════════════════════
-void testSignals() {
-  static unsigned long last_win_test = 0;
-  static unsigned long last_play_test = 0;
-  static int play_burst_count = 0;
-  static bool play_burst_active = false;
-  static bool win_pulse_active = false;
-  static unsigned long win_pulse_start = 0;
-  static bool play_pulse_low = false;
-  static unsigned long play_pulse_start = 0;
-  
-  unsigned long now = millis();
-
-  // Выигрыш: раз в 10 секунд, импульс LOW на 25 мс
-  if (!win_pulse_active && (now - last_win_test >= 10000)) {
-    win_pulse_active = true;
-    win_pulse_start = now;
-    digitalWrite(TEST_WIN_OUT, LOW);   // импульс в 0
-    //Serial.println("[TEST] Импульс WIN (25 мс, LOW)");
-  }
-  if (win_pulse_active && (now - win_pulse_start >= 25)) {
-    digitalWrite(TEST_WIN_OUT, HIGH);  // возвращаем 3.3В
-    win_pulse_active = false;
-    last_win_test = now;
-  }
-
-  // Игры: раз в 7 секунд, пачка из 4 импульсов LOW по 25 мс с интервалом 5 мс
-  if (!play_burst_active && (now - last_play_test >= 7000)) {
-    play_burst_active = true;
-    play_burst_count = 0;
-    last_play_test = now;
-    //Serial.println("[TEST] Пачка PLAY: 4 импульса");
-  }
-
-  if (play_burst_active && play_burst_count < 4) {
-    if (!play_pulse_low) {
-      digitalWrite(TEST_PLAY_OUT, LOW);  // импульс в 0
-      play_pulse_low = true;
-      play_pulse_start = now;
-    }
-    if (play_pulse_low && (now - play_pulse_start >= 25)) {
-      digitalWrite(TEST_PLAY_OUT, HIGH);  // возвращаем 3.3В
-      play_pulse_low = false;
-      play_burst_count++;
-      //Serial.printf("[TEST]   PLAY импульс %d/4\n", play_burst_count);
-    }
-  }
-  if (play_burst_count >= 4) {
-    play_burst_active = false;
-  }
 }
