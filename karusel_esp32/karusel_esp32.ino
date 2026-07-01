@@ -19,7 +19,7 @@
 //const char* WIFI_SSID = "karusel-net";
 //const char* WIFI_PASSWORD = "karusel2026";
 //const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
-const int MACHINE_ID = 1;
+const int MACHINE_ID = 5;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
@@ -31,9 +31,6 @@ const char* WIFI_PASSWORD = "93985666";
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
-
-const int TEST_WIN_OUT = 33;
-const int TEST_PLAY_OUT = 32;
 //////////////////////////////////////////
 
 // ═══════════════════════════════════════════════════════
@@ -103,11 +100,6 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
-  // Тестовые сигналы
-  pinMode(TEST_WIN_OUT, OUTPUT);
-  pinMode(TEST_PLAY_OUT, OUTPUT);
-  digitalWrite(TEST_WIN_OUT, HIGH);
-  digitalWrite(TEST_PLAY_OUT, HIGH);
 
   attachInterrupt(digitalPinToInterrupt(WIN_PIN), onWin, FALLING);
   attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
