@@ -174,12 +174,7 @@ async def delete_machine(machine_id: int):
         await conn.execute("DELETE FROM events WHERE machine_id = $1", machine_id)
         await conn.execute("DELETE FROM machines WHERE id = $1", machine_id)
 
-async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str = None) -> dict:
-    if from_date:
-        from_date = date.fromisoformat(from_date)
-    if to_date:
-        to_date = date.fromisoformat(to_date)
-        
+async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str = None) -> dict:        
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
