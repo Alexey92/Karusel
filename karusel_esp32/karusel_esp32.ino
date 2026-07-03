@@ -19,15 +19,15 @@
 //const char* WIFI_SSID = "karusel-net";
 //const char* WIFI_PASSWORD = "karusel2026";
 //const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
-const int MACHINE_ID = 5;
+const int MACHINE_ID = 12;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 //const char* SERVER_URL = "http://192.168.0.108:5050/api/event";
 const char* SERVER_URL = "http://194.186.104.79:5050/api/event";
-const char* WIFI_SSID = "kv1313";
-const char* WIFI_PASSWORD = "93985666";
+const char* WIFI_SSID = "SmartVend";
+const char* WIFI_PASSWORD = "12345678";
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
@@ -105,6 +105,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
 
   WiFi.mode(WIFI_STA);
+  WiFi.config(IPAddress(192, 168, 100, 100 + MACHINE_ID), IPAddress(192, 168, 100, 1), IPAddress(255, 255, 255, 0));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
 }
@@ -137,7 +138,7 @@ void loop() {
   if (millis() - last_poll_time >= POLL_INTERVAL_MS) {
     last_poll_time = millis();
 
-    Serial.printf("raw: wins=%d, plays=%d\n", raw_win_counter, raw_play_counter);
+    //Serial.printf("raw: wins=%d, plays=%d\n", raw_win_counter, raw_play_counter);
 
 
 
