@@ -217,7 +217,7 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
             "wins_24h": wins_24h or 0,
             "wins_total": wins_total or 0,
             "plays_total": plays_total or 0,
-            "last_win": last_win.isoformat() if last_win else None,
+            "last_win": last_win.strftime("%Y-%m-%d %H:%M:%S") if last_win else None,
             "jackpot_config": dict(jackpot) if jackpot else None,
             "wins_period": wins_period,
             "plays_period": plays_period
