@@ -3,6 +3,8 @@
 """
 import asyncpg
 import os
+from datetime import date
+
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://karusel:karusel@localhost:5432/karusel")
 pool = None
@@ -173,6 +175,11 @@ async def delete_machine(machine_id: int):
         await conn.execute("DELETE FROM machines WHERE id = $1", machine_id)
 
 async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str = None) -> dict:
+    if from_date:
+        from_date = date.fromisoformat(from_date)
+    if to_date:
+        to_date = date.fromisoformat(to_date)
+        
     p = await get_pool()
     async with p.acquire() as conn:
         row = await conn.fetchrow(
@@ -222,6 +229,11 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         }
 
 async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
+    if from_date:
+        from_date = date.fromisoformat(from_date)
+    if to_date:
+        to_date = date.fromisoformat(to_date)
+    
     machines = await get_machines()
     stats = []
     for m in machines:
