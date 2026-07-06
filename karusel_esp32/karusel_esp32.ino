@@ -105,7 +105,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
 
   WiFi.mode(WIFI_STA);
-  WiFi.config(IPAddress(192, 168, 100, 100 + MACHINE_ID), IPAddress(192, 168, 100, 1), IPAddress(255, 255, 255, 0));
+  WiFi.config(IPAddress(192, 168, 0, 200 + MACHINE_ID), IPAddress(192, 168, 0, 1), IPAddress(255, 255, 255, 0));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
 }
