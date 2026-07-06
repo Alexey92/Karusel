@@ -18,6 +18,10 @@
 
 //const char* WIFI_SSID = "karusel-net";
 //const char* WIFI_PASSWORD = "karusel2026";
+
+// const char* WIFI_SSID = "iPhone (Алекс)";
+// const char* WIFI_PASSWORD = "qwerty777";
+
 //const char* SERVER_URL = "http://192.168.1.100:5050/api/event";
 const int MACHINE_ID = 12;
 const int WIN_PIN = 13;
@@ -25,9 +29,11 @@ const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 //const char* SERVER_URL = "http://192.168.0.108:5050/api/event";
-const char* SERVER_URL = "http://194.186.104.79:5050/api/event";
-const char* WIFI_SSID = "SmartVend";
-const char* WIFI_PASSWORD = "12345678";
+const char* SERVER_URL = "http://194.186.104.79:80/api/event";
+// const char* WIFI_SSID = "SmartVend";
+// const char* WIFI_PASSWORD = "12345678";
+const char* WIFI_SSID = "iPhone (Алекс)";
+const char* WIFI_PASSWORD = "qwerty777";
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
@@ -88,7 +94,7 @@ void setup() {
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(7000);
+  delay(2000);
 
   Serial.println("\n╔════════════════════════════════╗");
   Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
@@ -105,7 +111,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
 
   WiFi.mode(WIFI_STA);
-  WiFi.config(IPAddress(192, 168, 0, 200 + MACHINE_ID), IPAddress(192, 168, 0, 1), IPAddress(255, 255, 255, 0));
+  // WiFi.config(IPAddress(192, 168, 0, 200 + MACHINE_ID), IPAddress(192, 168, 0, 1), IPAddress(255, 255, 255, 0));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
 }
