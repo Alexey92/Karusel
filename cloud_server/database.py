@@ -3,7 +3,7 @@
 """
 import asyncpg
 import os
-from datetime import date
+from datetime import datetime
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://karusel:karusel@localhost:5432/karusel")
@@ -195,11 +195,11 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         plays_period = 0
         if from_date and to_date:
             wins_period = await conn.fetchval(
-                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND date(timestamp) BETWEEN $2 AND $3",
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp BETWEEN $2 AND $3",
                 machine_id, from_date, to_date
             ) or 0
             plays_period = await conn.fetchval(
-                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND date(timestamp) BETWEEN $2 AND $3",
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND timestamp BETWEEN $2 AND $3",
                 machine_id, from_date, to_date
             ) or 0
         
@@ -225,9 +225,9 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
 
 async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
     if from_date:
-        from_date = date.fromisoformat(from_date)
+        from_date = datetime.strptime(from_date, "%Y-%m-%d %H:%M")
     if to_date:
-        to_date = date.fromisoformat(to_date)
+        to_date = datetime.strptime(to_date, "%Y-%m-%d %H:%M")
     
     machines = await get_machines()
     stats = []

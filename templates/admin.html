@@ -41,9 +41,9 @@
             <h2>Все аппараты — сводка</h2>
 						
 						<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-								<input type="date" id="date-from" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
+								<input type="datetime-local" id="date-from" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
 								<span style="color:#888;">—</span>
-								<input type="date" id="date-to" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
+								<input type="datetime-local" id="date-to" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
 								<button onclick="loadOverview()" class="btn-small">Показать</button>
 						</div>
 						
@@ -168,7 +168,7 @@
 						const to = document.getElementById('date-to')?.value || '';
 						let url = '/api/admin/stats';
 						if (from && to) {
-								url += `?from_date=${from}&to_date=${to}`;
+								url += `?from_date=${from.replace('T', ' ')}&to_date=${to.replace('T', ' ')}`;
 						}
 						const data = await apiGet(url);
 						const locations = await apiGet('/api/admin/locations'); // все адреса с джекпотом
