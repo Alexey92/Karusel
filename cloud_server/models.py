@@ -37,11 +37,15 @@ class MachineStats(BaseModel):
     wins_today: int
     wins_24h: int
     wins_total: int
-    plays_total: int = 0
-    last_win: Optional[str] = None
-    jackpot_config: Optional[dict] = None
     wins_period: int = 0
+    last_win: Optional[str] = None
+    plays_hour: int = 0
+    plays_today: int = 0
+    plays_24h: int = 0
+    plays_total: int = 0
     plays_period: int = 0
+    last_play: Optional[str] = None
+    jackpot_config: Optional[dict] = None
 
 class JackpotConfigResponse(BaseModel):
     id: int

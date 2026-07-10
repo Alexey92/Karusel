@@ -185,12 +185,21 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
             return {}
         info = dict(row)
 
+        # Выигрыши
         wins_hour = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '1 hour'", machine_id)
         wins_today = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND date(timestamp) = CURRENT_DATE", machine_id)
         wins_24h = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '24 hours'", machine_id)
         wins_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'", machine_id)
+        last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 AND event_type != 'play' ORDER BY timestamp DESC LIMIT 1", machine_id)
+
+        # Игры
+        plays_hour = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND timestamp >= NOW() - INTERVAL '1 hour'", machine_id)
+        plays_today = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND date(timestamp) = CURRENT_DATE", machine_id)
+        plays_24h = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play' AND timestamp >= NOW() - INTERVAL '24 hours'", machine_id)
         plays_total = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'", machine_id)
+        last_play = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 AND event_type = 'play' ORDER BY timestamp DESC LIMIT 1", machine_id)
         
+        # За период
         wins_period = 0
         plays_period = 0
         if from_date and to_date:
@@ -203,7 +212,6 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
                 machine_id, from_date, to_date
             ) or 0
         
-        last_win = await conn.fetchval("SELECT timestamp FROM events WHERE machine_id = $1 AND event_type != 'play' ORDER BY timestamp DESC LIMIT 1", machine_id)
         jackpot = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", info["location_id"])
 
         return {
@@ -216,11 +224,15 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
             "wins_today": wins_today or 0,
             "wins_24h": wins_24h or 0,
             "wins_total": wins_total or 0,
-            "plays_total": plays_total or 0,
-            "last_win": last_win.strftime("%Y-%m-%d %H:%M:%S") if last_win else None,
-            "jackpot_config": dict(jackpot) if jackpot else None,
             "wins_period": wins_period,
-            "plays_period": plays_period
+            "last_win": last_win.strftime("%Y-%m-%d %H:%M:%S") if last_win else None,
+            "plays_hour": plays_hour or 0,
+            "plays_today": plays_today or 0,
+            "plays_24h": plays_24h or 0,
+            "plays_total": plays_total or 0,
+            "plays_period": plays_period,
+            "last_play": last_play.strftime("%Y-%m-%d %H:%M:%S") if last_play else None,
+            "jackpot_config": dict(jackpot) if jackpot else None
         }
 
 async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
