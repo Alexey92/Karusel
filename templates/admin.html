@@ -41,17 +41,14 @@
             <h2>Все аппараты — сводка</h2>
 						
 						<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-						<input type="datetime-local" id="date-from" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
-						<span style="color:#888;">—</span>
-						<input type="datetime-local" id="date-to" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
-						<button onclick="loadOverview()" class="btn-small">Показать</button>
-						<span style="color:#888;margin-left:20px;">Стоимость игры:</span>
-						<input type="number" id="game-price" value="50" style="width:80px;padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
-						<span style="color:#888;">₽</span>
-						<span style="color:#888;margin-left:10px;">Стоимость игрушки:</span>
-						<input type="number" id="toy-price" value="300" style="width:80px;padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
-						<span style="color:#888;">₽</span>
-				</div>
+								<input type="datetime-local" id="date-from" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
+								<span style="color:#888;">—</span>
+								<input type="datetime-local" id="date-to" style="padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
+								<button onclick="loadOverview()" class="btn-small">Показать</button>
+								<span style="color:#888;margin-left:20px;">Стоимость игры:</span>
+								<input type="number" id="game-price" value="50" style="width:80px;padding:6px 10px;border-radius:6px;border:1px solid #444;background:#1a1a2e;color:#fff;">
+								<span style="color:#888;">₽</span>
+						</div>
 						
             <div id="overview-cards"></div>
         </div>
@@ -174,7 +171,6 @@
 					const from = document.getElementById('date-from')?.value || '';
 					const to = document.getElementById('date-to')?.value || '';
 					const gamePrice = parseInt(document.getElementById('game-price')?.value || 50);
-					const toyPrice = parseInt(document.getElementById('toy-price')?.value || 300);
 
 					// Логика периода
 					let fromParam = from, toParam = to;
@@ -232,32 +228,38 @@
 							html += '<div class="cards-grid" style="margin-bottom:10px;">';
 							html += g.machines.map(s => {
 									const revenueToday = s.plays_today * gamePrice;
-									const costToday = s.wins_today * toyPrice;
-									const balanceToday = revenueToday - costToday;
-									locBalanceToday += balanceToday;
-
 									const revenuePeriod = (s.plays_period || 0) * gamePrice;
-									const costPeriod = (s.wins_period || 0) * toyPrice;
-									const balancePeriod = revenuePeriod - costPeriod;
-									locBalancePeriod += balancePeriod;
+									locBalanceToday += revenueToday;
+									locBalancePeriod += revenuePeriod;
+									const avgToyToday = s.wins_today > 0 ? Math.round(revenueToday / s.wins_today) : 0;
+									const avgToyPeriod = (s.wins_period || 0) > 0 ? Math.round(revenuePeriod / (s.wins_period || 1)) : 0;
 
 									return `
 											<div class="card">
 													<div class="card-title">${s.machine_name || 'Автомат №' + s.machine_id} (ID:${s.machine_id})</div>
 
 													<div class="card-section-title">🏆 Выигрыши</div>
-													<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong> <small style="color:#888;">−${costToday}₽</small></div>
-													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.wins_period || 0}</strong> <small style="color:#888;">−${costPeriod}₽</small></div>` : ''}
+													<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong></div>
+													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.wins_period || 0}</strong></div>` : ''}
 													<div class="card-row"><span>Последний:</span><small>${s.last_win ? new Date(s.last_win).toLocaleString('ru-RU') : '—'}</small></div>
 
 													<div class="card-section-title">🎮 Игры</div>
-													<div class="card-row"><span>За сегодня:</span><strong>${s.plays_today}</strong> <small style="color:#888;">+${revenueToday}₽</small></div>
-													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.plays_period || 0}</strong> <small style="color:#888;">+${revenuePeriod}₽</small></div>` : ''}
+													<div class="card-row"><span>За сегодня:</span><strong>${s.plays_today}</strong></div>
+													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.plays_period || 0}</strong></div>` : ''}
 													<div class="card-row"><span>Последняя:</span><small>${s.last_play ? new Date(s.last_play).toLocaleString('ru-RU') : '—'}</small></div>
 
-													<div class="card-section-title">💰 Баланс</div>
-													<div class="card-row"><span>За сегодня:</span><strong style="color:${balanceToday >= 0 ? '#2ecc71' : '#e74c3c'}">${balanceToday >= 0 ? '+' : ''}${balanceToday}₽</strong></div>
-													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong style="color:${balancePeriod >= 0 ? '#2ecc71' : '#e74c3c'}">${balancePeriod >= 0 ? '+' : ''}${balancePeriod}₽</strong></div>` : ''}
+													<div class="card-section-title">💰 Доход</div>
+													<div class="card-row">
+															<span>За сегодня:</span>
+															<strong style="color:#2ecc71;font-size:16px;">${revenueToday}₽</strong>
+															${avgToyToday > 0 ? ` <small style="color:#888;">(~${avgToyToday}₽/игрушка)</small>` : ''}
+													</div>
+													${fromParam && toParam ? `
+													<div class="card-row">
+															<span>За период:</span>
+															<strong style="color:#2ecc71;font-size:16px;">${revenuePeriod}₽</strong>
+															${avgToyPeriod > 0 ? ` <small style="color:#888;">(~${avgToyPeriod}₽/игрушка)</small>` : ''}
+													</div>` : ''}
 											</div>
 									`;
 							}).join('');

@@ -15,14 +15,17 @@
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
-const int MACHINE_ID = 1;
+const int MACHINE_ID = 100;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 const char* SERVER_URL = "http://194.186.104.79:80/api/event";
-const char* WIFI_SSID = "SmartVend";
-const char* WIFI_PASSWORD = "12345678";
+// const char* WIFI_SSID = "SmartVend";
+// const char* WIFI_PASSWORD = "12345678";
+
+const char* WIFI_SSID = "kv1313";
+const char* WIFI_PASSWORD = "93985666";
 
 // const char* WIFI_SSID = "iPhone (Алекс)";
 // const char* WIFI_PASSWORD = "qwerty777";
@@ -182,38 +185,6 @@ void loop() {
         Serial.printf("[WAIT] Нет WiFi. Накоплено: wins=%d, plays=%d\n", pending_wins, pending_plays);
       }
     }
-    // if (pending_wins > 0 || pending_plays > 0) {
-    //   // delay(2000);
-    //   Serial.printf("Отправка: wins=%d, plays=%d\n", pending_wins, pending_plays);
-
-    //   if (wifi_ok) {
-    //     // Отправляем выигрыши
-    //     while (pending_wins > 0) {
-    //       if (sendHTTP("win")) {
-    //         pending_wins--;
-    //       } else {
-    //         Serial.println("[WIN] Отправка не удалась, пробую позже.");
-    //         break;
-    //       }
-    //     }
-
-    //     // Отправляем игры
-    //     while (pending_plays > 0) {
-    //       if (sendHTTP("play")) {
-    //         pending_plays--;
-    //       } else {
-    //         Serial.println("[PLAY] Отправка не удалась, пробую позже.");
-    //         break;
-    //       }
-    //     }
-
-    //     if (pending_wins == 0 && pending_plays == 0) {
-    //       Serial.println("[OK] Все события отправлены.");
-    //     }
-    //   } else {
-    //     Serial.printf("[WAIT] Нет WiFi. Накоплено: wins=%d, plays=%d\n", pending_wins, pending_plays);
-    //   }
-    // }
   }
 
   delay(10);
