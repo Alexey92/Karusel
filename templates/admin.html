@@ -247,13 +247,11 @@
 
 													<div class="card-section-title">🏆 Выигрыши</div>
 													<div class="card-row"><span>За сегодня:</span><strong>${s.wins_today}</strong> <small style="color:#888;">−${costToday}₽</small></div>
-													<div class="card-row"><span>Всего:</span><strong>${s.wins_total}</strong></div>
 													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.wins_period || 0}</strong> <small style="color:#888;">−${costPeriod}₽</small></div>` : ''}
 													<div class="card-row"><span>Последний:</span><small>${s.last_win ? new Date(s.last_win).toLocaleString('ru-RU') : '—'}</small></div>
 
 													<div class="card-section-title">🎮 Игры</div>
 													<div class="card-row"><span>За сегодня:</span><strong>${s.plays_today}</strong> <small style="color:#888;">+${revenueToday}₽</small></div>
-													<div class="card-row"><span>Всего:</span><strong>${s.plays_total}</strong></div>
 													${fromParam && toParam ? `<div class="card-row"><span>За период:</span><strong>${s.plays_period || 0}</strong> <small style="color:#888;">+${revenuePeriod}₽</small></div>` : ''}
 													<div class="card-row"><span>Последняя:</span><small>${s.last_play ? new Date(s.last_play).toLocaleString('ru-RU') : '—'}</small></div>
 
