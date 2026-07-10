@@ -170,6 +170,7 @@
         }
 
         async function loadOverview() {
+					const grid = document.getElementById('overview-cards');
 					const from = document.getElementById('date-from')?.value || '';
 					const to = document.getElementById('date-to')?.value || '';
 					const gamePrice = parseInt(document.getElementById('game-price')?.value || 50);
