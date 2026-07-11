@@ -70,7 +70,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="KARUSEL Cloud", version="1.0.0", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-app.mount("/firmware", StaticFiles(directory=os.path.join(BASE_DIR, "cloud", "firmware")), name="firmware")
+app.mount("/firmware", StaticFiles(directory=os.path.join(BASE_DIR, "cloud_server", "firmware")), name="firmware")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # ─── Приём событий от локальных серверов ──────────────────────
