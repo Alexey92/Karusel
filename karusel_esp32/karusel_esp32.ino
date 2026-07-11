@@ -12,6 +12,19 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
+#include <Update.h>
+
+
+// URL для проверки обновлений
+const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.merged.bin";
+const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
+const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
+unsigned long last_update_check = 0;
+
+String current_version = "1.1"; // Версия текущей прошивки
+
+
+
 
 Preferences prefs;
 
@@ -95,11 +108,13 @@ void IRAM_ATTR onPlay() {
 // SETUP
 // ═══════════════════════════════════════════════════════
 void setup() {
+  delay(3000);
+
   Serial.begin(115200);
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(3000);
+//   delay(3000);
 
   prefs.begin("karusel", false);
   total_wins = prefs.getInt("total_wins", 0);
@@ -246,6 +261,56 @@ void loop() {
         }
     }
 
+
+    if (millis() - last_update_check > UPDATE_CHECK_INTERVAL) {
+        last_update_check = millis();
+        checkForUpdate();
+    }
+
     delay(10);
+}
+
+void checkForUpdate() {
+    if (WiFi.status() != WL_CONNECTED) return;
+    
+    HTTPClient http;
+    http.begin(VERSION_URL);
+    int httpCode = http.GET();
+    
+    if (httpCode == 200) {
+        String new_version = http.getString();
+        new_version.trim();
+        
+        if (new_version != current_version) {
+            Serial.printf("[OTA] Новая версия: %s (текущая: %s)\n", new_version.c_str(), current_version.c_str());
+            performOTA();
+        }
+    }
+    http.end();
+}
+
+void performOTA() {
+    HTTPClient http;
+    http.begin(UPDATE_URL);
+    int httpCode = http.GET();
+    
+    if (httpCode == 200) {
+        int contentLength = http.getSize();
+        bool canBegin = Update.begin(contentLength);
+        
+        if (canBegin) {
+            WiFiClient* client = http.getStreamPtr();
+            size_t written = Update.writeStream(*client);
+            
+            if (written == contentLength) {
+                if (Update.end()) {
+                    Serial.println("[OTA] Обновление успешно! Перезагрузка...");
+                    delay(1000);
+                    ESP.restart();
+                }
+            }
+        }
+    }
+    http.end();
 }
 
