@@ -32,13 +32,13 @@ from database import (
     get_machines, create_machine, update_machine, delete_machine,
     get_machine_stats, get_all_machines_stats,
     get_events_history, get_total_events_count,
-    increment_jackpot, set_jackpot_threshold, reset_jackpot, set_jackpot_counter
+    increment_jackpot, set_jackpot_threshold, reset_jackpot, set_jackpot_counter, get_pool
 )
 from models import (
     CloudEventRequest, EventResponse,
     LoginRequest, LoginResponse, MachineStats,
     JackpotConfigResponse, JackpotThresholdRequest, JackpotCounterRequest,
-    ChangePasswordRequest, LocationCreate, LocationUpdate, MachineCreate, MachineUpdate
+    ChangePasswordRequest, LocationCreate, LocationUpdate, MachineCreate, MachineUpdate, BulkEventRequest
 )
 
 # Пути к общим папкам
@@ -109,6 +109,47 @@ async def receive_cloud_event(event: CloudEventRequest):
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
+        
+        
+        
+@app.post("/api/bulk-event")
+async def receive_bulk_event(event: BulkEventRequest):
+    if not await verify_api_key(event.location_id, event.api_key):
+        raise HTTPException(status_code=403, detail="Неверный api_key")
+
+    try:
+        cloud_machine_id = await find_or_create_machine(event.location_id, event.machine_id)
+
+        p = await get_pool()
+        async with p.acquire() as conn:
+            prev_wins = await conn.fetchval(
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'",
+                cloud_machine_id
+            ) or 0
+            prev_plays = await conn.fetchval(
+                "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'",
+                cloud_machine_id
+            ) or 0
+
+            new_wins = max(0, event.total_wins - prev_wins)
+            new_plays = max(0, event.total_plays - prev_plays)
+
+            for _ in range(new_wins):
+                await add_event(cloud_machine_id, event.location_id, "win")
+                await increment_jackpot(cloud_machine_id)
+            for _ in range(new_plays):
+                await add_event(cloud_machine_id, event.location_id, "play")
+
+        return {
+            "status": "ok",
+            "new_wins": new_wins,
+            "new_plays": new_plays,
+            "total_wins": event.total_wins,
+            "total_plays": event.total_plays
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")        
+        
 
 # ─── Авторизация ─────────────────────────────────────────────
 

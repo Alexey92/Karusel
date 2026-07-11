@@ -1,0 +1,3 @@
+
+psql -d karusel -c "ALTER TABLE machines ADD COLUMN IF NOT EXISTS last_win_id  INTEGER DEFAULT 0;"
+psql -d karusel -c "ALTER TABLE machines ADD COLUMN IF NOT EXISTS last_play_id  INTEGER DEFAULT 0;"

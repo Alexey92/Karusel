@@ -76,3 +76,11 @@ class MachineCreate(BaseModel):
 class MachineUpdate(BaseModel):
     local_id: Optional[int] = Field(None, ge=1)
     name: Optional[str] = Field(None, min_length=1, max_length=100)
+    
+    
+class BulkEventRequest(BaseModel):
+    machine_id: int
+    location_id: int
+    api_key: str
+    total_wins: int = 0
+    total_plays: int = 0    

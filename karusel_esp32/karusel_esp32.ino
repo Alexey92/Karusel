@@ -11,21 +11,24 @@
 
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <Preferences.h>
+
+Preferences prefs;
 
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
-const int MACHINE_ID = 3;
+const int MACHINE_ID = 100;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
-const char* SERVER_URL = "http://194.186.104.79:80/api/event";
-const char* WIFI_SSID = "SmartVend";
-const char* WIFI_PASSWORD = "12345678";
+const char* SERVER_URL = "http://194.186.104.79:80/api/bulk-event";
+// const char* WIFI_SSID = "SmartVend";
+// const char* WIFI_PASSWORD = "12345678";
 
-// const char* WIFI_SSID = "kv1313";
-// const char* WIFI_PASSWORD = "93985666";
+const char* WIFI_SSID = "kv1313";
+const char* WIFI_PASSWORD = "93985666";
 
 // const char* WIFI_SSID = "iPhone (Алекс)";
 // const char* WIFI_PASSWORD = "qwerty777";
@@ -38,24 +41,25 @@ const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════
 
-const unsigned long POLL_INTERVAL_MS = 1000;
+const unsigned long POLL_INTERVAL_MS = 5000;
 const unsigned long HTTP_TIMEOUT_MS = 3000;
 const unsigned long WIFI_RETRY_MS = 10000;
 
 // ═══════════════════════════════════════════════════════
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ═══════════════════════════════════════════════════════
+bool synced = false;  // true = счётчики синхронизированы с сервером
 
 // Счётчики событий (инкрементируются в прерываниях)
 volatile int win_counter = 0;
 volatile int play_counter = 0;
 
+// Загружается из NVS
+int total_wins = 0;   
+int total_plays = 0;
+
 volatile int raw_win_counter = 0;
 volatile int raw_play_counter = 0;
-
-// Неотправленные события (сохраняются в NVS)
-int pending_wins = 0;
-int pending_plays = 0;
 
 
 // WiFi
@@ -89,7 +93,20 @@ void setup() {
 
   // Задержка для стабилизации питания
   Serial.println("\n......................");
-  delay(2000);
+  delay(3000);
+
+  prefs.begin("karusel", false);
+  total_wins = prefs.getInt("total_wins", 0);
+  total_plays = prefs.getInt("total_plays", 0);
+  prefs.end();
+
+  // Если счётчики нулевые — запрашиваем у сервера
+  if (total_wins > 0 || total_plays > 0) {
+        synced = true;  // Уже были данные в NVS — синхронизированы
+    }
+
+
+  Serial.printf("Восстановлено: wins=%d, plays=%d\n", total_wins, total_plays);
 
   Serial.println("\n╔════════════════════════════════╗");
   Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
@@ -114,104 +131,108 @@ void setup() {
 // ═══════════════════════════════════════════════════════
 // LOOP
 // ═══════════════════════════════════════════════════════
-
 void loop() {
-  // ── WiFi ──
-  bool wifi_ok = (WiFi.status() == WL_CONNECTED);
-  digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
+    bool wifi_ok = (WiFi.status() == WL_CONNECTED);
+    digitalWrite(LED_BUILTIN, wifi_ok ? HIGH : LOW);
 
-  static bool was_connected = false;
-  if (wifi_ok && !was_connected) {
-      was_connected = true;
-      Serial.printf("[WiFi] Подключено! IP: %s\n", WiFi.localIP().toString().c_str());
-  }
-  if (!wifi_ok) {
-      was_connected = false;
-  }
-
-  if (!wifi_ok && (millis() - last_wifi_attempt > WIFI_RETRY_MS)) {
-    Serial.println("[WiFi] Переподключение...");
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    last_wifi_attempt = millis();
-  }
-
-  // ── Отправка раз в секунду ──
-  if (millis() - last_poll_time >= POLL_INTERVAL_MS) {
-    last_poll_time = millis();
-
-    //Serial.printf("raw: wins=%d, plays=%d\n", raw_win_counter, raw_play_counter);
-
-
-
-    // Атомарное чтение и обнуление счётчиков
-    portDISABLE_INTERRUPTS();
-    int wins = win_counter;
-    int plays = play_counter;
-    win_counter = 0;
-    play_counter = 0;
-    portENABLE_INTERRUPTS();
-
-    pending_wins += wins;
-    pending_plays += plays;
-
-    if (pending_wins > 0 || pending_plays > 0) {
-      delay(2000);
-      Serial.printf("Очередь: wins=%d, plays=%d\n", pending_wins, pending_plays);
-
-      if (wifi_ok) {
-        // Отправляем ТОЛЬКО ОДНО событие за раз!
-        if (pending_wins > 0) {
-          if (sendHTTP("win")) {
-            pending_wins--; // Успешно отправили - уменьшаем очередь
-            Serial.printf("[OK] Осталось win: %d\n", pending_wins);
-          } else {
-            Serial.println("[WIN] Ошибка, пробуем в следующую секунду");
-            // НЕ уменьшаем pending_wins, просто выходим из итерации
-          }
-        } 
-        else if (pending_plays > 0) { // Иначе, если нет win, отправляем play
-          if (sendHTTP("play")) {
-            pending_plays--;
-            Serial.printf("[OK] Осталось play: %d\n", pending_plays);
-          } else {
-            Serial.println("[PLAY] Ошибка, пробуем в следующую секунду");
-          }
-        }
-
-        if (pending_wins == 0 && pending_plays == 0) {
-          Serial.println("[OK] Все события отправлены.");
-        }
-      } else {
-        Serial.printf("[WAIT] Нет WiFi. Накоплено: wins=%d, plays=%d\n", pending_wins, pending_plays);
-      }
+    static bool was_connected = false;
+    if (wifi_ok && !was_connected) {
+        was_connected = true;
+        Serial.printf("[WiFi] Подключено! IP: %s\n", WiFi.localIP().toString().c_str());
     }
-  }
+    if (!wifi_ok) {
+        was_connected = false;
+    }
 
-  delay(10);
+    if (!wifi_ok && (millis() - last_wifi_attempt > WIFI_RETRY_MS)) {
+        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+        last_wifi_attempt = millis();
+    }
+
+
+    // Если не синхронизированы — пытаемся получить данные с сервера
+    if (!synced && wifi_ok) {
+        HTTPClient http;
+        String syncUrl = "http://194.186.104.79:80/api/get-counts?"
+            "machine_id=" + String(MACHINE_ID) +
+            "&location_id=" + String(LOCATION_ID) +
+            "&api_key=" + String(API_KEY);
+        http.begin(syncUrl);
+
+        
+        int httpCode = http.GET();
+        if (httpCode == 200) {
+            String response = http.getString();
+            int server_wins = 0, server_plays = 0;
+            int idx = response.indexOf("\"total_wins\":");
+            if (idx > 0) server_wins = response.substring(idx + 13).toInt();
+            idx = response.indexOf("\"total_plays\":");
+            if (idx > 0) server_plays = response.substring(idx + 14).toInt();
+            
+            total_wins += server_wins;
+            total_plays += server_plays;
+            win_counter = 0;
+            play_counter = 0;
+            synced = true;
+            
+            prefs.begin("karusel", false);
+            prefs.putInt("total_wins", total_wins);
+            prefs.putInt("total_plays", total_plays);
+            prefs.end();
+        }
+        http.end();
+    }
+
+    if (millis() - last_poll_time >= POLL_INTERVAL_MS) {
+        last_poll_time = millis();
+
+        portDISABLE_INTERRUPTS();
+        int wins = win_counter;
+        int plays = play_counter;
+        win_counter = 0;
+        play_counter = 0;
+        portENABLE_INTERRUPTS();
+
+        total_wins += wins;
+        total_plays += plays;
+
+        // Сохраняем в NVS
+        prefs.begin("karusel", false);
+        prefs.putInt("total_wins", total_wins);
+        prefs.putInt("total_plays", total_plays);
+        prefs.end();
+
+        if (wins > 0 || plays > 0) {
+            Serial.printf("Новые: wins=%d, plays=%d | Всего: wins=%d, plays=%d\n", wins, plays, total_wins, total_plays);
+        }
+
+        if (synced && wifi_ok) {
+            HTTPClient http;
+            http.begin(SERVER_URL);
+            http.addHeader("Content-Type", "application/json");
+            http.setTimeout(HTTP_TIMEOUT_MS);
+
+            String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) +
+                ",\"location_id\":" + String(LOCATION_ID) +
+                ",\"api_key\":\"" + String(API_KEY) + "\"" +
+                ",\"total_wins\":" + String(total_wins) +
+                ",\"total_plays\":" + String(total_plays) + "}";
+
+            unsigned long t0 = millis();
+            int httpCode = http.POST(jsonBody);
+            unsigned long t1 = millis();
+            http.end();
+
+            Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
+
+            if (httpCode == 200) {
+                Serial.println("[OK] Отправлено.");
+            } else {
+                Serial.println("[ERR] Ошибка отправки.");
+            }
+        }
+    }
+
+    delay(10);
 }
 
-// ═══════════════════════════════════════════════════════
-// HTTP (синхронный)
-// ═══════════════════════════════════════════════════════
-bool sendHTTP(String eventType) {
-  HTTPClient http;
-  http.begin(SERVER_URL);
-  http.addHeader("Content-Type", "application/json");
-  http.setTimeout(HTTP_TIMEOUT_MS);
-
-  //String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + ",\"event_type\":\"" + eventType + "\"}";
-  String jsonBody = "{\"machine_id\":" + String(MACHINE_ID) + 
-    ",\"location_id\":" + String(1) +
-    ",\"api_key\":\"EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg\"" +
-    ",\"event_type\":\"" + eventType + "\"}";
-
-
-  unsigned long t0 = millis();
-  int httpCode = http.POST(jsonBody);
-  unsigned long t1 = millis();
-  http.end();
-
-  Serial.printf("[HTTP] Код: %d, время: %lu мс, тип: %s\n", httpCode, t1 - t0, eventType.c_str());
-
-  return (httpCode == 200);
-}
