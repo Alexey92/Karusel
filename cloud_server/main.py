@@ -121,6 +121,7 @@ async def receive_bulk_event(event: BulkEventRequest):
         cloud_machine_id = await find_or_create_machine(event.location_id, event.machine_id)
 
         p = await get_pool()
+        
         async with p.acquire() as conn:
             prev_wins = await conn.fetchval(
                 "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'",
@@ -139,6 +140,11 @@ async def receive_bulk_event(event: BulkEventRequest):
                 await increment_jackpot(cloud_machine_id)
             for _ in range(new_plays):
                 await add_event(cloud_machine_id, event.location_id, "play")
+                
+            await conn.execute("UPDATE machines SET last_seen = NOW() WHERE id = $1", cloud_machine_id)
+                
+        
+
 
         return {
             "status": "ok",
@@ -150,7 +156,27 @@ async def receive_bulk_event(event: BulkEventRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")        
         
-
+@app.get("/api/get-counts")
+async def get_counts(machine_id: int, location_id: int, api_key: str):
+    if not await verify_api_key(location_id, api_key):
+        raise HTTPException(status_code=403, detail="Неверный api_key")
+    
+    cloud_machine_id = await find_or_create_machine(location_id, machine_id)
+    
+    p = await get_pool()
+    async with p.acquire() as conn:
+        total_wins = await conn.fetchval(
+            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'",
+            cloud_machine_id
+        ) or 0
+        total_plays = await conn.fetchval(
+            "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type = 'play'",
+            cloud_machine_id
+        ) or 0
+    
+    return {"total_wins": total_wins, "total_plays": total_plays}
+    
+    
 # ─── Авторизация ─────────────────────────────────────────────
 
 @app.post("/api/login", response_model=LoginResponse)

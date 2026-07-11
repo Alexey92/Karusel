@@ -41,7 +41,13 @@ const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
 // КОНСТАНТЫ
 // ═══════════════════════════════════════════════════════
 
-const unsigned long POLL_INTERVAL_MS = 5000;
+const unsigned long REPORT_INTERVAL_S = 30;  // 30 секунд
+const unsigned long EVENT_DELAY_S = 2;       // 2 секунды после события
+unsigned long last_report_time = 0;
+bool has_new_events = false;
+unsigned long last_event_time = 0;
+
+const unsigned long POLL_INTERVAL_MS = 1000;
 const unsigned long HTTP_TIMEOUT_MS = 3000;
 const unsigned long WIFI_RETRY_MS = 10000;
 
@@ -183,7 +189,9 @@ void loop() {
         http.end();
     }
 
+    static uint32_t resend = 0;
     if (millis() - last_poll_time >= POLL_INTERVAL_MS) {
+        resend++;
         last_poll_time = millis();
 
         portDISABLE_INTERRUPTS();
@@ -196,17 +204,21 @@ void loop() {
         total_wins += wins;
         total_plays += plays;
 
-        // Сохраняем в NVS
-        prefs.begin("karusel", false);
-        prefs.putInt("total_wins", total_wins);
-        prefs.putInt("total_plays", total_plays);
-        prefs.end();
+        
 
         if (wins > 0 || plays > 0) {
-            Serial.printf("Новые: wins=%d, plays=%d | Всего: wins=%d, plays=%d\n", wins, plays, total_wins, total_plays);
+          // Сохраняем в NVS
+          prefs.begin("karusel", false);
+          prefs.putInt("total_wins", total_wins);
+          prefs.putInt("total_plays", total_plays);
+          prefs.end();
+
+          resend = REPORT_INTERVAL_S - EVENT_DELAY_S;
+
+          Serial.printf("Новые: wins=%d, plays=%d | Всего: wins=%d, plays=%d\n", wins, plays, total_wins, total_plays);
         }
 
-        if (synced && wifi_ok) {
+        if (synced && wifi_ok && resend > REPORT_INTERVAL_S) {
             HTTPClient http;
             http.begin(SERVER_URL);
             http.addHeader("Content-Type", "application/json");
@@ -226,6 +238,7 @@ void loop() {
             Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
 
             if (httpCode == 200) {
+                resend = 0;
                 Serial.println("[OK] Отправлено.");
             } else {
                 Serial.println("[ERR] Ошибка отправки.");
