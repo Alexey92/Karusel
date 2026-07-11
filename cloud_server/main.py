@@ -143,9 +143,6 @@ async def receive_bulk_event(event: BulkEventRequest):
                 
             await conn.execute("UPDATE machines SET last_seen = NOW() WHERE id = $1", cloud_machine_id)
                 
-        
-
-
         return {
             "status": "ok",
             "new_wins": new_wins,
