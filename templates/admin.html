@@ -173,16 +173,23 @@
 					const gamePrice = parseInt(document.getElementById('game-price')?.value || 50);
 
 					// Логика периода
-					let fromParam = from, toParam = to;
-					if (from && !to) {
-							toParam = new Date().toISOString().slice(0, 16).replace('T', ' ');
-					} else if (!from && to) {
+					let fromParam = from ? from.replace('T', ' ') : '';
+					let toParam = to ? to.replace('T', ' ') : '';
+
+					if (fromParam && !toParam) {
+							const now = new Date();
+							toParam = now.getFullYear() + '-' +
+									String(now.getMonth() + 1).padStart(2, '0') + '-' +
+									String(now.getDate()).padStart(2, '0') + ' ' +
+									String(now.getHours()).padStart(2, '0') + ':' +
+									String(now.getMinutes()).padStart(2, '0');
+					} else if (!fromParam && toParam) {
 							fromParam = '2020-01-01 00:00';
 					}
 
 					let url = '/api/admin/stats';
 					if (fromParam && toParam) {
-							url += `?from_date=${fromParam.replace('T', ' ')}&to_date=${toParam.replace('T', ' ')}`;
+							url += `?from_date=${fromParam}&to_date=${toParam}`;
 					}
 
 					const data = await apiGet(url);

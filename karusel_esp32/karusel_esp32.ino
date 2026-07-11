@@ -15,17 +15,17 @@
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
-const int MACHINE_ID = 100;
+const int MACHINE_ID = 3;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 const char* SERVER_URL = "http://194.186.104.79:80/api/event";
-// const char* WIFI_SSID = "SmartVend";
-// const char* WIFI_PASSWORD = "12345678";
+const char* WIFI_SSID = "SmartVend";
+const char* WIFI_PASSWORD = "12345678";
 
-const char* WIFI_SSID = "kv1313";
-const char* WIFI_PASSWORD = "93985666";
+// const char* WIFI_SSID = "kv1313";
+// const char* WIFI_PASSWORD = "93985666";
 
 // const char* WIFI_SSID = "iPhone (Алекс)";
 // const char* WIFI_PASSWORD = "qwerty777";
