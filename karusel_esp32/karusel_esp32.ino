@@ -14,6 +14,7 @@
 #include <Preferences.h>
 #include <Update.h>
 
+#define _MACHINE_ID  100
 
 // URL для проверки обновлений
 const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.bin";
@@ -31,20 +32,24 @@ Preferences prefs;
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
-const int MACHINE_ID = 100;
+const int MACHINE_ID = _MACHINE_ID;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
 //////////////////////////////////////////
 const char* SERVER_URL = "http://194.186.104.79:80/api/bulk-event";
-// const char* WIFI_SSID = "SmartVend";
-// const char* WIFI_PASSWORD = "12345678";
+
 
 // const char* WIFI_SSID = "kv1313";
 // const char* WIFI_PASSWORD = "93985666";
 
-const char* WIFI_SSID = "iPhone (Алекс)";
-const char* WIFI_PASSWORD = "qwerty777";
+#if _MACHINE_ID < 100
+    const char* WIFI_SSID = "SmartVend";
+   const char* WIFI_PASSWORD = "12345678";
+#else
+    const char* WIFI_SSID = "iPhone (Алекс)";
+    const char* WIFI_PASSWORD = "qwerty777";
+#endif
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
