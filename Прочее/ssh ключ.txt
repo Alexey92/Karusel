@@ -31,7 +31,8 @@ kill 82000
 s-sist@194.186.104.79
 
 Командная строка: 
-scp "D:\karusel_esp32.ino.merged.bin" s-sist@194.186.104.79:~/Documents/karusel/cloud_server/firmware/karusel_esp32.ino.merged.bin
+scp "D:\karusel_esp32.ino.bin" s-sist@194.186.104.79:~/Documents/karusel/cloud_server/firmware/
+
 echo "1.2" > version.txt
 
 
