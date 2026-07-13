@@ -1,0 +1,38 @@
+passphrese: karusel
+
+Your identification has been saved in password.txt.
+Your public key has been saved in password.txt.pub.
+The key fingerprint is:
+SHA256:pfgBM8tttGVu87YwmQwBYjqjNXqYPMeqASEVvOzNR10 s-sist@iMac-S-sist.local
+The key's randomart image is:
++---[RSA 4096]----+
+| .o.o .          |
+| ..o . .  E      |
+|o.*.  +.o.+      |
+|oB++ ..O.O       |
+|*+.= .+ S +      |
+|..= o .o = =     |
+|..   .  . * o    |
+|..         + .   |
+|.           .    |
++----[SHA256]-----+
+
+
+
+cd ~/Documents/karusel/cloud_server
+nohup python3.12 main.py > /tmp/karusel_cloud.log 2>&1 &
+
+
+ps aux | grep "main.py" | grep -v grep
+kill 82000
+
+
+
+s-sist@194.186.104.79
+
+Командная строка: 
+scp "D:\karusel_esp32.ino.merged.bin" s-sist@194.186.104.79:~/Documents/karusel/cloud_server/firmware/karusel_esp32.ino.merged.bin
+echo "1.2" > version.txt
+
+
+tail -f /tmp/karusel_cloud.log

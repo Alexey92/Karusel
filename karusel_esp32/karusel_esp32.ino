@@ -16,12 +16,12 @@
 
 
 // URL для проверки обновлений
-const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.merged.bin";
+const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.bin";
 const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.1"; // Версия текущей прошивки
+String current_version = "1.4"; // Версия текущей прошивки
 
 
 
@@ -294,30 +294,39 @@ void checkForUpdate() {
         }
         else Serial.printf("[OTA] Текущая версия: %s (:%s)\n", new_version.c_str(), current_version.c_str());
     }
-    Serial.printf("[OTA] Нет ответа от сервера\n");
+    else    Serial.printf("[OTA] Нет ответа от сервера\n");
     http.end();
 }
 
 void performOTA() {
+    Serial.println("[OTA] Начинаю загрузку прошивки...");
     HTTPClient http;
     http.begin(UPDATE_URL);
     int httpCode = http.GET();
+    Serial.printf("[OTA] Код ответа: %d\n", httpCode);
     
     if (httpCode == 200) {
         int contentLength = http.getSize();
+        Serial.printf("[OTA] Размер: %d байт\n", contentLength);
         bool canBegin = Update.begin(contentLength);
+        Serial.printf("[OTA] Update.begin: %d\n", canBegin);
         
         if (canBegin) {
             WiFiClient* client = http.getStreamPtr();
             size_t written = Update.writeStream(*client);
+            Serial.printf("[OTA] Записано: %d из %d\n", written, contentLength);
             
             if (written == contentLength) {
                 if (Update.end()) {
                     Serial.println("[OTA] Обновление успешно! Перезагрузка...");
                     delay(1000);
                     ESP.restart();
+                } else {
+                    Serial.printf("[OTA] Update.end() ошибка: %d\n", Update.getError());
                 }
             }
+        } else {
+            Serial.printf("[OTA] Не могу начать обновление: %d\n", Update.getError());
         }
     }
     http.end();
