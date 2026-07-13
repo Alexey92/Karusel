@@ -292,7 +292,9 @@ void checkForUpdate() {
             Serial.printf("[OTA] Новая версия: %s (текущая: %s)\n", new_version.c_str(), current_version.c_str());
             performOTA();
         }
+        else Serial.printf("[OTA] Текущая версия: %s (:%s)\n", new_version.c_str(), current_version.c_str());
     }
+    Serial.printf("[OTA] Нет ответа от сервера\n");
     http.end();
 }
 

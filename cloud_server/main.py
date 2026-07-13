@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
+from datetime import datetime
 
 # Добавляем server/ в путь для импорта auth.py
 import importlib.util
@@ -60,6 +61,9 @@ async def setup_admin_password():
         hashed = hash_password(ADMIN_DEFAULT_PASSWORD)
         await update_admin_password(ADMIN_USERNAME, hashed)
         print(f"[AUTH] Установлен пароль администратора: {ADMIN_DEFAULT_PASSWORD}")
+
+def log(msg):
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -156,7 +160,10 @@ async def receive_bulk_event(event: BulkEventRequest):
             "total_wins": event.total_wins,
             "total_plays": event.total_plays
         }
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")        
         
 @app.get("/api/get-counts")
