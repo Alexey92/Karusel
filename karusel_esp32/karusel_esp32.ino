@@ -40,11 +40,11 @@ const char* SERVER_URL = "http://194.186.104.79:80/api/bulk-event";
 // const char* WIFI_SSID = "SmartVend";
 // const char* WIFI_PASSWORD = "12345678";
 
-const char* WIFI_SSID = "kv1313";
-const char* WIFI_PASSWORD = "93985666";
+// const char* WIFI_SSID = "kv1313";
+// const char* WIFI_PASSWORD = "93985666";
 
-// const char* WIFI_SSID = "iPhone (Алекс)";
-// const char* WIFI_PASSWORD = "qwerty777";
+const char* WIFI_SSID = "iPhone (Алекс)";
+const char* WIFI_PASSWORD = "qwerty777";
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
@@ -160,6 +160,9 @@ void loop() {
     if (wifi_ok && !was_connected) {
         was_connected = true;
         Serial.printf("[WiFi] Подключено! IP: %s\n", WiFi.localIP().toString().c_str());
+        sendLog("WiFi подключено: " + WiFi.localIP().toString());
+
+        checkForUpdate();
     }
     if (!wifi_ok) {
         was_connected = false;
@@ -231,6 +234,7 @@ void loop() {
           resend = REPORT_INTERVAL_S - EVENT_DELAY_S;
 
           Serial.printf("Новые: wins=%d, plays=%d | Всего: wins=%d, plays=%d\n", wins, plays, total_wins, total_plays);
+          sendLog("Событий: wins=" + String(total_wins) + " plays=" + String(total_plays));
         }
 
         if (synced && wifi_ok && resend > REPORT_INTERVAL_S) {
@@ -251,12 +255,15 @@ void loop() {
             http.end();
 
             Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
+            sendLog("HTTP код: " + String(httpCode));
 
             if (httpCode == 200) {
                 resend = 0;
                 Serial.println("[OK] Отправлено.");
+                sendLog("[OK] Отправлено");
             } else {
                 Serial.println("[ERR] Ошибка отправки.");
+                sendLog("[ERR] Ошибка отправки");
             }
         }
     }
@@ -311,6 +318,20 @@ void performOTA() {
             }
         }
     }
+    http.end();
+}
+
+void sendLog(String message) {
+    if (WiFi.status() != WL_CONNECTED) return;
+    
+    HTTPClient http;
+    http.begin("http://194.186.104.79:80/api/log");
+    http.addHeader("Content-Type", "application/json");
+    http.setTimeout(2000);
+    
+    String json = "{\"machine_id\":" + String(MACHINE_ID) +
+                  ",\"message\":\"" + message + "\"}";
+    http.POST(json);
     http.end();
 }
 

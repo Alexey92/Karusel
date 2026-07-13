@@ -1,0 +1,7 @@
+
+
+
+
+tail -f /tmp/karusel_cloud.log
+
+http://194.186.104.79/api/admin/logs
