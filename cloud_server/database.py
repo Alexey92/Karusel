@@ -12,7 +12,7 @@ pool = None
 async def get_pool():
     global pool
     if pool is None:
-        pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+        pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=25)
     return pool
 
 async def get_db():
@@ -241,11 +241,7 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         }
 
 async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
-    if from_date:
-        from_date = datetime.strptime(from_date, "%Y-%m-%d %H:%M")
-    if to_date:
-        to_date = datetime.strptime(to_date, "%Y-%m-%d %H:%M")
-    
+    # НЕ преобразовываем в datetime, оставляем как строки
     machines = await get_machines()
     stats = []
     for m in machines:
@@ -253,6 +249,8 @@ async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> 
         if s:
             stats.append(s)
     return stats
+    
+
 
 async def get_events_history(limit: int = 50, offset: int = 0, location_id: int = None) -> list:
     p = await get_pool()
