@@ -39,3 +39,19 @@ echo "1.2" > version.txt
 
 tail -f /tmp/karusel_cloud.log
 cat /tmp/karusel_cloud.log
+
+
+
+screen 
+# 1. Запустите screen-сессию
+screen -S karusel
+
+# 2. Внутри неё запустите сервер
+cd ~/Documents/karusel/cloud_server
+python3.12 main.py
+
+# 3. Отсоединитесь (Ctrl+A, затем D)
+# Всё, сервер работает в фоне стабильно
+
+# 4. Чтобы проверить логи, подключитесь обратно:
+screen -r karusel
