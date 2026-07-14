@@ -38,3 +38,4 @@ echo "1.2" > version.txt
 
 
 tail -f /tmp/karusel_cloud.log
+cat /tmp/karusel_cloud.log
