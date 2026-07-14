@@ -25,6 +25,7 @@ nohup python3.12 main.py > /tmp/karusel_cloud.log 2>&1 &
 
 ps aux | grep "main.py" | grep -v grep
 kill 82000
+kill -9 82000
 kill $(ps aux | grep "main.py" | grep -v grep | awk '{print $2}')
 
 
