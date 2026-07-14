@@ -186,7 +186,8 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         info = dict(row)
         
         # Время последнего сообщения от сервера
-        last_seen = await conn.fetchval("SELECT last_seen FROM machines WHERE id = $1", machine_id)
+        # last_seen = await conn.fetchval("SELECT last_seen FROM machines WHERE id = $1", machine_id)
+        last_seen = None
 
         # Выигрыши
         wins_hour = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '1 hour'", machine_id)
