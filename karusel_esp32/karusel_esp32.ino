@@ -23,7 +23,7 @@ const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.4"; // Версия текущей прошивки
+String current_version = "1.5"; // Версия текущей прошивки
 
 
 
@@ -131,10 +131,10 @@ void setup() {
     prefs.end();
 
     if (MACHINE_ID < 100) {
-        // WIFI_SSID = "SmartVend";
-        // WIFI_PASSWORD = "12345678";
-        WIFI_SSID = "Sistema-Global";
-        WIFI_PASSWORD = "87654321";
+        WIFI_SSID = "SmartVend";
+        WIFI_PASSWORD = "12345678";
+        // WIFI_SSID = "Sistema-Global";
+        // WIFI_PASSWORD = "87654321";
     } else {
         WIFI_SSID = "kv1313";
         WIFI_PASSWORD = "93985666";
