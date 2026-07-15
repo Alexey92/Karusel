@@ -21,7 +21,7 @@ const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.1"; // Версия текущей прошивки
+String current_version = "1.2"; // Версия текущей прошивки
 
 
 
