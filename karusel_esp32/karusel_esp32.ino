@@ -23,7 +23,7 @@ const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.3"; // Версия текущей прошивки
+String current_version = "1.4"; // Версия текущей прошивки
 
 
 
@@ -279,7 +279,7 @@ void loop() {
 
             if (httpCode == 200) {
                 resend = 0;
-                Serial.println("[OK] Отправлено.");
+                Serial.printf("[OK] Отправлено (%d %d).\n", total_wins, total_plays);
                 sendLog("[OK] Отправлено");
             } else {
                 Serial.println("[ERR] Ошибка отправки.");
