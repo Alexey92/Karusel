@@ -15,13 +15,15 @@
 #include <Update.h>
 
 
+#define ___MACHINE_ID 1
+
 // URL для проверки обновлений
 const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.bin";
 const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.2"; // Версия текущей прошивки
+String current_version = "1.3"; // Версия текущей прошивки
 
 
 
@@ -39,8 +41,6 @@ const int PLAY_PIN = 14;
 const char* SERVER_URL = "http://194.186.104.79:80/api/bulk-event";
 
 
-// const char* WIFI_SSID = "kv1313";
-// const char* WIFI_PASSWORD = "93985666";
 const char* WIFI_SSID;
 const char* WIFI_PASSWORD;
 
@@ -124,15 +124,17 @@ void setup() {
     if (MACHINE_ID == 0) {
         // Первый запуск — ID не задан
         // Здесь можно прочитать с пинов-перемычек или задать вручную
-        MACHINE_ID = 100; 
+        MACHINE_ID = ___MACHINE_ID; 
         prefs.putInt("machine_id", MACHINE_ID);
         Serial.printf("[INIT] Присвоен ID: %d\n", MACHINE_ID);
     }
     prefs.end();
 
     if (MACHINE_ID < 100) {
-        WIFI_SSID = "SmartVend";
-        WIFI_PASSWORD = "12345678";
+        // WIFI_SSID = "SmartVend";
+        // WIFI_PASSWORD = "12345678";
+        WIFI_SSID = "Sistema-Global";
+        WIFI_PASSWORD = "87654321";
     } else {
         WIFI_SSID = "kv1313";
         WIFI_PASSWORD = "93985666";
@@ -273,7 +275,7 @@ void loop() {
             http.end();
 
             Serial.printf("[HTTP] Код: %d, время: %lu мс\n", httpCode, t1 - t0);
-            sendLog("HTTP код: " + String(httpCode));
+            sendLog("HTTP код: " + String(httpCode) + "время: " + String(t1 - t0));
 
             if (httpCode == 200) {
                 resend = 0;
@@ -308,6 +310,7 @@ void checkForUpdate() {
         
         if (new_version != current_version) {
             Serial.printf("[OTA] Новая версия: %s (текущая: %s)\n", new_version.c_str(), current_version.c_str());
+            sendLog("[OTA] Новая версия:  " + new_version + "| текущая: : " + current_version);
             performOTA();
         }
         else Serial.printf("[OTA] Текущая версия: %s (:%s)\n", new_version.c_str(), current_version.c_str());
@@ -322,6 +325,7 @@ void performOTA() {
     http.begin(UPDATE_URL);
     int httpCode = http.GET();
     Serial.printf("[OTA] Код ответа: %d\n", httpCode);
+    sendLog("[OTA] Код ответа: " + String(httpCode));
     
     if (httpCode == 200) {
         int contentLength = http.getSize();
