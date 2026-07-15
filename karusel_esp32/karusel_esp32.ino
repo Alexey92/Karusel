@@ -145,6 +145,7 @@ void setup() {
 
 
     Serial.printf("Восстановлено: wins=%d, plays=%d\n", total_wins, total_plays);
+    sendLog("Восстановлено: wins=" + String(total_wins) + " plays=" + String(total_plays));
 
     Serial.println("\n╔════════════════════════════════╗");
     Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
@@ -251,7 +252,7 @@ void loop() {
           resend = REPORT_INTERVAL_S - EVENT_DELAY_S;
 
           Serial.printf("Новые: wins=%d, plays=%d | Всего: wins=%d, plays=%d\n", wins, plays, total_wins, total_plays);
-          sendLog("Событий: wins=" + String(total_wins) + " plays=" + String(total_plays));
+          sendLog("Новые: wins=" + String(wins) + " plays=" + String(plays) + "| Всего: wins=" + String(total_wins) + " plays=" + String(total_plays));
         }
 
         if (synced && wifi_ok && resend > REPORT_INTERVAL_S) {
