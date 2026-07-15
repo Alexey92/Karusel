@@ -10,8 +10,6 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
-from pydantic import BaseModel
-from datetime import datetime
 
 # Добавляем server/ в путь для импорта auth.py
 import importlib.util
@@ -51,19 +49,12 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 ADMIN_USERNAME = "admin"
 ADMIN_DEFAULT_PASSWORD = "admin123"
 
-class LogRequest(BaseModel):
-    machine_id: int
-    message: str    
-
 async def setup_admin_password():
     user = await get_user(ADMIN_USERNAME)
     if user and user["password_hash"] == "placeholder_hash_will_be_replaced":
         hashed = hash_password(ADMIN_DEFAULT_PASSWORD)
         await update_admin_password(ADMIN_USERNAME, hashed)
         print(f"[AUTH] Установлен пароль администратора: {ADMIN_DEFAULT_PASSWORD}")
-
-def log(msg):
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -160,10 +151,7 @@ async def receive_bulk_event(event: BulkEventRequest):
             "total_wins": event.total_wins,
             "total_plays": event.total_plays
         }
-
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")        
         
 @app.get("/api/get-counts")
@@ -187,10 +175,6 @@ async def get_counts(machine_id: int, location_id: int, api_key: str):
     return {"total_wins": total_wins, "total_plays": total_plays}
     
     
-@app.post("/api/log")
-async def receive_log(log: LogRequest):
-    print(f"[ESP:{log.machine_id}] {log.message}")
-    return {"status": "ok"}
 # ─── Авторизация ─────────────────────────────────────────────
 
 @app.post("/api/login", response_model=LoginResponse)
@@ -312,5 +296,4 @@ async def change_password(data: ChangePasswordRequest, username: str = Depends(g
     return {"status": "ok", "message": "Пароль изменён"}
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=80, reload=False, log_level="info")
-    #uvicorn.run("main:app", host="0.0.0.0", port=80, reload=True, log_level="info")
+    uvicorn.run("main:app", host="0.0.0.0", port=80, reload=True, log_level="info")

@@ -46,6 +46,7 @@ class MachineStats(BaseModel):
     plays_period: int = 0
     last_play: Optional[str] = None
     jackpot_config: Optional[dict] = None
+    last_seen: Optional[str] = None
 
 class JackpotConfigResponse(BaseModel):
     id: int

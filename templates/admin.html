@@ -243,7 +243,7 @@
 
 									return `
 											<div class="card">
-													<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.last_play && (new Date() - new Date(s.last_play)) < 120000 ? '#2ecc71' : '#e74c3c'};margin-right:6px;"></span>
+													<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.last_seen && (new Date() - new Date(s.last_seen)) < 120000 ? '#2ecc71' : '#e74c3c'};margin-right:6px;"></span>
 													<div class="card-title">${s.machine_name || 'Автомат №' + s.machine_id} (ID:${s.machine_id})</div>
 
 													<div class="card-section-title">🏆 Выигрыши</div>

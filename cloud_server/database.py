@@ -12,7 +12,7 @@ pool = None
 async def get_pool():
     global pool
     if pool is None:
-        pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=25)
+        pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
     return pool
 
 async def get_db():
@@ -184,7 +184,9 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
         if not row:
             return {}
         info = dict(row)
-
+        
+        # Время последнего сообщения от сервера
+        last_seen = await conn.fetchval("SELECT last_seen FROM machines WHERE id = $1", machine_id)
 
         # Выигрыши
         wins_hour = await conn.fetchval("SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play' AND timestamp >= NOW() - INTERVAL '1 hour'", machine_id)
@@ -233,11 +235,16 @@ async def get_machine_stats(machine_id: int, from_date: str = None, to_date: str
             "plays_total": plays_total or 0,
             "plays_period": plays_period,
             "last_play": last_play.strftime("%Y-%m-%d %H:%M:%S") if last_play else None,
+            "last_seen": last_seen.strftime("%Y-%m-%d %H:%M:%S") if last_seen else None,
             "jackpot_config": dict(jackpot) if jackpot else None
         }
 
 async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> list:
-    # НЕ преобразовываем в datetime, оставляем как строки
+    if from_date:
+        from_date = datetime.strptime(from_date, "%Y-%m-%d %H:%M")
+    if to_date:
+        to_date = datetime.strptime(to_date, "%Y-%m-%d %H:%M")
+    
     machines = await get_machines()
     stats = []
     for m in machines:
@@ -245,8 +252,6 @@ async def get_all_machines_stats(from_date: str = None, to_date: str = None) -> 
         if s:
             stats.append(s)
     return stats
-    
-
 
 async def get_events_history(limit: int = 50, offset: int = 0, location_id: int = None) -> list:
     p = await get_pool()
