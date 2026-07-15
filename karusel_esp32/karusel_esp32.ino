@@ -14,7 +14,6 @@
 #include <Preferences.h>
 #include <Update.h>
 
-#define _MACHINE_ID  100
 
 // URL для проверки обновлений
 const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.bin";
@@ -22,7 +21,7 @@ const char* VERSION_URL = "http://194.186.104.79:80/firmware/version.txt";
 const unsigned long UPDATE_CHECK_INTERVAL = 300000; // 5 минут
 unsigned long last_update_check = 0;
 
-String current_version = "1.4"; // Версия текущей прошивки
+String current_version = "1.1"; // Версия текущей прошивки
 
 
 
@@ -32,7 +31,7 @@ Preferences prefs;
 // ═══════════════════════════════════════════════════════
 // НАСТРОЙКИ
 // ═══════════════════════════════════════════════════════
-const int MACHINE_ID = _MACHINE_ID;
+int MACHINE_ID;
 const int WIN_PIN = 13;
 const int PLAY_PIN = 14;
 
@@ -42,14 +41,9 @@ const char* SERVER_URL = "http://194.186.104.79:80/api/bulk-event";
 
 // const char* WIFI_SSID = "kv1313";
 // const char* WIFI_PASSWORD = "93985666";
+const char* WIFI_SSID;
+const char* WIFI_PASSWORD;
 
-#if _MACHINE_ID < 100
-    const char* WIFI_SSID = "SmartVend";
-   const char* WIFI_PASSWORD = "12345678";
-#else
-    const char* WIFI_SSID = "iPhone (Алекс)";
-    const char* WIFI_PASSWORD = "qwerty777";
-#endif
 
 const int LOCATION_ID = 1;  // ID адреса в облаке
 const char* API_KEY = "EawbxVBa7azu65LNdfCOzXzB_BRo0Kp2YC_fuy4rfVg";
@@ -113,45 +107,63 @@ void IRAM_ATTR onPlay() {
 // SETUP
 // ═══════════════════════════════════════════════════════
 void setup() {
-  delay(3000);
+    delay(3000);
 
-  Serial.begin(115200);
+    Serial.begin(115200);
 
-  // Задержка для стабилизации питания
-  Serial.println("\n......................");
-//   delay(3000);
+    // Задержка для стабилизации питания
+    Serial.println("\n......................");
+    //   delay(3000);
 
-  prefs.begin("karusel", false);
-  total_wins = prefs.getInt("total_wins", 0);
-  total_plays = prefs.getInt("total_plays", 0);
-  prefs.end();
+    prefs.begin("karusel", false);
+    total_wins = prefs.getInt("total_wins", 0);
+    total_plays = prefs.getInt("total_plays", 0);
 
-  // Если счётчики нулевые — запрашиваем у сервера
-  if (total_wins > 0 || total_plays > 0) {
+    MACHINE_ID = prefs.getInt("machine_id", 0);
+    
+    if (MACHINE_ID == 0) {
+        // Первый запуск — ID не задан
+        // Здесь можно прочитать с пинов-перемычек или задать вручную
+        MACHINE_ID = 100; 
+        prefs.putInt("machine_id", MACHINE_ID);
+        Serial.printf("[INIT] Присвоен ID: %d\n", MACHINE_ID);
+    }
+    prefs.end();
+
+    if (MACHINE_ID < 100) {
+        WIFI_SSID = "SmartVend";
+        WIFI_PASSWORD = "12345678";
+    } else {
+        WIFI_SSID = "kv1313";
+        WIFI_PASSWORD = "93985666";
+    }
+
+    // Если счётчики нулевые — запрашиваем у сервера
+    if (total_wins > 0 || total_plays > 0) {
         synced = true;  // Уже были данные в NVS — синхронизированы
     }
 
 
-  Serial.printf("Восстановлено: wins=%d, plays=%d\n", total_wins, total_plays);
+    Serial.printf("Восстановлено: wins=%d, plays=%d\n", total_wins, total_plays);
 
-  Serial.println("\n╔════════════════════════════════╗");
-  Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
-  Serial.println("╚════════════════════════════════╝");
-  Serial.printf("ID: %d | WIN: GPIO%d | PLAY: GPIO%d\n", MACHINE_ID, WIN_PIN, PLAY_PIN);
+    Serial.println("\n╔════════════════════════════════╗");
+    Serial.println("║  KARUSEL ESP32 TRACKER v6.0    ║");
+    Serial.println("╚════════════════════════════════╝");
+    Serial.printf("ID: %d | WIN: GPIO%d | PLAY: GPIO%d\n", MACHINE_ID, WIN_PIN, PLAY_PIN);
 
-  pinMode(WIN_PIN, INPUT_PULLUP);
-  pinMode(PLAY_PIN, INPUT_PULLUP);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+    pinMode(WIN_PIN, INPUT_PULLUP);
+    pinMode(PLAY_PIN, INPUT_PULLUP);
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
 
 
-  attachInterrupt(digitalPinToInterrupt(WIN_PIN), onWin, FALLING);
-  attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
+    attachInterrupt(digitalPinToInterrupt(WIN_PIN), onWin, FALLING);
+    attachInterrupt(digitalPinToInterrupt(PLAY_PIN), onPlay, FALLING);
 
-  WiFi.mode(WIFI_STA);
-  // WiFi.config(IPAddress(192, 168, 0, 200 + MACHINE_ID), IPAddress(192, 168, 0, 1), IPAddress(255, 255, 255, 0));
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
+    WiFi.mode(WIFI_STA);
+    // WiFi.config(IPAddress(192, 168, 0, 200 + MACHINE_ID), IPAddress(192, 168, 0, 1), IPAddress(255, 255, 255, 0));
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Serial.printf("[WiFi] Подключение к %s...\n", WIFI_SSID);
 }
 
 // ═══════════════════════════════════════════════════════

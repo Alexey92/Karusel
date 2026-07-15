@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
 
 # Добавляем server/ в путь для импорта auth.py
 import importlib.util
@@ -174,6 +175,17 @@ async def get_counts(machine_id: int, location_id: int, api_key: str):
     
     return {"total_wins": total_wins, "total_plays": total_plays}
     
+    
+
+
+class LogRequest(BaseModel):
+    machine_id: int
+    message: str
+
+@app.post("/api/log")
+async def receive_log(log: LogRequest):
+    print(f"[ESP:{log.machine_id}] {log.message}")
+    return {"status": "ok"}
     
 # ─── Авторизация ─────────────────────────────────────────────
 
