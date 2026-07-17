@@ -15,7 +15,7 @@
 #include <Update.h>
 
 
-#define ___MACHINE_ID 1
+#define ___MACHINE_ID 2
 
 // URL для проверки обновлений
 const char* UPDATE_URL = "http://194.186.104.79:80/firmware/karusel_esp32.ino.bin";
