@@ -149,9 +149,11 @@ async def create_machine(local_id: int, name: str, location_id: int) -> dict:
         )
         return dict(row)
 
-async def update_machine(machine_id: int, local_id: int = None, name: str = None):
+async def update_machine(machine_id: int, local_id: int = None, name: str = None, smartvend_id: str = None):
     p = await get_pool()
     async with p.acquire() as conn:
+        if smartvend_id is not None:
+            await conn.execute("UPDATE machines SET smartvend_id = $1 WHERE id = $2", smartvend_id, machine_id)
         if local_id is not None and name is not None:
             await conn.execute(
                 "UPDATE machines SET local_id = $1, name = $2 WHERE id = $3",
@@ -319,3 +321,42 @@ async def set_jackpot_counter(location_id: int, count: int) -> dict:
         await conn.execute("UPDATE jackpot_config SET current_win_count = $1 WHERE location_id = $2", count, location_id)
         row = await conn.fetchrow("SELECT * FROM jackpot_config WHERE location_id = $1", location_id)
         return dict(row)
+        
+        
+        
+async def save_cashout(machine_id: int, reported_amount: int, 
+                       smartvend_amount: int, difference: int,
+                       smartvend_encashment_id: str = None) -> dict:
+    """Сохранить инкассацию в БД."""
+    p = await get_pool()
+    async with p.acquire() as conn:
+        row = await conn.fetchrow(
+            """INSERT INTO cashouts (machine_id, reported_amount, smartvend_amount, 
+               difference, smartvend_encashment_id)
+               VALUES ($1, $2, $3, $4, $5) RETURNING *""",
+            machine_id, reported_amount, smartvend_amount, 
+            difference, smartvend_encashment_id
+        )
+        return dict(row)
+
+
+async def get_last_cashout(machine_id: int) -> dict:
+    """Получить последнюю инкассацию автомата."""
+    p = await get_pool()
+    async with p.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM cashouts WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1",
+            machine_id
+        )
+        return dict(row) if row else None
+
+
+async def get_machine_by_smartvend_id(smartvend_id: str) -> dict:
+    """Найти автомат по smartvend_id."""
+    p = await get_pool()
+    async with p.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT m.*, l.name as location_name, l.api_key FROM machines m JOIN locations l ON m.location_id = l.id WHERE m.smartvend_id = $1",
+            smartvend_id
+        )
+        return dict(row) if row else None

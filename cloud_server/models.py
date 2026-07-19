@@ -77,6 +77,7 @@ class MachineCreate(BaseModel):
 class MachineUpdate(BaseModel):
     local_id: Optional[int] = Field(None, ge=1)
     name: Optional[str] = Field(None, min_length=1, max_length=100)
+    smartvend_id: Optional[str] = None
     
     
 class BulkEventRequest(BaseModel):
