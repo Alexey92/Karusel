@@ -200,9 +200,9 @@ def main():
     """Запуск бота."""
     # Для России и стран с блокировкой Telegram — прокси
     # Если SOCKS5:
-    proxy = "socks5://138.16.29.205:64143"
+    # proxy = "socks5://138.16.29.205:64143"
     # Если HTTP-прокси:
-    # proxy = "http://138.16.29.205:1080"
+    proxy = "http://MrLhU7twz:WB4ZJgbrb@154.213.7.9:64876"
     
     app = Application.builder().token(TOKEN).build()
 
