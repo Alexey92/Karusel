@@ -53,3 +53,8 @@ killall screen
 Список устройств: ls /dev/cu.*
 Перезагрузка: esptool --chip esp32 --port /dev/cu.usbserial-1470 run
 
+
+
+esptool --chip esp32 --port /dev/cu.usbserial-1470 --baud 115200 write-flash 0x10000 karusel_esp32.ino.bin
+screen -U /dev/cu.usbserial-1470 115200
+
