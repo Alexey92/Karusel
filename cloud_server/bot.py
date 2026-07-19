@@ -198,6 +198,12 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     """Запуск бота."""
+    # Для России и стран с блокировкой Telegram — прокси
+    # Если SOCKS5:
+    proxy = "socks5://138.16.29.205:64143"
+    # Если HTTP-прокси:
+    # proxy = "http://138.16.29.205:1080"
+    
     app = Application.builder().token(TOKEN).build()
 
     # Инициализация БД при старте

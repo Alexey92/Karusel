@@ -104,7 +104,6 @@
     </div>
 
     <script>
-		const IS_CLOUD = {% if is_cloud %}true{% else %}false{% endif %};
         let token = localStorage.getItem('karusel_token');
         let currentOffset = 0;
         const LIMIT = 50;
@@ -243,7 +242,7 @@
 
 									return `
 											<div class="card">
-													<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.last_seen && (new Date() - new Date(s.last_seen)) < 120000 ? '#2ecc71' : '#e74c3c'};margin-right:6px;"></span>
+													<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.last_seen && (new Date() - new Date(s.last_seen)) < 240000 ? '#2ecc71' : '#e74c3c'};margin-right:6px;"></span>
 													<div class="card-title">${s.machine_name || 'Автомат №' + s.machine_id} (ID:${s.machine_id})</div>
 
 													<div class="card-section-title">🏆 Выигрыши</div>
@@ -382,30 +381,26 @@
 						const machines = await apiGet('/api/admin/locations/'+locId+'/machines');
 						let html = `<h3 style="color:#ffd200;margin:0 0 10px;">📍 ${locName} — автоматы</h3>`;
 						html += '<table class="history-table"><thead><tr>';
-						if (IS_CLOUD) {
-							html += '<th>Лок. ID</th>';
-						}
-						if (!IS_CLOUD) {
-								html += '<th>ID</th>';
-						}
-						html += '<th>Название</th>';
-						if (IS_CLOUD) {
-							html += '<th>Глоб. ID</th>';
-						}
+						html += '<th>Лок. ID</th>';
 						
+
+						html += '<th>Название</th>';
+						html += '<th>Глоб. ID</th>';
+						
+						html += '<th>SmartVend ID</th>';
 						html += '<th></th></tr></thead><tbody>';
+						
+						
 						machines.forEach(m=>{
 							html += `<tr>`;
-							if (IS_CLOUD) {
-								html += `<td><input type="number" id="local-${m.id}" value="${m.local_id}" style="width:60px;"></td>`;
-							}
-							if (!IS_CLOUD) {
-									html += `<td>${m.id}</td>`;
-							}
+							html += `<td><input type="number" id="local-${m.id}" value="${m.local_id}" style="width:60px;"></td>`;
+
 							html += `<td><input type="text" id="name-${m.id}" value="${m.name}" style="width:150px;"></td>`;
-							if (IS_CLOUD) {
-								html += `<td>${m.id}</td>`;
-							}
+							html += `<td>${m.id}</td>`;
+							
+							// Поле SmartVend ID
+							html += `<td><input type="text" id="sv-${m.id}" value="${m.smartvend_id || ''}" style="width:250px;font-size:11px;" placeholder="UUID контроллера"></td>`;
+						
 							html += `<td>
 								<button onclick="saveMachine(${m.id})" class="btn-small">💾</button>
 								<button onclick="deleteMachine(${m.id})" class="btn-danger btn-small">🗑️</button>
@@ -413,9 +408,8 @@
 						});
 						html += '</tbody></table>';
 						html += `<div class="form-row" style="margin-top:10px;">`;
-						if (IS_CLOUD) {
-							html += `<input type="number" id="new-machine-local" placeholder="Номер на объекте" style="width:100px;">`;
-						}
+						html += `<input type="number" id="new-machine-local" placeholder="Номер на объекте" style="width:100px;">`;
+						
 						html += `<input type="text" id="new-machine-name" placeholder="Название автомата">
 							<button onclick="addMachine(${locId})">Добавить</button>
 						</div>`;
@@ -424,33 +418,32 @@
 		
 					async function saveMachine(machineId){
 						const name = document.getElementById('name-'+machineId).value;
-						let body;
-						if (IS_CLOUD) {
-							const localId = document.getElementById('local-'+machineId).value;
-							body = JSON.stringify({local_id:parseInt(localId), name:name});
-						} else {
-							body = JSON.stringify({name:name});
-						}
+						const localId = parseInt(document.getElementById('local-'+machineId).value) || 0;
+						const svId = document.getElementById('sv-'+machineId)?.value || null;
+						
+						let body = {
+								local_id: localId || null,
+								name: name,
+								smartvend_id: svId
+						};
+						
 						await fetch('/api/admin/machines/'+machineId, {
-							method:'PUT',
-							headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-							body:body
+								method:'PUT',
+								headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+								body: JSON.stringify(body)
 						});
 						alert('Сохранено');
-					}
+				}
 
         async function addMachine(locId){
 						const name = document.getElementById('new-machine-name').value;
 						if(!name) return;
 						
 						let body;
-						if (IS_CLOUD) {
 							const localId = document.getElementById('new-machine-local').value;
 							if(!localId) return;
 							body = JSON.stringify({local_id:parseInt(localId), name:name});
-						} else {
-							body = JSON.stringify({name:name});
-						}
+
 						
 						await fetch('/api/admin/locations/'+locId+'/machines', {
 							method:'POST',
