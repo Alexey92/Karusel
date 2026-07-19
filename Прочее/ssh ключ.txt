@@ -58,3 +58,8 @@ killall screen
 esptool --chip esp32 --port /dev/cu.usbserial-1470 --baud 115200 write-flash 0x10000 karusel_esp32.ino.bin
 screen -U /dev/cu.usbserial-1470 115200
 
+Ключи smartvend
+Публичный ключ
+302a300506032b6570032100d41f51080cb63a02b7df51ee717205d5ba881fc945cf69ae7eb07fd96cc11589
+Приватный ключ
+302e020100300506032b65700422042007d34bd9fba1874f99a5ee824a43bd569c05434a5a0efb52c0c3914a018ca646
