@@ -187,9 +187,8 @@ async def cmd_cashout(message: Message):
 async def main():
     global bot
     
-    # Прокси через BotGate (для России) — абсолютно бесплатно
     session = AiohttpSession(
-        proxy="http://botgate.ru:8080"  # если не работает, попробуй tg.lain.la:80
+        proxy="socks5://tuFfegLy8:aCKcPzchx@170.168.56.208:64819"
     )
     
     bot = Bot(token=TOKEN, session=session)
