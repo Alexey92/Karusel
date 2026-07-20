@@ -188,8 +188,8 @@ async def main():
     global bot
     
     session = AiohttpSession(
-        proxy="socks5://tuFfegLy8:aCKcPzchx@170.168.56.208:64819"
-    )
+    proxy="http://tuFfegLy8:aCKcPzchx@170.168.56.208:64818"
+)
     
     bot = Bot(token=TOKEN, session=session)
     
