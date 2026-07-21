@@ -164,6 +164,7 @@ async def get_counts(machine_id: int, location_id: int, api_key: str):
     
     p = await get_pool()
     async with p.acquire() as conn:
+        await conn.execute("SET statement_timeout = '5000'")  # 5 секунд
         total_wins = await conn.fetchval(
             "SELECT COUNT(*) FROM events WHERE machine_id = $1 AND event_type != 'play'",
             cloud_machine_id
