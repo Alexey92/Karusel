@@ -36,10 +36,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_events_machine ON events(machine_id);
 CREATE INDEX IF NOT EXISTS idx_events_location ON events(location_id);
 CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_machines_location_local ON machines(location_id, local_id);
+CREATE INDEX IF NOT EXISTS idx_events_machine_type ON events(machine_id, event_type);
+CREATE INDEX IF NOT EXISTS idx_events_machine_timestamp ON events(machine_id, timestamp);
 
 INSERT INTO users (username, password_hash)
 VALUES ('admin', 'placeholder_hash_will_be_replaced')
