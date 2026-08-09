@@ -76,8 +76,8 @@ volatile int play_counter = 0;
 int total_wins = 0;   
 int total_plays = 0;
 
-volatile int raw_win_counter = 0;
-volatile int raw_play_counter = 0;
+// volatile int raw_win_counter = 0;
+// volatile int raw_play_counter = 0;
 
 
 // WiFi
@@ -91,7 +91,7 @@ void IRAM_ATTR onWin() {
   delayMicroseconds(50);  // Ждём 50 мкс, пока дребезг затухнет
   if (digitalRead(WIN_PIN) == LOW) {  // Пин всё ещё в LOW — реальный импульс
     win_counter++;
-    raw_win_counter++;
+    // raw_win_counter++;
   }
 }
 
@@ -99,7 +99,7 @@ void IRAM_ATTR onPlay() {
   delayMicroseconds(50);
   if (digitalRead(PLAY_PIN) == LOW) {
     play_counter++;
-    raw_play_counter++;
+    // raw_play_counter++;
   }
 }
 
@@ -131,6 +131,8 @@ void setup() {
     prefs.end();
 
     if (MACHINE_ID < 100) {
+        // WIFI_SSID = "kv1313";
+        // WIFI_PASSWORD = "93985666";
         WIFI_SSID = "SmartVend";
         WIFI_PASSWORD = "12345678";
         // WIFI_SSID = "Sistema-Global";
@@ -289,10 +291,10 @@ void loop() {
     }
 
 
-    if (millis() - last_update_check > UPDATE_CHECK_INTERVAL) {
-        last_update_check = millis();
-        checkForUpdate();
-    }
+    // if (millis() - last_update_check > UPDATE_CHECK_INTERVAL) {
+    //     last_update_check = millis();
+    //     checkForUpdate();
+    // }
 
     delay(10);
 }
@@ -355,6 +357,9 @@ void performOTA() {
 }
 
 void sendLog(String message) {
+    return;
+
+
     if (WiFi.status() != WL_CONNECTED) return;
     
     HTTPClient http;
