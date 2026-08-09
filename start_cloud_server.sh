@@ -17,4 +17,7 @@ fi
 # Запуск сервера
 cd ~/Documents/karusel/cloud_server
 echo "Запускаю облачный сервер..."
+
+ulimit -n 4096
+
 python3.12 main.py
